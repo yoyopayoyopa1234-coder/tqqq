@@ -1,0 +1,19 @@
+"""TQQQ 일·주·월봉 시세 → tqqq_data.json (분석 페이지용, Global M2는 dashboard/data.json 공유)."""
+import json, os, sys
+from datetime import datetime, timezone
+sys.path.insert(0, os.path.dirname(__file__))
+from yahoo_data import yahoo
+
+def main():
+    out = {"updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "ohlc": {}}
+    for key, iv in (("TQQQ_1d", "1d"), ("TQQQ_1wk", "1wk"), ("TQQQ_1mo", "1mo")):
+        try:
+            out["ohlc"][key] = yahoo("TQQQ", iv); print(key, len(out["ohlc"][key]))
+        except Exception as e:
+            print("FAIL", key, e)
+    if len(out["ohlc"]) < 3:
+        raise SystemExit("일부 시세를 받지 못함 — 기존 tqqq_data.json 유지")
+    json.dump(out, open("tqqq_data.json", "w"), separators=(",", ":"))
+
+if __name__ == "__main__":
+    main()
