@@ -58,7 +58,7 @@ def run_strategy(name, idx, tq, band, multi_ts):
         hit_small = [x for x in SMALL if cur["max_ret"] >= x]; hit_big = [x for x in BIG if cur["max_ret"] >= x]
         nxt_small = next((x for x in SMALL if x not in hit_small), None); nxt_big = next((x for x in BIG if x not in hit_big), None)
         out["cycle"] = {
-            "entry_date": cur["entry_date"], "entry_tq": round(cur["entry_tq"], 2), "days": (datetime.fromisoformat(dates[i]) - datetime.fromisoformat(cur["entry_date"])).days,
+            "entry_date": cur["entry_date"], "entry_tq": round(cur["entry_tq"], 2), "tdays": sum(1 for d in dates if d >= cur["entry_date"]), "days": (datetime.fromisoformat(dates[i]) - datetime.fromisoformat(cur["entry_date"])).days,
             "ret": round(ret, 2), "max_ret": round(cur["max_ret"], 2), "peak": round(cur["peak"], 2),
             "ts_peak": round(cur["ts_peak"], 2) if ts_line else None, "ts_line": round(ts_line, 2) if ts_line else None,
             "dd": round((t[i] / cur["ts_peak"] - 1) * 100, 2) if ts_line else None,
