@@ -232,27 +232,21 @@ async function load(){
 
 
 async function verify(){
-  let V; try{ V = await (await fetch('verify_summary.json?'+Math.floor(Date.now()/600000))).json(); }catch(e){ $('#verify').innerHTML='<span class="zone">검증 데이터 준비 중</span>'; return; }
-  const ag = V.agitq||[], cut = ag.findIndex(l=>l.includes('QQQ')), agS = ag.slice(0,cut>0?cut:ag.length).join(' '), agQ = ag.slice(cut>0?cut:ag.length).join(' ');
-  const grab = (t,re) => { const m=t.match(re); return m?m[1]:null; };
-  const ok = (a,b,tol) => (a==null||b==null) ? '<span class="zone">—</span>' : (Math.abs(a-b) <= tol ? '<span class="up">일치</span>' : `<span class="dn">차이 ${(a-b).toFixed(2)}</span>`);
-  const zk = z => z==='above'?'상단 위':z==='band'?'밴드 안':z==='below'?'하단 아래':'—';
-  const rows=[];
-  for(const [k,label,agT] of [['spx','SPX',agS],['qqq','QQQ',agQ]]){
-    const it=V.items[k]||{}, R=TQ&&TQ[k], cy=R&&R.cycle;
-    const agDays = +grab(agT,/상단 밴드 위 (\d+)일/), agDD = +grab(agT,/최고점 대비 (-?[\d.]+)%/);
-    const myDD = cy ? (cy.dd ?? +(((R.tqqq/cy.peak)-1)*100).toFixed(1)) : null;
-    rows.push(`<tr><td><b>${label}</b> 종가</td><td>${fmt(it.tv_px)}</td><td>${fmt(it.my_px)}</td><td>—</td><td>${ok(it.tv_px,it.my_px,0.05)}</td></tr>`);
-    rows.push(`<tr><td>${label} 200일선</td><td>${fmt(it.tv_ma)}</td><td>${fmt(it.my_ma)}</td><td>—</td><td>${ok(it.tv_ma,it.my_ma,0.05)}</td></tr>`);
-    rows.push(`<tr><td>${label} 밴드 위치</td><td>${zk(it.tv_zone)}</td><td>${zk(R&&R.zone)}</td><td>${agT.includes('상단 밴드 위')?'상단 위':'—'}</td><td>${it.zone_match?'<span class="up">일치</span>':'<span class="dn">확인 필요</span>'}</td></tr>`);
-    rows.push(`<tr><td>${label} 상단 위 일수</td><td>—</td><td>${cy?cy.tdays+'일':'—'}</td><td>${agDays?agDays+'일':'—'}</td><td>${ok(agDays||null,cy?cy.tdays:null,0)}</td></tr>`);
-    rows.push(`<tr><td>${label} TQQQ 고점 대비</td><td>—</td><td>${myDD!=null?myDD.toFixed(1)+'%':'—'}</td><td>${agDD?agDD.toFixed(1)+'%':'—'}</td><td>${ok(agDD||null,myDD,0.15)}</td></tr>`);
-  }
-  rows.push(`<tr><td><b>TQQQ</b> 종가</td><td>${fmt(V.tqqq_tv)}</td><td>${fmt(V.tqqq_my)}</td><td>—</td><td>${ok(V.tqqq_tv,V.tqqq_my,0.02)}</td></tr>`);
-  const agFG = +grab(ag.join(' '),/현재 (\d+)/), myFG = TQ&&TQ.fg&&TQ.fg.score;
-  rows.push(`<tr><td>공포·탐욕 지수</td><td>—</td><td>${myFG!=null?myFG.toFixed(0):'—'}</td><td>${agFG||'—'}</td><td>${ok(agFG||null,myFG!=null?Math.round(myFG):null,1)}</td></tr>`);
-  $('#verify').innerHTML = `<div class="tbl"><table><thead><tr><th>항목</th><th>TradingView</th><th>이 사이트</th><th>AgiTQ</th><th>판정</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>
-    <div class="fine">검증 시각 ${V.at} · 매 영업일 미국 장 마감 뒤(한국 06:40) TradingView 공개 페이지(종가·SMA 200)와 AgiTQ 화면을 서버에서 열어 대조합니다. AgiTQ의 "SPYM 추가 매수" 문구는 보내주신 규칙에 없는 항목이라 대조하지 않았습니다.</div>`;
+  let V; try{ V = await (await fetch('verify_summary.json?'+Date.now())).json(); }catch(e){ $('#verify').innerHTML='<span class="zone">검증 데이터 준비 중</span>'; return; }
+  const col = {ok:'var(--in)', minor:'var(--accent)', bad:'var(--hot)', warn:'var(--warn)'}[V.level] || 'var(--muted)';
+  const bg = {ok:'rgba(90,212,69,.10)', minor:'rgba(240,180,41,.10)', bad:'rgba(242,54,69,.12)', warn:'rgba(240,160,48,.10)'}[V.level] || 'transparent';
+  const mk = {open:'미국 장중', closed:'장 마감', extended:'시간외', unknown:'—'}[V.market] || '—';
+  const mins = Math.round((Date.now() - new Date(V.at)) / 60000);
+  const hist = (V.history||[]).slice(-24).map(h=>`<span title="${h.at} ${h.ok}/${h.n}" style="display:inline-block;width:9px;height:14px;border-radius:2px;margin-right:2px;background:${{ok:'#5ad445',minor:'#f0b429',bad:'#f23645',warn:'#f0a030'}[h.level]||'#5d6675'}"></span>`).join('');
+  const passed = (V.history||[]).filter(h=>h.level==='ok').length, total=(V.history||[]).length;
+  const rows = (V.checks||[]).map(c=>`<tr><td>${c.name}</td><td>${c.detail}</td><td>${c.ok?'<span class="up">일치</span>':'<span class="dn">차이</span>'}</td></tr>`).join('');
+  $('#verify').innerHTML = `
+    <div style="padding:10px 12px;border-radius:8px;background:${bg};border:1px solid ${col}"><b style="color:${col}">${V.verdict}</b>
+      <div class="zone" style="margin-top:2px">${V.at_kst} 검증 (${mins<1?'방금':mins+'분 전'}) · ${mk} · 매시간 자동 검증</div></div>
+    <div><div class="zone" style="margin-bottom:4px">검증 분석</div><ul style="margin:0;padding-left:18px;display:grid;gap:3px">${(V.notes||[]).map(n=>`<li>${n}</li>`).join('')}</ul></div>
+    <div><div class="zone" style="margin-bottom:4px">최근 ${Math.min(24,total)}회 기록 (초록 전부 일치 · 노랑 수치만 차이 · 빨강 신호 불일치) — ${total}회 중 ${passed}회 전부 일치</div>${hist}</div>
+    <details><summary>항목별 대조 (${(V.checks||[]).filter(c=>c.ok).length}/${(V.checks||[]).length})</summary><div class="tbl"><table><thead><tr><th>항목</th><th>값 (TradingView·AgiTQ / 이 사이트)</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table></div></details>
+    <div class="fine">매시간 GitHub 서버가 TradingView 공개 페이지(종가·SMA 200)와 AgiTQ 화면을 직접 열어 이 사이트 계산과 대조합니다. 새로고침하면 가장 최근 검증 결과가 보입니다.</div>`;
 }
 
 ['c-st','c-avg','c-qty','c-peak'].forEach(id=>{ const v=store.get('tq-'+id); if(v!=null) $('#'+id).value=v; $('#'+id).addEventListener('input',calc); });
