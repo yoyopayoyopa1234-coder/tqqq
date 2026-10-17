@@ -242,7 +242,7 @@ async function verify(){
   const rows = (V.checks||[]).map(c=>`<tr><td>${c.name}</td><td>${c.detail}</td><td>${c.ok?'<span class="up">일치</span>':'<span class="dn">차이</span>'}</td></tr>`).join('');
   $('#verify').innerHTML = `
     <div style="padding:10px 12px;border-radius:8px;background:${bg};border:1px solid ${col}"><b style="color:${col}">${V.verdict}</b>
-      <div class="zone" style="margin-top:2px">${V.at_kst} 검증 (${mins<1?'방금':mins+'분 전'}) · ${mk} · 매시간 자동 검증</div></div>
+      <div class="zone" style="margin-top:2px">${V.at_kst} 검증 (${mins<1?'방금':mins+'분 전'}) · ${mk} · 매시간 자동 검증${mins>90?' · <span class="dn">검증이 지연되고 있습니다</span>':''}</div></div>
     <div><div class="zone" style="margin-bottom:4px">검증 분석</div><ul style="margin:0;padding-left:18px;display:grid;gap:3px">${(V.notes||[]).map(n=>`<li>${n}</li>`).join('')}</ul></div>
     <div><div class="zone" style="margin-bottom:4px">최근 ${Math.min(24,total)}회 기록 (초록 전부 일치 · 노랑 수치만 차이 · 빨강 신호 불일치) — ${total}회 중 ${passed}회 전부 일치</div>${hist}</div>
     <details><summary>항목별 대조 (${(V.checks||[]).filter(c=>c.ok).length}/${(V.checks||[]).length})</summary><div class="tbl"><table><thead><tr><th>항목</th><th>값 (TradingView·AgiTQ / 이 사이트)</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table></div></details>

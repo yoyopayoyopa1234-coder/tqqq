@@ -1,0 +1,26 @@
+name: heartbeat
+# GitHub 예약 실행이 자주 밀리거나 빠져서, 이 작업이 매시간 직접 update.yml 을 실행시킨다.
+# 약 5시간 50분 돌고 나면 스스로 다음 heartbeat 를 시작해 끊기지 않게 이어간다.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */4 * * *"   # 혹시 체인이 끊겼을 때 되살리는 예비용
+permissions:
+  actions: write
+  contents: read
+concurrency: { group: heartbeat, cancel-in-progress: true }
+jobs:
+  beat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - name: 매시간 실행
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          for i in 1 2 3 4 5; do
+            gh api repos/$REPO/actions/workflows/update.yml/dispatches -f ref=main && echo "dispatched $(date -u)"
+            sleep 3550
+          done
+          gh api repos/$REPO/actions/workflows/heartbeat.yml/dispatches -f ref=main
