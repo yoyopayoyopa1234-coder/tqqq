@@ -11,7 +11,11 @@ def main():
             out["ohlc"][key] = yahoo("TQQQ", iv); print(key, len(out["ohlc"][key]))
         except Exception as e:
             print("FAIL", key, e)
-    if len(out["ohlc"]) < 3:
+    try:
+        out["ohlc"]["QQQ_1mo"] = yahoo("QQQ", "1mo"); print("QQQ_1mo", len(out["ohlc"]["QQQ_1mo"]))   # RSI는 QQQ 기준
+    except Exception as e:
+        print("FAIL QQQ_1mo", e)
+    if not all(k in out["ohlc"] for k in ("TQQQ_1d", "TQQQ_1wk", "TQQQ_1mo")):
         raise SystemExit("일부 시세를 받지 못함 — 기존 tqqq_data.json 유지")
     json.dump(out, open("tqqq_data.json", "w"), separators=(",", ":"))
 

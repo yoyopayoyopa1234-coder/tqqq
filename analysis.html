@@ -67,7 +67,7 @@
   </div>
 
   <div class="panel">
-    <h2>월봉<span class="desc">BB 20/2 · RSI 14 · Williams Vix Fix 22/20/2/50/0.85</span></h2>
+    <h2>월봉<span class="desc">BB 20/2 · RSI 14 (QQQ) · Williams Vix Fix 22/20/2/50/0.85</span></h2>
     <div class="sum" id="sum-c">불러오는 중…</div>
     <div class="plot" id="plot-c" style="height:820px"></div>
   </div>
@@ -153,10 +153,15 @@ function chartB(){
   Plotly.react('plot-b', tr, L, cfg);
 }
 
+/* RSI는 QQQ 월봉으로 계산해 TQQQ 월봉 날짜에 맞춤 */
+function qqqRsi(rows){
+  const q=ohlc('QQQ_1mo'), r=rsi(q.map(d=>d.c)), k=t=>t.getUTCFullYear()*12+t.getUTCMonth(), m=new Map(q.map((d,j)=>[k(d.t),r[j]]));
+  return rows.map(d=>m.get(k(d.t)) ?? null);
+}
 function chartC(){
-  const r = ohlc('TQQQ_1mo'), x=r.map(d=>d.t), c=r.map(d=>d.c), b=bb(c), rs=rsi(c), v=vixfix(r), i=r.length-1;
+  const r = ohlc('TQQQ_1mo'), x=r.map(d=>d.t), c=r.map(d=>d.c), b=bb(c), rs=qqqRsi(r), v=vixfix(r), i=r.length-1;
   const pb=(c[i]-b.lo[i])/(b.up[i]-b.lo[i]);
-  $('#sum-c').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(b.up[i])} / ${fmt(b.mid[i])} / ${fmt(b.lo[i])} (%b ${pb.toFixed(2)}) · RSI <b>${rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}`;
+  $('#sum-c').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(b.up[i])} / ${fmt(b.mid[i])} / ${fmt(b.lo[i])} (%b ${pb.toFixed(2)}) · QQQ RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}`;
   const s = Math.max(0, x.findIndex(t=>t.getFullYear()>=2019));
   const visH = [...r.slice(s).map(d=>d.h), ...b.up.slice(s).filter(v=>v!=null)], visL=[...r.slice(s).map(d=>d.l), ...b.lo.slice(s).filter(v=>v!=null)];
   const L = base(820); L.yaxis=ax({domain:[0.48,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
@@ -169,7 +174,7 @@ function chartC(){
     line(x,b.lo,'#089981','BB 하단',{line:{color:'#089981',width:1.2}, fill:'tonexty', fillcolor:'rgba(33,150,243,0.08)'}),
     line(x,b.mid,'#2962ff','BB 중심',{line:{color:'#2962ff',width:1.2}}),
     candle(r),
-    line(x,rs,'#7c7cf0','RSI 14',{yaxis:'y2', line:{color:'#7c7cf0',width:1.8}}),
+    line(x,rs,'#7c7cf0','QQQ RSI 14',{yaxis:'y2', line:{color:'#7c7cf0',width:1.8}}),
     { type:'bar', x, y:v.w, name:'Vix Fix', marker:{color:v.sig.map(g=>g?'#5ad445':'#e05a5a')}, yaxis:'y3' },
     line(x, v.rh, '#f0a030', 'RangeHigh', { yaxis:'y3', line:{color:'#f0a030',width:2.5} }) ], L, cfg);
 }
@@ -177,19 +182,19 @@ function chartC(){
 async function alerts(){
   try{
     const d=ohlc('TQQQ_1d'), mo=ohlc('TQQQ_1mo'), dc=d.map(r=>r.c), mc=mo.map(r=>r.c), c=dc[dc.length-1];
-    const ma218=sma(dc,218).at(-1), env=ma218*1.07, disp=c/sma(dc,200).at(-1)*100, bmid=bb(mc).mid.at(-1), mrsi=rsi(mc).at(-1), v=vixfix(mo);
+    const ma218=sma(dc,218).at(-1), env=ma218*1.07, disp=c/sma(dc,200).at(-1)*100, bmid=bb(mc).mid.at(-1), mrsi=qqqRsi(mo).at(-1), v=vixfix(mo);
     const vixRecent=v.sig.slice(-12).filter(Boolean).length, f=x=>x.toFixed(2);
     const conds=[
       {kind:'buy',name:'월봉 Vix Fix 투매 신호 점등',on:v.sig.at(-1),val:`Vix Fix ${v.w.at(-1).toFixed(1)} / 기준 ${v.rh.at(-1).toFixed(1)}`},
       {kind:'buy',name:'이격도(200) 50 이하 — 과매도',on:disp<=50,val:`이격도 ${disp.toFixed(1)}`},
       {kind:'buy',name:'218일선 위로 회복',on:c>ma218,val:`${f(c)} vs 218일선 ${f(ma218)}`},
       {kind:'buy',name:'218일선 +7% 엔벨로프 돌파',on:c>env,val:`${f(c)} vs 엔벨로프 ${f(env)}`},
-      {kind:'buy',name:'월봉 RSI 50 돌파',on:mrsi>=50,val:`월봉 RSI ${mrsi.toFixed(1)}`},
+      {kind:'buy',name:'QQQ 월봉 RSI 50 돌파',on:mrsi>=50,val:`QQQ 월봉 RSI ${mrsi.toFixed(1)}`},
       {kind:'buy',name:'월봉 BB 중심선 돌파 (추세 전환)',on:c>bmid,val:`${f(c)} vs BB 중심 ${f(bmid)}`},
       {kind:'warn',name:'이격도(200) 160 이상 — 과열 경고',on:disp>=160,val:`이격도 ${disp.toFixed(1)}`},
       {kind:'warn',name:'218일선 이탈 — 반등 실패 경고',on:c<ma218,val:`${f(c)} vs 218일선 ${f(ma218)}`}];
     const score=conds.filter(x=>x.kind==='buy'&&x.on).length;
-    const [stage,txt] = (c>bmid&&mrsi>=50)?['전환','추세 전환 확인 구간 — 월봉 BB 중심선과 RSI 50을 모두 넘었습니다.']
+    const [stage,txt] = (c>bmid&&mrsi>=50)?['전환','추세 전환 확인 구간 — 월봉 BB 중심선과 QQQ RSI 50을 모두 넘었습니다.']
       : ((vixRecent>=3||disp<=50)&&c>ma218)?['회복','투매 신호 이후 218일선을 회복한 구간 — 분할 매수 검토 구간입니다.']
       : (v.sig.at(-1)||disp<=50)?['투매','공포(투매) 구간 — 역사적으로 바닥 후보였던 자리입니다. 218일선 회복 확인 전입니다.']
       : disp>=160?['과열','과열 구간 — 신규 매수에 불리한 자리입니다.'] : ['관망','뚜렷한 매수 조건이 겹치지 않은 구간입니다.'];
