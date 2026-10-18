@@ -55,14 +55,6 @@
   </div>
 
   <div class="panel">
-    <h2>CME FedWatch<span class="desc">금리 확률 · 1분마다 자동 새로고침</span>
-      <span class="tools"><span id="fw-t"></span> <a class="btn" href="https://www.cmegroup.com/ko/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener">CME에서 열기</a></span></h2>
-    <iframe id="fw" title="CME FedWatch" style="width:100%;height:760px;border:0;background:#fff;display:block"
-      src="https://cmegroup-tools.quikstrike.net/User/QuikStrikeView.aspx?viewitemid=IntegratedFedWatchTool"></iframe>
-    <div class="note" style="padding:6px 12px">위에서 <b>Probabilities</b> 탭을 누르면 회의별 확률표가 나옵니다. 화면이 비어 있으면 'CME에서 열기'를 누르세요.</div>
-  </div>
-
-  <div class="panel">
     <h2>일봉<span class="desc">5/218선 · 218일선 +7% 엔벨로프 · 이격도(200) 160/50</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plot" id="plot-d" style="height:620px"></div>
@@ -222,11 +214,6 @@ const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement(
   await dataP; init();
 })();
 
-/* FedWatch: 1분마다 새로고침 */
-const FW=$('#fw'), FW_SRC=FW.src;
-function fwStamp(){ $('#fw-t').textContent=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' 갱신'; }
-fwStamp();
-setInterval(()=>{ if(document.hidden) return; FW.src=FW_SRC.split('&_=')[0]+'&_='+Date.now(); fwStamp(); }, 60000);
 </script>
 </body>
 </html>
