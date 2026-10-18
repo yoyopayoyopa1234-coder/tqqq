@@ -72,17 +72,6 @@
     <div class="plot" id="plot-c" style="height:820px"></div>
   </div>
 
-  <div class="panel">
-    <h2>BB Width<span class="desc">볼린저밴드 폭 = (상단−하단)÷중심 × 100 · BB 20/2</span>
-      <span class="tools" id="bbw-tf">
-        <button class="btn" data-tf="1d" type="button">일</button>
-        <button class="btn" data-tf="1wk" type="button">주</button>
-        <button class="btn" data-tf="1mo" type="button" style="border-color:var(--accent);color:var(--accent)">월</button>
-      </span></h2>
-    <div class="sum" id="sum-w">불러오는 중…</div>
-    <div class="plot" id="plot-w" style="height:520px"></div>
-  </div>
-
   <div class="status">데이터: Yahoo Finance(TQQQ 시세, 매시간 갱신) · Global M2는 MSTR 대시보드와 같은 데이터(3시간마다 갱신)를 씁니다.</div>
 </div>
 
@@ -94,7 +83,7 @@ $('#today').textContent = new Date().toLocaleDateString('ko-KR',{month:'long',da
 let DATA=null;
 async function loadData(){ const q='?'+Math.floor(Date.now()/600000);
   const [a,b]=await Promise.all([fetch('tqqq_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('../dashboard/data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
-  if(a){ DATA=a; DATA.m2=b&&b.m2; DATA.mstr=b&&b.ohlc; } }
+  if(a){ DATA=a; DATA.m2=b&&b.m2; } }
 function ohlc(key){
   const k = DATA && DATA.ohlc && DATA.ohlc[key];
   if(!k || !k.length) throw new Error('데이터 준비 중');
@@ -190,47 +179,6 @@ function chartC(){
     line(x, v.rh, '#f0a030', 'RangeHigh', { yaxis:'y3', line:{color:'#f0a030',width:2.5} }) ], L, cfg);
 }
 
-
-/* ── BB Width ── */
-let bbwTF='1mo';
-const bbw = c => { const b=bb(c); return b.mid.map((m,i)=>m==null?null:(b.up[i]-b.lo[i])/m*100); };
-function bbwStats(w){
-  const v=w.filter(x=>x!=null), cur=v[v.length-1], n=v.length;
-  const rank=v.filter(x=>x<=cur).length/n*100;                 // 역사적 백분위 (낮을수록 수축)
-  const look = bbwTF==='1d'?126:bbwTF==='1wk'?52:24;             // 최근 6개월·1년·2년
-  const rec=v.slice(-look), lo=Math.min(...rec), hi=Math.max(...rec), prev=v[n-2];
-  let st, cls;
-  if(rank<=10 || cur<=lo*1.02){ st='스퀴즈 — 변동성 극단 수축, 큰 방향성 움직임이 가까울 수 있음'; cls='on'; }
-  else if(rank>=90 || cur>=hi*0.98){ st='확장 — 변동성 극대, 추세 막바지·과열 또는 급락 구간'; cls='hot'; }
-  else st = cur>prev ? '확장 중' : '수축 중', cls='';
-  return {cur, prev, rank, lo, hi, look, st, cls};
-}
-function chartW(){
-  const tq = ohlc('TQQQ_'+bbwTF);
-  const ms = (DATA.mstr && DATA.mstr['MSTR_'+bbwTF] || []).map(a=>({t:new Date(a[0]*1000),c:a[4]}));
-  const wT = bbw(tq.map(d=>d.c)), wM = ms.length ? bbw(ms.map(d=>d.c)) : [];
-  const sT = bbwStats(wT), sM = wM.length ? bbwStats(wM) : null;
-  const lbl = {'1d':'일봉','1wk':'주봉','1mo':'월봉'}[bbwTF], per = {'1d':'6개월','1wk':'1년','1mo':'2년'}[bbwTF];
-  const line1 = (name,s) => `<b>${name}</b> ${s.cur.toFixed(1)}% (${s.cur>=s.prev?'▲':'▼'} 전봉 ${s.prev.toFixed(1)}%) · 역사적 하위 ${s.rank.toFixed(0)}% · 최근 ${per} 범위 ${s.lo.toFixed(1)}~${s.hi.toFixed(1)}% · <span class="${s.cls}">${s.st}</span>`;
-  $('#sum-w').innerHTML = `${lbl} 기준<br>${line1('TQQQ',sT)}<br>${sM?line1('MSTR',sM):'<span class="note">MSTR 데이터 없음</span>'}<br><span class="note">BB Width가 낮게 눌릴수록(스퀴즈) 다음에 크게 움직일 가능성이 커지고, 방향은 밴드 돌파 방향으로 확인합니다.</span>`;
-  const L = base(520); L.showlegend=false;
-  L.yaxis=ax({domain:[0.54,1], title:{text:'TQQQ %',font:{size:10}}}); L.yaxis2=ax({domain:[0,0.46], title:{text:'MSTR %',font:{size:10}}});
-  const xT=tq.map(d=>d.t), xM=ms.map(d=>d.t);
-  const span = bbwTF==='1d'?500:bbwTF==='1wk'?260:110;
-  L.xaxis.range=[xT[Math.max(0,xT.length-span)], new Date(xT[xT.length-1].getTime()+(bbwTF==='1mo'?60:10)*86400000)];
-  const pctLine = (w,q) => { const v=w.filter(x=>x!=null).slice().sort((a,b)=>a-b); return v[Math.floor((v.length-1)*q)]; };
-  L.shapes=[ hline(pctLine(wT,0.1),'y','#5ad445','dash'), hline(pctLine(wT,0.9),'y','#f23645','dash') ];
-  if(wM.length) L.shapes.push(hline(pctLine(wM,0.1),'y2','#5ad445','dash'), hline(pctLine(wM,0.9),'y2','#f23645','dash'));
-  L.annotations=[{xref:'paper',x:0,yref:'y',y:pctLine(wT,0.1),text:'하위 10%',showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:9,color:'#5ad445'}},
-                 {xref:'paper',x:0,yref:'y',y:pctLine(wT,0.9),text:'상위 10%',showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:9,color:'#f23645'}}];
-  const tr=[ line(xT,wT,'#f0b429','TQQQ BBW',{line:{color:'#f0b429',width:1.8}, fill:'tozeroy', fillcolor:'rgba(240,180,41,0.08)'}) ];
-  if(wM.length) tr.push(line(xM,wM,'#e05aa0','MSTR BBW',{yaxis:'y2', line:{color:'#e05aa0',width:1.8}, fill:'tozeroy', fillcolor:'rgba(224,90,160,0.08)'}));
-  Plotly.react('plot-w', tr, L, cfg);
-}
-document.querySelectorAll('#bbw-tf [data-tf]').forEach(b=>b.addEventListener('click',()=>{
-  bbwTF=b.dataset.tf; document.querySelectorAll('#bbw-tf [data-tf]').forEach(x=>{ x.style.borderColor=x===b?'var(--accent)':''; x.style.color=x===b?'var(--accent)':''; });
-  safe(chartW,'#sum-w'); }));
-
 async function alerts(){
   try{
     const d=ohlc('TQQQ_1d'), mo=ohlc('TQQQ_1mo'), dc=d.map(r=>r.c), mc=mo.map(r=>r.c), c=dc[dc.length-1];
@@ -263,7 +211,7 @@ async function init(){
     $('#today').innerHTML += ' · 데이터 ' + u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + ' 기준'
       + (hrs>26 ? ' <span class="err">(갱신이 멈춤 — 확인 필요)</span>' : '');
   }
-  alerts(); safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c'); safe(chartW,'#sum-w');
+  alerts(); safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
 }
 $('#m2off').addEventListener('input',e=>{ $('#m2offv').textContent=e.target.value; safe(chartB,'#sum-b'); });
 $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); init(); });
@@ -278,7 +226,7 @@ const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement(
 (async()=>{
   const dataP = loadData();
   for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
-  if(!window.Plotly){ ['#sum-b','#sum-c','#sum-d','#sum-w'].forEach(id=>$(id).innerHTML='<span class="err">차트 라이브러리를 불러오지 못했습니다. 새로고침하세요.</span>'); return; }
+  if(!window.Plotly){ ['#sum-b','#sum-c','#sum-d'].forEach(id=>$(id).innerHTML='<span class="err">차트 라이브러리를 불러오지 못했습니다. 새로고침하세요.</span>'); return; }
   await dataP; init();
 })();
 </script>
