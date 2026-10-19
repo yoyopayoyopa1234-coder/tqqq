@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>빅테크 Vix Fix</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429;
+          --low:#5ad445; --mid:#c9cfd8; --high:#f23645; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .nav { display:flex; gap:4px; flex-wrap:wrap; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; }
+  .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  .btn { font:inherit; font-size:12px; padding:5px 12px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; }
+  .btn[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
+  .tabs { display:flex; gap:6px; margin-left:auto; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .panel h2 { margin:0; padding:10px 12px; font-size:15px; display:flex; align-items:baseline; gap:8px; border-bottom:1px solid var(--line); }
+  .panel h2 .cnt { font-size:12px; color:var(--muted); font-weight:400; }
+  .panel h2 .desc { font-size:12px; color:var(--muted); font-weight:400; margin-left:auto; text-align:right; }
+  .p-low h2 { border-left:4px solid var(--low); } .p-low h2 .t { color:var(--low); }
+  .p-mid h2 { border-left:4px solid var(--mid); } .p-mid h2 .t { color:var(--mid); }
+  .p-high h2 { border-left:4px solid var(--high); } .p-high h2 .t { color:var(--high); }
+  .tbl { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  th:first-child, td:first-child { text-align:left; } th { color:var(--muted); font-weight:500; font-size:12px; }
+  td .sym { color:var(--muted); font-size:11px; margin-left:4px; }
+  .empty { padding:12px; color:var(--muted); font-size:13px; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:var(--low); font-weight:700; }
+  .bar { display:inline-block; width:60px; height:6px; border-radius:3px; background:#262c35; position:relative; vertical-align:middle; margin-right:6px; }
+  .bar i { position:absolute; left:0; top:0; bottom:0; border-radius:3px; }
+  .note { font-size:12px; color:var(--muted); line-height:1.7; padding:0 2px; }
+  .note b { color:var(--fg); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="mstr.html">MSTR</a><a href="bigtech.html" class="cur">빅테크 Vix Fix</a></nav>
+    <span style="flex-basis:100%;height:0"></span>
+    <h1>빅테크 Williams Vix Fix</h1>
+    <span class="date" id="upd"></span>
+    <span class="tabs" role="group" aria-label="봉 단위">
+      <button class="btn" data-tf="1d" type="button">일봉</button>
+      <button class="btn" data-tf="1wk" type="button">주봉</button>
+      <button class="btn" data-tf="1mo" type="button" aria-pressed="true">월봉</button>
+    </span>
+  </header>
+
+  <div id="tables"><div class="panel"><div class="empty">불러오는 중…</div></div></div>
+
+  <div class="note" id="miss"></div>
+  <div class="note">
+    <b>분류 기준</b> · CM Williams Vix Fix 22/20/2/50/0.85 · Vix Fix는 "최근 22봉 최고 종가 대비 이번 봉 저가가 얼마나 빠졌나"로 공포를 잽니다.<br>
+    <b style="color:var(--low)">저점</b> 녹색 신호(Vix Fix가 BB 상단 또는 RangeHigh 이상) 이거나, Vix Fix가 최근 100봉 중 상위 20% — 공포·투매권<br>
+    <b style="color:var(--mid)">중간점</b> 그 사이<br>
+    <b style="color:var(--high)">고점</b> Vix Fix가 최근 100봉 중 하위 20% — 공포가 사라진 안심권, 가격이 최근 고점 근처<br>
+    매시간 자동 갱신 · 지표 조건에 따른 분류이며 투자 자문이 아닙니다.
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = (v,d=2) => v==null?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sg = (v,d=2) => v==null?'—':`<span class="${v>=0?'up':'dn'}">${v>=0?'+':''}${Number(v).toFixed(d)}%</span>`;
+let D=null, tf='1mo';
+try{ tf = localStorage.getItem('bt-tf') || '1mo'; }catch(e){}
+
+const ZONES = [
+  ['low','저점','공포·투매권 — Vix Fix 높음'],
+  ['mid','중간점','공포도 안심도 아닌 구간'],
+  ['high','고점','안심·과열권 — Vix Fix 낮음'],
+];
+function row(r){
+  const ratio = Math.min(100, r.ratio||0), col = r.zone==='low'?'#5ad445':r.zone==='high'?'#f23645':'#8a93a3';
+  return `<tr><td><b>${r.name}</b><span class="sym">${r.sym}</span></td>
+    <td>$${fmt(r.price)} ${sg(r.chg)}</td>
+    <td>${fmt(r.wvf)} / ${fmt(r.rh)}${r.sig?' <span class="on">녹색</span>':''}</td>
+    <td><span class="bar"><i style="width:${ratio}%;background:${col}"></i></span>${r.ratio==null?'—':r.ratio.toFixed(0)+'%'}</td>
+    <td>${r.pctl}%</td>
+    <td>${sg(r.from_high,1)}</td>
+    <td>${r.last_green||'—'}</td></tr>`;
+}
+function render(){
+  if(!D) return;
+  document.querySelectorAll('[data-tf]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.tf===tf)));
+  const rows = D.tf[tf]||[], ok = rows.filter(r=>r.zone), miss = rows.filter(r=>!r.zone);
+  const lbl = {'1d':'일봉','1wk':'주봉','1mo':'월봉'}[tf];
+  $('#tables').innerHTML = ZONES.map(([z,t,desc])=>{
+    const list = ok.filter(r=>r.zone===z).sort((a,b)=> z==='high' ? a.pctl-b.pctl : b.pctl-a.pctl);
+    return `<div class="panel p-${z}" style="margin-bottom:14px"><h2><span class="t">${t}</span><span class="cnt">${list.length}종목 · ${lbl}</span><span class="desc">${desc}</span></h2>
+      ${list.length ? `<div class="tbl"><table><thead><tr><th>종목</th><th>현재가</th><th>Vix Fix / 기준</th><th>기준 대비</th><th>100봉 백분위</th><th>22봉 고점 대비</th><th>최근 녹색</th></tr></thead><tbody>${list.map(row).join('')}</tbody></table></div>` : '<div class="empty">해당 종목 없음</div>'}</div>`;
+  }).join('');
+  $('#miss').innerHTML = miss.length ? '계산 제외: ' + miss.map(r=>`${r.name}(${r.sym}) — ${r.note}`).join(' · ') : '';
+}
+async function load(){
+  try{ D = await (await fetch('bigtech.json?'+Math.floor(Date.now()/300000))).json(); }
+  catch(e){ $('#tables').innerHTML='<div class="panel"><div class="empty">데이터 준비 중입니다. 잠시 후 새로고침하세요.</div></div>'; return; }
+  const u = new Date(D.updated);
+  $('#upd').textContent = u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + ' 기준';
+  render();
+}
+document.querySelectorAll('[data-tf]').forEach(b=>b.addEventListener('click',()=>{ tf=b.dataset.tf; try{ localStorage.setItem('bt-tf',tf); }catch(e){} render(); }));
+load();
+</script>
+</body>
+</html>
