@@ -32,7 +32,8 @@ def run_strategy(name, idx, tq, band, multi_ts):
             cur = {"entry_date": d, "entry_tq": t[i], "entry_idx": c[i], "peak": t[i], "ts_peak": t[i], "ts": [], "hit": [], "max_ret": 0.0}
         elif state == "IN":
             if t[i] > cur["ts_peak"]:
-                cur["ts_peak"] = t[i]; cur["hit"] = []      # 새 고점 → TS 단계 재설정
+                cur["ts_peak"] = t[i]
+                if multi_ts: cur["hit"] = []                # V2만 새 고점에서 재설정 (V1은 사이클당 최초 1회)
             cur["peak"] = max(cur["peak"], t[i])
             cur["max_ret"] = max(cur["max_ret"], (t[i] / cur["entry_tq"] - 1) * 100)
             if multi_ts:
@@ -41,7 +42,7 @@ def run_strategy(name, idx, tq, band, multi_ts):
                     cur["ts"].append({"date": d, "price": t[i], "from_peak": cur["ts_peak"], "level": 25})
                     cur["ts_peak"] = t[i]; cur["hit"] = []
             else:
-                # QQQ(V1): 고점 대비 −25%에서 1회 발동, 새 고점이 나오면 다시 설정
+                # QQQ(V1): 사이클 최고점 대비 −25%에서 사이클당 최초 1회만 발동 (원문 "최초 1번 정도")
                 for lv in (25,):
                     if lv not in cur.setdefault("hit", []) and t[i] <= cur["ts_peak"] * (1 - lv / 100):
                         cur["hit"].append(lv)

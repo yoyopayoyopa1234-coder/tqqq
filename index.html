@@ -114,7 +114,7 @@
         <li>매수: QQQ가 상단(+2%) 돌파 → SGOV로 TQQQ 3분할 매수</li>
         <li>관망: 밴드 안에서는 기존 포지션 유지</li>
         <li>소익절 +10/25/50% → 잔고 10% · 대익절 +100/200/400/800%… → 잔고 50%, SPYM으로</li>
-        <li>TS (V1): 사이클 TQQQ 고점 대비 −25% → 보유 TQQQ 수량의 50% SPYM 전환. 새 고점이 나오면 다시 설정 · 하단 밴드 이탈 시 전량 SGOV</li>
+        <li>TS (V1): 사이클 TQQQ 최고점 대비 −25% → 보유 TQQQ 수량의 50% SPYM 전환, 사이클당 최초 1회 · 하단 밴드 이탈 시 전량 SGOV</li>
         <li>전량 탈출: QQQ가 하단(−2%) 이탈 → 전량 매도, SGOV 대피</li>
       </ul></details>
       <p class="fine">사이클 수익률은 "매수 신호일 TQQQ 종가" 기준입니다. 실제 3분할 매수 평단과 다를 수 있으니 계산기에 본인 평단을 넣어 확인하세요. 신호가 새로 나오면 GitHub 앱으로 알림이 갑니다. 규칙을 자동 계산한 참고 화면이며 투자 자문이 아닙니다.</p>
@@ -147,7 +147,7 @@ function card(R, key){
       <dt>사이클 시작</dt><dd>${cy.entry_date} · TQQQ ${fmt(cy.entry_tq)} · ${cy.days}일째</dd>
       <dt>사이클 수익률</dt><dd>${sg(cy.ret)} (최고 ${sg(cy.max_ret)})</dd>
       <dt>TQQQ 사이클 고점</dt><dd>${fmt(cy.ts_peak ?? cy.peak)}</dd>
-      <dt>TS 발동선${cy.ts_level?` (−${cy.ts_level}%)`:''}</dt><dd>${cy.ts_line?`<span class="num">${fmt(cy.ts_line)}</span> · 현재 고점 대비 <span class="${cy.dd<=-20?'wr':''}">${cy.dd.toFixed(1)}%</span>`:'−25% 발동 완료 — 사이클 고점을 다시 넘으면 재설정, 그 전엔 하단 밴드 이탈(전량 SGOV)만 남음'}</dd>
+      <dt>TS 발동선${cy.ts_level?` (−${cy.ts_level}%)`:''}</dt><dd>${cy.ts_line?`<span class="num">${fmt(cy.ts_line)}</span> · 현재 고점 대비 <span class="${cy.dd<=-20?'wr':''}">${cy.dd.toFixed(1)}%</span>`:'이번 사이클 TS(−25%) 발동 완료 — V1은 사이클당 1회, 남은 건 하단 밴드 이탈(전량 SGOV)'}</dd>
       <dt>TS 발동 기록</dt><dd>${cy.ts.length? cy.ts.map(t=>`${t.date} @ ${fmt(t.price)}${t.level?` (−${t.level}%)`:''}`).join('<br>') : '없음'}</dd>
     </dl>
     <div><div class="zone">소익절 (잔고 10%)</div><div class="chips">${smalls}</div></div>
