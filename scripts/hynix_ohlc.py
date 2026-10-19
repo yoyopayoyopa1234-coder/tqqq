@@ -1,10 +1,10 @@
-"""한국 주식 일·주·월봉 → <이름>_data.json (SK하이닉스, 삼성전자)"""
+"""한국 주식 일·주·월봉 → <이름>_data.json (SK하이닉스)"""
 import json, os, sys
 from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from yahoo_data import yahoo
 
-STOCKS = [("HYNIX", "000660.KS", "hynix_data.json"), ("SAMSUNG", "005930.KS", "samsung_data.json")]
+STOCKS = [("HYNIX", "000660.KS", "hynix_data.json")]
 
 def main():
     for key, sym, fn in STOCKS:
