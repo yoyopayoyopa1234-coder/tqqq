@@ -62,8 +62,9 @@ def main():
         rows = []
         for sym, name in TICKERS:
             try:
-                r = yahoo(sym, iv, "max")
-                res = run(r); res.update(sym=sym, name=name); rows.append(res)
+                r = yahoo(sym, iv, {"1d": "25y", "1wk": "25y", "1mo": "30y"}[iv])
+                gap = (r[-2][0] - r[-60][0]) / 58 / 86400
+                res = run(r); res.update(sym=sym, name=name, bars=len(r), gap_days=round(gap, 1)); rows.append(res)
                 print(iv, sym, res["cagr"], res["bh_cagr"], res["mdd"], res["bh_mdd"], res["trades"], res["in_mkt"])
             except Exception as e:
                 rows.append({"sym": sym, "name": name, "error": str(e)[:80]}); print("FAIL", iv, sym, e)
