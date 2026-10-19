@@ -1,7 +1,7 @@
 name: update
 on:
   schedule:
-    - cron: "7 * * * *"   # 매시간: 신호 계산 → TradingView·AgiTQ 검증
+    - cron: "7 * * * *"   # 예비용 (실제로는 heartbeat가 15분마다 실행)
   workflow_dispatch:
   push:
     paths: ["scripts/**", ".github/workflows/update.yml"]
