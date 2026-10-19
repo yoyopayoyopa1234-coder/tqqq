@@ -1,19 +1,19 @@
 {
- "at": "2026-10-19T13:19+00:00",
- "at_kst": "10/19 22:19",
+ "at": "2026-10-19T13:33+00:00",
+ "at_kst": "10/19 22:33",
  "market": "closed",
- "verdict": "전부 일치 (14/14) — 신호판 수치와 판단을 그대로 믿어도 됩니다.",
- "level": "ok",
+ "verdict": "신호 판단은 일치, 수치 5건 차이 — 매수·탈출 판단에는 영향이 없습니다.",
+ "level": "minor",
  "checks": [
   {
    "name": "SPX 가격",
-   "ok": true,
-   "detail": "+0.000%"
+   "ok": false,
+   "detail": "+0.547%"
   },
   {
    "name": "SPX 200일선",
-   "ok": true,
-   "detail": "+0.000%"
+   "ok": false,
+   "detail": "+0.059%"
   },
   {
    "name": "SPX 밴드 위치",
@@ -28,22 +28,22 @@
   {
    "name": "SPX 상단 위 일수 (AgiTQ)",
    "ok": true,
-   "detail": "131 / 131일"
+   "detail": "132 / 132일"
   },
   {
    "name": "SPX TQQQ 고점 대비 (AgiTQ)",
    "ok": true,
-   "detail": "-19.0% / -19.0%"
+   "detail": "-15.9% / -15.8%"
   },
   {
    "name": "QQQ 가격",
-   "ok": true,
-   "detail": "+0.000%"
+   "ok": false,
+   "detail": "-0.124%"
   },
   {
    "name": "QQQ 200일선",
-   "ok": true,
-   "detail": "+0.000%"
+   "ok": false,
+   "detail": "+0.077%"
   },
   {
    "name": "QQQ 밴드 위치",
@@ -58,35 +58,40 @@
   {
    "name": "QQQ 상단 위 일수 (AgiTQ)",
    "ok": true,
-   "detail": "133 / 133일"
+   "detail": "134 / 134일"
   },
   {
    "name": "QQQ TQQQ 고점 대비 (AgiTQ)",
    "ok": true,
-   "detail": "-21.8% / -21.8%"
+   "detail": "-18.7% / -18.6%"
   },
   {
    "name": "TQQQ 가격",
-   "ok": true,
-   "detail": "+0.000%"
+   "ok": false,
+   "detail": "-0.225%"
   },
   {
    "name": "공포·탐욕 지수",
    "ok": true,
-   "detail": "AgiTQ 27 / 사이트 27"
+   "detail": "AgiTQ 26 / 사이트 26"
   }
  ],
  "notes": [
   "SPX: TradingView 기준 상단 밴드 위 (상단 대비 +2.77%, 하단 대비 +8.04%).",
-  "QQQ: TradingView 기준 상단 밴드 위 (상단 대비 +3.11%, 하단 대비 +7.32%).",
+  "QQQ: TradingView 기준 상단 밴드 위 (상단 대비 +4.58%, 하단 대비 +8.85%).",
+  "차이: SPX 가격 — +0.547%",
+  "차이: SPX 200일선 — +0.059%",
+  "차이: QQQ 가격 — -0.124%",
+  "차이: QQQ 200일선 — +0.077%",
+  "차이: TQQQ 가격 — -0.225%",
   "AgiTQ의 'SPYM 추가 매수'는 보내주신 규칙에 없는 항목이라 대조하지 않았습니다."
  ],
  "items": {
   "spx": {
    "tv_px": 7659.44,
    "tv_ma": 7271.44,
-   "my_px": 7659.44,
-   "my_ma": 7271.44,
+   "my_px": 7701.3,
+   "my_ma": 7275.71,
    "my_zone": "above",
    "my_state": "IN",
    "tv_up": 7453.23,
@@ -94,67 +99,61 @@
    "tv_zone": "above",
    "tv_dist_up": 2.77,
    "tv_dist_lo": 8.04,
-   "px_diff_pct": 0.0,
-   "ma_diff_pct": 0.0,
+   "px_diff_pct": 0.547,
+   "ma_diff_pct": 0.059,
    "zone_match": true,
    "ag_state": "IN",
-   "ag_days": 131.0,
-   "ag_dd": -19.0,
-   "my_days": 131,
-   "my_dd": -19.04
+   "ag_days": 132.0,
+   "ag_dd": -15.9,
+   "my_days": 132,
+   "my_dd": -15.75
   },
   "qqq": {
-   "tv_px": 709.8,
+   "tv_px": 719.94,
    "tv_ma": 674.91,
-   "my_px": 709.8,
-   "my_ma": 674.91,
+   "my_px": 719.05,
+   "my_ma": 675.43,
    "my_zone": "above",
    "my_state": "IN",
    "tv_up": 688.41,
    "tv_lo": 661.41,
    "tv_zone": "above",
-   "tv_dist_up": 3.11,
-   "tv_dist_lo": 7.32,
-   "px_diff_pct": 0.0,
-   "ma_diff_pct": 0.0,
+   "tv_dist_up": 4.58,
+   "tv_dist_lo": 8.85,
+   "px_diff_pct": -0.124,
+   "ma_diff_pct": 0.077,
    "zone_match": true,
    "ag_state": "IN",
-   "ag_days": 133.0,
-   "ag_dd": -21.8,
-   "my_days": 133,
-   "my_dd": -21.8
+   "ag_days": 134.0,
+   "ag_dd": -18.7,
+   "my_days": 134,
+   "my_dd": -18.62
   }
  },
- "tqqq_tv": 68.21,
- "tqqq_my": 68.21,
+ "tqqq_tv": 71.14,
+ "tqqq_my": 70.98,
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
-  "26.10.17. 05:42 기준",
+  "26.10.19. 22:31 기준",
   "TQQQ 보유 유지",
   "SPYM 추가 매수",
-  "상단 밴드 위 131일 차 (추세 유지)",
-  "TQQQ 최고점 대비 -19.0%",
+  "상단 밴드 위 132일 차 (추세 유지)",
+  "TQQQ 최고점 대비 -15.9%",
   "아기티큐 200큐큐단 (QQQ)",
   "v3.0-γ (26.08.12)",
-  "26.10.17. 05:00 기준",
+  "26.10.19. 22:31 기준",
   "TQQQ 보유 유지",
   "SPYM 추가 매수",
-  "상단 밴드 위 133일 차 (추세 유지)",
-  "TQQQ 최고점 대비 -21.8%",
+  "상단 밴드 위 134일 차 (추세 유지)",
+  "TQQQ 최고점 대비 -18.7%",
   "공포와 탐욕 지수 (CNN FGI)",
   "공포 (Fear)",
-  "현재 27",
+  "현재 26",
   "/",
   "30일 평균 34"
  ],
  "history": [
-  {
-   "at": "10/19 12:03",
-   "level": "ok",
-   "ok": 14,
-   "n": 14
-  },
   {
    "at": "10/19 12:36",
    "level": "ok",
@@ -435,6 +434,12 @@
    "at": "10/19 22:19",
    "level": "ok",
    "ok": 14,
+   "n": 14
+  },
+  {
+   "at": "10/19 22:33",
+   "level": "minor",
+   "ok": 9,
    "n": 14
   }
  ]
