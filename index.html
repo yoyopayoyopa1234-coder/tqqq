@@ -114,7 +114,7 @@
         <li>매수: QQQ가 상단(+2%) 돌파 → SGOV로 TQQQ 3분할 매수</li>
         <li>관망: 밴드 안에서는 기존 포지션 유지</li>
         <li>소익절 +10/25/50% → 잔고 10% · 대익절 +100/200/400/800%… → 잔고 50%, SPYM으로</li>
-        <li>TS: 사이클 TQQQ 고점 대비 −25% → TQQQ 수량 50% SPYM 전환 (1회)</li>
+        <li>TS: 사이클 TQQQ 고점 대비 −25%, −50%에서 각각 보유 TQQQ 수량의 50%를 SPYM 전환 (새 고점이 나오면 다시 설정) · 예외: 하단 밴드 이탈 시 전량 SGOV</li>
         <li>전량 탈출: QQQ가 하단(−2%) 이탈 → 전량 매도, SGOV 대피</li>
       </ul></details>
       <p class="fine">사이클 수익률은 "매수 신호일 TQQQ 종가" 기준입니다. 실제 3분할 매수 평단과 다를 수 있으니 계산기에 본인 평단을 넣어 확인하세요. 신호가 새로 나오면 GitHub 앱으로 알림이 갑니다. 규칙을 자동 계산한 참고 화면이며 투자 자문이 아닙니다.</p>
@@ -147,15 +147,15 @@ function card(R, key){
       <dt>사이클 시작</dt><dd>${cy.entry_date} · TQQQ ${fmt(cy.entry_tq)} · ${cy.days}일째</dd>
       <dt>사이클 수익률</dt><dd>${sg(cy.ret)} (최고 ${sg(cy.max_ret)})</dd>
       <dt>TQQQ 사이클 고점</dt><dd>${fmt(cy.ts_peak ?? cy.peak)}</dd>
-      <dt>TS 발동선 (−25%)</dt><dd>${cy.ts_line?`<span class="num">${fmt(cy.ts_line)}</span> · 현재 고점 대비 <span class="${cy.dd<=-20?'wr':''}">${cy.dd.toFixed(1)}%</span>`:'이번 사이클 TS 사용 완료'}</dd>
-      <dt>TS 발동 기록</dt><dd>${cy.ts.length? cy.ts.map(t=>`${t.date} @ ${fmt(t.price)}`).join('<br>') : '없음'}</dd>
+      <dt>TS 발동선${cy.ts_level?` (−${cy.ts_level}%)`:''}</dt><dd>${cy.ts_line?`<span class="num">${fmt(cy.ts_line)}</span> · 현재 고점 대비 <span class="${cy.dd<=-20?'wr':''}">${cy.dd.toFixed(1)}%</span>`:'−25%·−50% 모두 발동 — 새 고점이 나오면 다시 설정, 남은 건 하단 밴드 이탈(전량 SGOV)'}</dd>
+      <dt>TS 발동 기록</dt><dd>${cy.ts.length? cy.ts.map(t=>`${t.date} @ ${fmt(t.price)}${t.level?` (−${t.level}%)`:''}`).join('<br>') : '없음'}</dd>
     </dl>
     <div><div class="zone">소익절 (잔고 10%)</div><div class="chips">${smalls}</div></div>
     <div><div class="zone">대익절 (잔고 50%)</div><div class="chips">${bigs}</div></div>
     <div class="zone">다음 익절가: ${cy.next_small?`소익절 +${cy.next_small}% → TQQQ <span class="num">${fmt(cy.next_small_px)}</span> · `:''}대익절 +${cy.next_big}% → TQQQ <span class="num">${fmt(cy.next_big_px)}</span></div>`;
   }
   const hist = R.cycles.slice().reverse().map(c=>`<tr><td>${c.entry_date}</td><td>${c.exit_date}</td><td>${fmt(c.entry_tq)}→${fmt(c.exit_tq)}</td><td>${sg(c.ret)}</td><td>${sg(c.max_ret)}</td><td>${c.ts_n}</td></tr>`).join('');
-  return `<div class="panel"><h2>${R.name} ±${(R.band*100).toFixed(R.band===0.025?1:0)}%<span class="desc">${R.multi_ts?'V2 · 연쇄 TS':'TS 1회'} · ${R.date} 종가</span></h2>
+  return `<div class="panel"><h2>${R.name} ±${(R.band*100).toFixed(R.band===0.025?1:0)}%<span class="desc">${R.multi_ts?'V2 · 연쇄 TS':'TS −25%·−50%'} · ${R.date} 종가</span></h2>
   <div class="body">
     <div class="state"><span class="badge ${IN?'b-in':'b-out'}">${IN?'보유 (TQQQ)':'대피 (SGOV)'}</span><span class="zone">${zoneTxt} · 200일선 대비 ${sg(R.dist_ma,2)}</span></div>
     <div class="action">${action}</div>

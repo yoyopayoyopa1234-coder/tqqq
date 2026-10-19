@@ -29,14 +29,23 @@ def run_strategy(name, idx, tq, band, multi_ts):
         up, lo = ma[i] * (1 + band), ma[i] * (1 - band)
         if state == "OUT" and c[i] > up:
             state = "IN"
-            cur = {"entry_date": d, "entry_tq": t[i], "entry_idx": c[i], "peak": t[i], "ts_peak": t[i], "ts": [], "max_ret": 0.0}
+            cur = {"entry_date": d, "entry_tq": t[i], "entry_idx": c[i], "peak": t[i], "ts_peak": t[i], "ts": [], "hit": [], "max_ret": 0.0}
         elif state == "IN":
-            cur["peak"] = max(cur["peak"], t[i]); cur["ts_peak"] = max(cur["ts_peak"], t[i])
+            if t[i] > cur["ts_peak"]:
+                cur["ts_peak"] = t[i]; cur["hit"] = []      # 새 고점 → TS 단계 재설정
+            cur["peak"] = max(cur["peak"], t[i])
             cur["max_ret"] = max(cur["max_ret"], (t[i] / cur["entry_tq"] - 1) * 100)
-            if t[i] <= cur["ts_peak"] * 0.75 and (multi_ts or not cur["ts"]):
-                cur["ts"].append({"date": d, "price": t[i], "from_peak": cur["ts_peak"]})
-                if multi_ts: cur["ts_peak"] = t[i]          # V2: 임시 최고점 리셋
-                else: cur["ts_peak"] = float("inf")          # V1: 1회만
+            if multi_ts:
+                # SPX V2: 고점 대비 −25%마다 발동, 발동 후 임시 최고점을 그 가격으로 리셋해 반복
+                if t[i] <= cur["ts_peak"] * 0.75:
+                    cur["ts"].append({"date": d, "price": t[i], "from_peak": cur["ts_peak"], "level": 25})
+                    cur["ts_peak"] = t[i]; cur["hit"] = []
+            else:
+                # QQQ: 같은 고점 기준 −25%, −50%에서 각각 발동 (보유 수량 절반씩 SPYM)
+                for lv in (25, 50):
+                    if lv not in cur.setdefault("hit", []) and t[i] <= cur["ts_peak"] * (1 - lv / 100):
+                        cur["hit"].append(lv)
+                        cur["ts"].append({"date": d, "price": t[i], "from_peak": cur["ts_peak"], "level": lv})
             if c[i] < lo:
                 state = "OUT"
                 cur.update(exit_date=d, exit_tq=t[i], exit_idx=c[i], ret=(t[i] / cur["entry_tq"] - 1) * 100)
@@ -50,18 +59,22 @@ def run_strategy(name, idx, tq, band, multi_ts):
         "idx": round(c[i], 2), "ma200": round(ma[i], 2), "up": round(up, 2), "lo": round(lo, 2),
         "dist_ma": round((c[i] / ma[i] - 1) * 100, 2), "to_up": round((up / c[i] - 1) * 100, 2), "to_lo": round((lo / c[i] - 1) * 100, 2),
         "pos": round(pos, 3), "zone": zone, "state": state, "tqqq": round(t[i], 2),
-        "cycles": [{k: (round(v, 2) if isinstance(v, float) else v) for k, v in cy.items() if k not in ("peak", "ts_peak")} | {"ts_n": len(cy["ts"])} for cy in cycles[-12:]],
+        "cycles": [{k: (round(v, 2) if isinstance(v, float) else v) for k, v in cy.items() if k not in ("peak", "ts_peak", "hit")} | {"ts_n": len(cy["ts"])} for cy in cycles[-12:]],
     }
     if cur:
         ret = (t[i] / cur["entry_tq"] - 1) * 100
-        ts_line = cur["ts_peak"] * 0.75 if cur["ts_peak"] != float("inf") else None
+        if multi_ts:
+            ts_level = 25; ts_line = cur["ts_peak"] * 0.75
+        else:
+            nxt = next((lv for lv in (25, 50) if lv not in cur.get("hit", [])), None)
+            ts_level = nxt; ts_line = cur["ts_peak"] * (1 - nxt / 100) if nxt else None
         hit_small = [x for x in SMALL if cur["max_ret"] >= x]; hit_big = [x for x in BIG if cur["max_ret"] >= x]
         nxt_small = next((x for x in SMALL if x not in hit_small), None); nxt_big = next((x for x in BIG if x not in hit_big), None)
         out["cycle"] = {
             "entry_date": cur["entry_date"], "entry_tq": round(cur["entry_tq"], 2), "tdays": sum(1 for d in dates if d >= cur["entry_date"]), "days": (datetime.fromisoformat(dates[i]) - datetime.fromisoformat(cur["entry_date"])).days,
             "ret": round(ret, 2), "max_ret": round(cur["max_ret"], 2), "peak": round(cur["peak"], 2),
-            "ts_peak": round(cur["ts_peak"], 2) if ts_line else None, "ts_line": round(ts_line, 2) if ts_line else None,
-            "dd": round((t[i] / cur["ts_peak"] - 1) * 100, 2) if ts_line else None,
+            "ts_peak": round(cur["ts_peak"], 2), "ts_line": round(ts_line, 2) if ts_line else None, "ts_level": ts_level,
+            "ts_hit": cur.get("hit", []), "dd": round((t[i] / cur["ts_peak"] - 1) * 100, 2),
             "ts": [{k: round(v, 2) if isinstance(v, float) else v for k, v in x.items()} for x in cur["ts"]],
             "hit_small": hit_small, "hit_big": hit_big, "next_small": nxt_small, "next_big": nxt_big,
             "next_small_px": round(cur["entry_tq"] * (1 + nxt_small / 100), 2) if nxt_small else None,
