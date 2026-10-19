@@ -1,6 +1,6 @@
 {
- "at": "2026-10-19T18:34+00:00",
- "at_kst": "10/20 03:34",
+ "at": "2026-10-19T18:48+00:00",
+ "at_kst": "10/20 03:48",
  "market": "open",
  "verdict": "전부 일치 (14/14) — 신호판 수치와 판단을 그대로 믿어도 됩니다.",
  "level": "ok",
@@ -8,12 +8,12 @@
   {
    "name": "SPX 가격",
    "ok": true,
-   "detail": "-0.038%"
+   "detail": "+0.065%"
   },
   {
    "name": "SPX 200일선",
    "ok": true,
-   "detail": "-0.000%"
+   "detail": "+0.000%"
   },
   {
    "name": "SPX 밴드 위치",
@@ -33,17 +33,17 @@
   {
    "name": "SPX TQQQ 고점 대비 (AgiTQ)",
    "ok": true,
-   "detail": "-16.1% / -16.1%"
+   "detail": "-15.7% / -15.7%"
   },
   {
    "name": "QQQ 가격",
    "ok": true,
-   "detail": "+0.035%"
+   "detail": "+0.014%"
   },
   {
    "name": "QQQ 200일선",
    "ok": true,
-   "detail": "-0.001%"
+   "detail": "+0.001%"
   },
   {
    "name": "QQQ 밴드 위치",
@@ -63,86 +63,86 @@
   {
    "name": "QQQ TQQQ 고점 대비 (AgiTQ)",
    "ok": true,
-   "detail": "-19.0% / -18.9%"
+   "detail": "-18.6% / -18.6%"
   },
   {
    "name": "TQQQ 가격",
    "ok": true,
-   "detail": "+0.085%"
+   "detail": "+0.000%"
   },
   {
    "name": "공포·탐욕 지수",
    "ok": true,
-   "detail": "AgiTQ 24 / 사이트 25"
+   "detail": "AgiTQ 24 / 사이트 24"
   }
  ],
  "notes": [
-  "SPX: TradingView 기준 상단 밴드 위 (상단 대비 +3.26%, 하단 대비 +8.56%).",
-  "QQQ: TradingView 기준 상단 밴드 위 (상단 대비 +4.25%, 하단 대비 +8.51%).",
+  "SPX: TradingView 기준 상단 밴드 위 (상단 대비 +3.24%, 하단 대비 +8.54%).",
+  "QQQ: TradingView 기준 상단 밴드 위 (상단 대비 +4.44%, 하단 대비 +8.70%).",
   "미국 장중이라 TradingView 실시간가와 사이트 값 사이에 몇 분의 시차가 있을 수 있습니다. 신호는 종가 기준으로 확정됩니다.",
   "AgiTQ의 'SPYM 추가 매수'는 보내주신 규칙에 없는 항목이라 대조하지 않았습니다."
  ],
  "items": {
   "spx": {
-   "tv_px": 7700.89,
-   "tv_ma": 7275.73,
-   "my_px": 7697.98,
-   "my_ma": 7275.7,
+   "tv_px": 7699.27,
+   "tv_ma": 7275.7,
+   "my_px": 7704.29,
+   "my_ma": 7275.73,
    "my_zone": "above",
    "my_state": "IN",
-   "tv_up": 7457.62,
-   "tv_lo": 7093.84,
+   "tv_up": 7457.59,
+   "tv_lo": 7093.81,
    "tv_zone": "above",
-   "tv_dist_up": 3.26,
-   "tv_dist_lo": 8.56,
-   "px_diff_pct": -0.038,
-   "ma_diff_pct": -0.0,
+   "tv_dist_up": 3.24,
+   "tv_dist_lo": 8.54,
+   "px_diff_pct": 0.065,
+   "ma_diff_pct": 0.0,
    "zone_match": true,
    "ag_state": "IN",
    "ag_days": 132.0,
-   "ag_dd": -16.1,
+   "ag_dd": -15.7,
    "my_days": 132,
-   "my_dd": -16.07
+   "my_dd": -15.69
   },
   "qqq": {
-   "tv_px": 718.26,
-   "tv_ma": 675.44,
-   "my_px": 718.51,
-   "my_ma": 675.43,
+   "tv_px": 719.54,
+   "tv_ma": 675.43,
+   "my_px": 719.64,
+   "my_ma": 675.44,
    "my_zone": "above",
    "my_state": "IN",
-   "tv_up": 688.95,
-   "tv_lo": 661.93,
+   "tv_up": 688.94,
+   "tv_lo": 661.92,
    "tv_zone": "above",
-   "tv_dist_up": 4.25,
-   "tv_dist_lo": 8.51,
-   "px_diff_pct": 0.035,
-   "ma_diff_pct": -0.001,
+   "tv_dist_up": 4.44,
+   "tv_dist_lo": 8.7,
+   "px_diff_pct": 0.014,
+   "ma_diff_pct": 0.001,
    "zone_match": true,
    "ag_state": "IN",
    "ag_days": 134.0,
-   "ag_dd": -19.0,
+   "ag_dd": -18.6,
    "my_days": 134,
-   "my_dd": -18.92
+   "my_dd": -18.56
   }
  },
- "tqqq_tv": 70.66,
- "tqqq_my": 70.72,
+ "tqqq_tv": 71.03,
+ "tqqq_my": 71.03,
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
-  "26.10.20. 03:32 기준",
+  "26.10.20. 03:46 기준",
   "TQQQ 보유 유지",
   "SPYM 추가 매수",
   "상단 밴드 위 132일 차 (추세 유지)",
-  "TQQQ 최고점 대비 -16.1%",
+  "TQQQ 최고점 대비 -15.7%",
   "아기티큐 200큐큐단 (QQQ)",
   "v3.0-γ (26.08.12)",
-  "26.10.20. 03:32 기준",
+  "26.10.20. 03:46 기준",
   "TQQQ 보유 유지",
   "SPYM 추가 매수",
   "상단 밴드 위 134일 차 (추세 유지)",
-  "TQQQ 최고점 대비 -19.0%",
+  "TQQQ 최고점 대비 -18.6%",
   "공포와 탐욕 지수 (CNN FGI)",
   "극공포 (Extreme Fear)",
   "현재 24",
@@ -150,12 +150,6 @@
   "30일 평균 34"
  ],
  "history": [
-  {
-   "at": "10/19 16:14",
-   "level": "ok",
-   "ok": 14,
-   "n": 14
-  },
   {
    "at": "10/19 16:29",
    "level": "ok",
@@ -434,6 +428,12 @@
   },
   {
    "at": "10/20 03:34",
+   "level": "ok",
+   "ok": 14,
+   "n": 14
+  },
+  {
+   "at": "10/20 03:48",
    "level": "ok",
    "ok": 14,
    "n": 14
