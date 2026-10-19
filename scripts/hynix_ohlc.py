@@ -1,19 +1,23 @@
-"""SK하이닉스(000660.KS) 일·주·월봉 → hynix_data.json"""
+"""한국 주식 일·주·월봉 → <이름>_data.json (SK하이닉스, 삼성전자)"""
 import json, os, sys
 from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from yahoo_data import yahoo
 
+STOCKS = [("HYNIX", "000660.KS", "hynix_data.json"), ("SAMSUNG", "005930.KS", "samsung_data.json")]
+
 def main():
-    out = {"updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "ohlc": {}}
-    for key, iv, rng in (("HYNIX_1d", "1d", "5y"), ("HYNIX_1wk", "1wk", "10y"), ("HYNIX_1mo", "1mo", "20y")):
-        try:
-            out["ohlc"][key] = yahoo("000660.KS", iv, rng); print(key, len(out["ohlc"][key]), out["ohlc"][key][-1])
-        except Exception as e:
-            print("FAIL", key, e)
-    if len(out["ohlc"]) < 3:
-        raise SystemExit("일부 시세를 받지 못함 — 기존 파일 유지")
-    json.dump(out, open("hynix_data.json", "w"), separators=(",", ":"))
+    for key, sym, fn in STOCKS:
+        out = {"updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "ohlc": {}}
+        for iv, rng in (("1d", "5y"), ("1wk", "10y"), ("1mo", "20y")):
+            try:
+                out["ohlc"][f"{key}_{iv}"] = yahoo(sym, iv, rng); print(key, iv, len(out["ohlc"][f"{key}_{iv}"]))
+            except Exception as e:
+                print("FAIL", key, iv, e)
+        if len(out["ohlc"]) == 3:
+            json.dump(out, open(fn, "w"), separators=(",", ":"))
+        else:
+            print(key, "일부 시세 실패 — 기존 파일 유지")
 
 if __name__ == "__main__":
     main()
