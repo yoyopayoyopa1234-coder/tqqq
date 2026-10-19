@@ -54,7 +54,7 @@
   </div>
 
   <div class="panel">
-    <h2>일봉<span class="desc">5/218선 · 218일선 +7% 엔벨로프 · 이격도(200) 160/50</span></h2>
+    <h2>일봉<span class="desc">200일선 · 이격도(200) 160/50</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plot" id="plot-d" style="height:620px"></div>
   </div>
@@ -120,16 +120,14 @@ function chartD(){
   const r = ohlc('TQQQ_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
   const ma5=sma(c,5), ma218=sma(c,218), env=ma218.map(v=>v==null?null:v*1.07), ma200=sma(c,200), disp=c.map((v,k)=>ma200[k]==null?null:v/ma200[k]*100);
   const st = disp[i]>=160?' <span class="hot">과열</span>':disp[i]<=50?' <span class="on">과매도</span>':'';
-  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 5일선 ${fmt(ma5[i])} · 218일선 ${fmt(ma218[i])} (${c[i]>ma218[i]?'위':'아래'}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
+  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 200일선 ${fmt(ma200[i])} (${c[i]>ma200[i]?'위':'아래'}, ${pct(c[i],ma200[i])}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
   const L = base(620); L.yaxis=ax({domain:[0.36,1]}); L.yaxis2=ax({domain:[0,0.30]});
   const back=Math.max(0,r.length-600); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
   L.shapes=[hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
   L.annotations=[[160,'#f23645'],[50,'#2962ff']].map(([y,col])=>({xref:'paper',x:0,yref:'y2',y,text:String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
   const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[Math.min(40,...vis)-5, Math.max(170,...vis)+5];
   Plotly.react('plot-d', [ candle(r),
-    line(x,ma5,'#8fe388','5일선',{line:{color:'#8fe388',width:2}}),
-    line(x,ma218,'#3fae6a','218일선',{line:{color:'#3fae6a',width:1.2}}),
-    line(x,env,'#4f7cf7','엔벨로프 +7%',{line:{color:'#4f7cf7',width:1.6}}),
+    line(x,ma200,'#4f7cf7','200일선',{line:{color:'#4f7cf7',width:1.8}}),
     line(x,disp,'#2bb58f','이격도(200)',{yaxis:'y2', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);
 }
 
