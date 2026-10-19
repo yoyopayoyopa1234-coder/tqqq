@@ -41,8 +41,8 @@ def run_strategy(name, idx, tq, band, multi_ts):
                     cur["ts"].append({"date": d, "price": t[i], "from_peak": cur["ts_peak"], "level": 25})
                     cur["ts_peak"] = t[i]; cur["hit"] = []
             else:
-                # QQQ: 같은 고점 기준 −25%, −50%에서 각각 발동 (보유 수량 절반씩 SPYM)
-                for lv in (25, 50):
+                # QQQ(V1): 고점 대비 −25%에서 1회 발동, 새 고점이 나오면 다시 설정
+                for lv in (25,):
                     if lv not in cur.setdefault("hit", []) and t[i] <= cur["ts_peak"] * (1 - lv / 100):
                         cur["hit"].append(lv)
                         cur["ts"].append({"date": d, "price": t[i], "from_peak": cur["ts_peak"], "level": lv})
@@ -66,7 +66,7 @@ def run_strategy(name, idx, tq, band, multi_ts):
         if multi_ts:
             ts_level = 25; ts_line = cur["ts_peak"] * 0.75
         else:
-            nxt = next((lv for lv in (25, 50) if lv not in cur.get("hit", [])), None)
+            nxt = next((lv for lv in (25,) if lv not in cur.get("hit", [])), None)
             ts_level = nxt; ts_line = cur["ts_peak"] * (1 - nxt / 100) if nxt else None
         hit_small = [x for x in SMALL if cur["max_ret"] >= x]; hit_big = [x for x in BIG if cur["max_ret"] >= x]
         nxt_small = next((x for x in SMALL if x not in hit_small), None); nxt_big = next((x for x in BIG if x not in hit_big), None)
