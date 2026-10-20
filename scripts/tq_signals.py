@@ -107,23 +107,22 @@ def issue(title, body):
     with urllib.request.urlopen(req, timeout=30) as r: print("이슈:", json.loads(r.read())["html_url"])
 
 def main():
-    tq = daily("TQQQ"); spx = daily("%5EGSPC"); qqq = daily("QQQ")
+    tq = daily("TQQQ"); spx = daily("%5EGSPC")
     extra = {}
     for s in ("SPYM", "SGOV"):
         try:
             r = yahoo(s, "1d", "1mo"); extra[s] = {"px": round(r[-1][4], 2), "chg": round((r[-1][4] / r[-2][4] - 1) * 100, 2)}
         except Exception as e: extra[s] = {"error": str(e)[:60]}
     S = run_strategy("SPX", spx, tq, 0.025, True)
-    Q = run_strategy("QQQ", qqq, tq, 0.02, False)
-    out = {"updated": NOW.isoformat(timespec="minutes"), "spx": S, "qqq": Q, "fg": fear_greed(), "extra": extra}
+    out = {"updated": NOW.isoformat(timespec="minutes"), "spx": S, "fg": fear_greed(), "extra": extra}
     json.dump(out, open("tq.json", "w"), ensure_ascii=False, separators=(",", ":"))
-    print("SPX", S["state"], S["zone"], S["idx"], S["up"], S["lo"], "| QQQ", Q["state"], Q["zone"], Q["idx"], Q["up"], Q["lo"])
+    print("SPX", S["state"], S["zone"], S["idx"], S["up"], S["lo"])
 
     # ── 알림: 상태 변화 감지 ──
     sp = "tq_state.json"
     prev = json.load(open(sp)) if os.path.exists(sp) else None
     snap = {}
-    for k, R, label in (("spx", S, "SPX ±2.5%"), ("qqq", Q, "QQQ ±2%")):
+    for k, R, label in (("spx", S, "SPX ±2.5%"),):
         cy = R.get("cycle") or {}
         snap[k] = {"state": R["state"], "entry": cy.get("entry_date"), "ts_n": len(cy.get("ts", [])),
                    "small": cy.get("hit_small", []), "big": cy.get("hit_big", [])}
@@ -143,8 +142,8 @@ def main():
                 issue(f"💰 [{label}] 소익절 +{x}% 도달", f"**사이클 TQQQ 수익률이 +{x}%에 도달했습니다.** (진입 {cy['entry_date']} @ {cy['entry_tq']})\n\n{line}\n\n규칙: 현재 잔고의 10%를 덜어 SPYM으로 전환.")
     if prev is None:
         s_ = lambda R: f"{R['name']} {'보유(IN)' if R['state']=='IN' else '대피(OUT)'} · {('상단 위' if R['zone']=='above' else '밴드 안' if R['zone']=='band' else '하단 아래')}"
-        issue(f"[TQQQ 신호판] 알림 설정 완료 · SPX {S['state']} / QQQ {Q['state']}",
-              f"매수·전량탈출·TS·익절 신호가 새로 나오면 이렇게 알림이 옵니다.\n\n- {s_(S)}\n- {s_(Q)}")
+        issue(f"[TQQQ 신호판] 알림 설정 완료 · SPX {S['state']}",
+              f"매수·전량탈출·TS·익절 신호가 새로 나오면 이렇게 알림이 옵니다.\n\n- {s_(S)}")
     json.dump(snap, open(sp, "w"), ensure_ascii=False, indent=1)
 
 if __name__ == "__main__":

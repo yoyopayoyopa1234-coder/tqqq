@@ -5,10 +5,8 @@ OUT = "captures"; os.makedirs(OUT, exist_ok=True)
 PAGES = [
     ("agitq", "https://0x7f-core.github.io/AgiTQ-Android/", 25),
     ("tv_spx_tech", "https://www.tradingview.com/symbols/SP-SPX/technicals/", 15),
-    ("tv_qqq_tech", "https://www.tradingview.com/symbols/NASDAQ-QQQ/technicals/", 15),
     ("tv_tqqq_tech", "https://www.tradingview.com/symbols/NASDAQ-TQQQ/technicals/", 15),
     ("tv_spx", "https://www.tradingview.com/symbols/SP-SPX/", 10),
-    ("tv_qqq", "https://www.tradingview.com/symbols/NASDAQ-QQQ/", 10),
     ("tv_tqqq", "https://www.tradingview.com/symbols/NASDAQ-TQQQ/", 10),
 ]
 res = {}
@@ -62,7 +60,7 @@ def g(t, rx):
 items, checks, notes = {}, [], []
 market = mkt(res.get("tv_spx", {}).get("text", ""))
 px_tol = 0.15 if market == "open" else 0.02     # 장중엔 시세 시점 차이 허용
-for key, pn, tn, band, label in (("spx", "tv_spx", "tv_spx_tech", 0.025, "SPX"), ("qqq", "tv_qqq", "tv_qqq_tech", 0.02, "QQQ")):
+for key, pn, tn, band, label in (("spx", "tv_spx", "tv_spx_tech", 0.025, "SPX"),):
     px, ma = tv_vals(res.get(pn, {}).get("text", ""), res.get(tn, {}).get("text", ""))
     R = tq.get(key, {}); cy = R.get("cycle") or {}
     it = {"tv_px": px, "tv_ma": ma, "my_px": R.get("idx"), "my_ma": R.get("ma200"), "my_zone": R.get("zone"), "my_state": R.get("state")}
@@ -108,7 +106,7 @@ elif signal_ok:
 else:
     verdict, level = f"신호 판단 불일치 {sum(1 for c in signal_keys if not c[1])}건 — 아래 차이를 확인하고, TradingView 화면을 직접 보세요.", "bad"
 # 해설
-for key, label in (("spx", "SPX"), ("qqq", "QQQ")):
+for key, label in (("spx", "SPX"),):
     it = items.get(key, {})
     if it.get("tv_zone"):
         z = {"above": "상단 밴드 위", "band": "밴드 안", "below": "하단 밴드 아래"}[it["tv_zone"]]
