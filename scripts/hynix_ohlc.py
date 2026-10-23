@@ -9,7 +9,7 @@ STOCKS = [("HYNIX", "000660.KS", "hynix_data.json")]
 def main():
     for key, sym, fn in STOCKS:
         out = {"updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "ohlc": {}}
-        for iv, rng in (("1d", "5y"), ("1wk", "10y"), ("1mo", "20y")):
+        for iv, rng in (("1d", None), ("1wk", None), ("1mo", "20y")):
             try:
                 out["ohlc"][f"{key}_{iv}"] = yahoo(sym, iv, rng); print(key, iv, len(out["ohlc"][f"{key}_{iv}"]))
             except Exception as e:
