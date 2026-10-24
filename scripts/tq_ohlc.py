@@ -12,6 +12,10 @@ def main():
         except Exception as e:
             print("FAIL", key, e)
     try:
+        out["ohlc"]["QQQ_1d"] = yahoo("QQQ", "1d"); print("QQQ_1d", len(out["ohlc"]["QQQ_1d"]))   # 3/161/185 매매법
+    except Exception as e:
+        print("FAIL QQQ_1d", e)
+    try:
         out["ohlc"]["QQQ_1mo"] = yahoo("QQQ", "1mo"); print("QQQ_1mo", len(out["ohlc"]["QQQ_1mo"]))   # RSI는 QQQ 기준
     except Exception as e:
         print("FAIL QQQ_1mo", e)

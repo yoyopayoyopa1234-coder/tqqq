@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QQQ 3/161/185</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1100px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .panel h2 { margin:0; padding:9px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; border-bottom:1px solid var(--line); }
+  .panel h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .sum { padding:10px 12px; font-size:13px; font-variant-numeric:tabular-nums; line-height:1.65; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:#5ad445; font-weight:600; } .hot { color:#f23645; font-weight:600; } .wr { color:#f0a030; font-weight:600; }
+  .big { font-size:22px; font-weight:700; margin:2px 0 6px; }
+  .kv { display:grid; grid-template-columns:auto 1fr; gap:3px 12px; font-size:13px; }
+  .kv dt { color:var(--muted); } .kv dd { margin:0; font-variant-numeric:tabular-nums; }
+  .warn { margin-top:8px; padding:8px 10px; border-radius:6px; background:rgba(240,160,48,.12); border:1px solid rgba(240,160,48,.5); font-size:13px; }
+  .plot { width:100%; }
+  .tbl { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  th, td { padding:5px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--muted); font-weight:500; }
+  ul { margin:4px 0; padding-left:18px; } li { margin:2px 0; }
+  .note { color:var(--muted); font-size:11.5px; line-height:1.6; }
+  .err { color:#f23645; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  details summary { cursor:pointer; color:var(--muted); font-size:12.5px; padding:4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html" class="cur">3/161/185</a><a href="mstr.html">MSTR</a><a href="hynix.html">하이닉스</a></nav>
+    <span style="flex-basis:100%;height:0"></span>
+    <h1>QQQ 3/161/185 매매법</h1>
+    <span class="date" id="today"></span>
+    <span class="right"><button class="btn" id="refresh" type="button">새로고침</button></span>
+  </header>
+
+  <div class="grid" id="cards">
+    <div class="panel"><h2>5번 · 3/185 + 5% 밴드 매수</h2><div class="sum">불러오는 중…</div></div>
+    <div class="panel"><h2>4번 · 3/185 돌파 매수</h2><div class="sum">불러오는 중…</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>QQQ 일봉<span class="desc">3일선 · 161일선(매도선) · 185일선(매수선) · 185일선 +5% 엔벨로프 · ▲매수 ▼매도 (5번 전략)</span></h2>
+    <div class="sum" id="sum-d">불러오는 중…</div>
+    <div class="plot" id="plot-d" style="height:560px"></div>
+  </div>
+
+  <div class="panel">
+    <h2>백테스트 (2015년~)<span class="desc">QQQ 신호 → TQQQ 종가 매매 · 거치식 · 세금·차입비용 제외</span></h2>
+    <div class="sum"><div class="tbl" id="bt">계산 중…</div>
+      <details style="margin-top:8px"><summary>5번 전략 매매 기록</summary><div class="tbl" id="trades"></div></details>
+      <details><summary>원글 백테스트 (2003년~, 월 $1,000 적립 · 세금·차입비용 반영)</summary><div class="tbl"><table>
+        <thead><tr><th>전략</th><th>총 자산</th><th>CAGR</th><th>MDD</th><th>승률</th></tr></thead><tbody>
+        <tr><td>1. QQQ 보유</td><td>$2,026,560</td><td>13.55%</td><td>−53.71%</td><td>97.85%</td></tr>
+        <tr><td>2. TQQQ 200일선</td><td>$3,034,554</td><td>14.30%</td><td>−59.81%</td><td>22.37%</td></tr>
+        <tr><td>3. QQQ 3/161 → TQQQ</td><td>$8,307,082</td><td>20.09%</td><td>−54.90%</td><td>38.10%</td></tr>
+        <tr><td>4. 3/185 매수, 3/161 매도</td><td>$5,054,291</td><td>17.29%</td><td>−67.40%</td><td>34.29%</td></tr>
+        <tr><td>5. 3/185 + 5% 밴드 매수, 3/161 매도</td><td>$11,952,500</td><td>22.05%</td><td>−67.73%</td><td>40.00%</td></tr>
+      </tbody></table></div></details>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>규칙</h2>
+    <div class="sum">
+      <ul>
+        <li>기준은 <b>QQQ</b> 종가의 3일·161일·185일 단순이동평균, 매매는 <b>TQQQ</b>를 그날 종가로.</li>
+        <li><b>매수 (4번)</b>: 3일선이 185일선을 상향 돌파한 날.</li>
+        <li><b>매수 (5번)</b>: 3일선이 185일선과 185일선 +5% 사이(엔벨로프 안)에 있는 날. 4번이 놓치는 엔벨로프 안 재진입을 잡습니다.</li>
+        <li><b>매도 (공통)</b>: 3일선이 161일선 아래로 내려간 날 → 전량 매도, 현금 대기.</li>
+        <li><b>사지 말 것</b>: 3일선이 185일선 아래인데 161일선만 다시 넘은 경우. 원글 기준 1986년 이후 7번 모두 손실(평균 −7.6%) — 관망.</li>
+        <li>중간 익절 없음 (원글 기준).</li>
+      </ul>
+      <div class="note">매수 신호는 3일선이 161일선 위에 있을 때만 인정했습니다 (161일선 아래면 같은 날 바로 매도 조건이 되기 때문). 5% 엔벨로프는 원글 댓글의 "185×1.05" 설명을 따라 185일선 위 +5% 구간으로 해석했습니다. 출처: 에펨코리아 지옥계단 「[긴급정리] QQQ 3/161/185 완벽 정리」(2026-03-14). 규칙 자동 계산 화면이며 투자 자문이 아닙니다.</div>
+    </div>
+  </div>
+
+  <div class="note" id="status">데이터: Yahoo Finance · 15분마다 갱신 · 장중에는 오늘 봉이 실시간가라 종가 확정 전 신호는 바뀔 수 있습니다.</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let DATA=null;
+async function loadData(){ DATA = await fetch('tqqq_data.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null).catch(()=>null); }
+const rows = k => (DATA&&DATA.ohlc&&DATA.ohlc[k]||[]).map(a=>({d:new Date(a[0]*1000).toISOString().slice(0,10), t:new Date(a[0]*1000), o:a[1],h:a[2],l:a[3],c:a[4]}));
+const sma=(a,n)=>{ const o=Array(a.length).fill(null); let s=0; for(let i=0;i<a.length;i++){ s+=a[i]; if(i>=n) s-=a[i-n]; if(i>=n-1) o[i]=s/n; } return o; };
+const fmt = (v,d=2) => v==null?'—':v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sg = (v,d=2) => `<span class="${v>=0?'up':'dn'}">${v>=0?'+':''}${v.toFixed(d)}%</span>`;
+
+/* 신호 계산: 매일 종가 기준 상태 머신 */
+function signals(Q, s3, s161, s185, mode){
+  const pos=Array(Q.length).fill(0), ev=[]; let p=0;
+  for(let i=1;i<Q.length;i++){
+    if(s185[i]==null || s185[i-1]==null){ pos[i]=0; continue; }
+    if(p===1 && s3[i] < s161[i]){ p=0; ev.push({i, type:'sell'}); }
+    else if(p===0 && s3[i] >= s161[i]){
+      const buy = mode===4 ? (s3[i-1] < s185[i-1] && s3[i] >= s185[i])
+                           : (s3[i] >= s185[i] && s3[i] <= s185[i]*1.05);
+      if(buy){ p=1; ev.push({i, type:'buy'}); }
+    }
+    pos[i]=p;
+  }
+  return {pos, ev};
+}
+
+function backtest(Q, T, pos, from){
+  // 신호일 종가에 TQQQ 매매 → 다음날부터 수익 반영
+  let eq=1, peak=1, mdd=0, trades=[], open=null; const curve=[];
+  const start = Q.findIndex(q=>q.d>=from);
+  for(let i=start;i<Q.length;i++){
+    if(i>start && pos[i-1]===1 && T[i] && T[i-1]) eq *= T[i]/T[i-1];
+    peak=Math.max(peak,eq); mdd=Math.min(mdd,eq/peak-1); curve.push(eq);
+    if(pos[i]===1 && (i===start || pos[i-1]===0)) open={i, px:T[i]};
+    if(pos[i]===0 && i>start && pos[i-1]===1 && open){ trades.push({in:Q[open.i].d, out:Q[i].d, ret:T[i]/open.px-1, days:i-open.i}); open=null; }
+  }
+  if(open) trades.push({in:Q[open.i].d, out:null, ret:T.at(-1)/open.px-1, days:Q.length-1-open.i});
+  const yrs=(Q.at(-1).t - Q[start].t)/(365.25*864e5);
+  const closed=trades.filter(t=>t.out);
+  return {eq, cagr:Math.pow(eq,1/yrs)-1, mdd, trades, win: closed.length? closed.filter(t=>t.ret>0).length/closed.length : null, n:closed.length};
+}
+
+function render(){
+  const Q=rows('QQQ_1d'), TQ=rows('TQQQ_1d');
+  if(Q.length<200 || !TQ.length) throw new Error('QQQ 일봉 데이터 준비 중 — 15분 안에 채워집니다');
+  const tmap=Object.fromEntries(TQ.map(r=>[r.d,r.c]));
+  const c=Q.map(r=>r.c), s3=sma(c,3), s161=sma(c,161), s185=sma(c,185), env=s185.map(v=>v==null?null:v*1.05);
+  const T=Q.map(r=>tmap[r.d] ?? null);
+  for(let i=1;i<T.length;i++) if(T[i]==null) T[i]=T[i-1];
+  const i=Q.length-1, S5=signals(Q,s3,s161,s185,5), S4=signals(Q,s3,s161,s185,4);
+
+  // 현재 상태 카드
+  const nogo = s3[i] < s185[i] && s3[i] >= s161[i];
+  const card=(S,title,mode)=>{
+    const p=S.pos[i], last=S.ev.at(-1), today=last&&last.i===i;
+    const lastBuy=[...S.ev].reverse().find(e=>e.type==='buy');
+    const inEnv = s3[i]>=s185[i] && s3[i]<=env[i];
+    let state, cls;
+    if(today) { state = last.type==='buy'?'오늘 매수 신호':'오늘 매도 신호'; cls = last.type==='buy'?'on':'hot'; }
+    else if(p===1){ state='보유 (TQQQ)'; cls='on'; }
+    else { state='현금 대기'; cls='wr'; }
+    const hold = p===1 && lastBuy ? `<dt>진입</dt><dd>${Q[lastBuy.i].d} · TQQQ ${fmt(T[lastBuy.i])} → ${fmt(T[i])} ${sg((T[i]/T[lastBuy.i]-1)*100)}</dd>` : '';
+    const next = p===1 ? `<dt>매도 조건</dt><dd>3일선 ${fmt(s3[i])} &lt; 161일선 ${fmt(s161[i])} 이면 매도 (여유 ${sg((s3[i]/s161[i]-1)*100)})</dd>`
+      : mode===5 ? `<dt>매수 조건</dt><dd>3일선이 ${fmt(s185[i])} ~ ${fmt(env[i])} 안 + 161일선 위 → ${inEnv&&s3[i]>=s161[i]?'<span class="on">충족</span>':'<span class="note">미충족</span>'}${s3[i]>env[i]?' · 엔벨로프 위라 추격 매수 안 함':''}</dd>`
+      : `<dt>매수 조건</dt><dd>3일선이 185일선 ${fmt(s185[i])} 상향 돌파 (현재 ${sg((s3[i]/s185[i]-1)*100)})</dd>`;
+    return `<div class="panel"><h2>${title}<span class="desc">${Q[i].d} 기준</span></h2><div class="sum">
+      <div class="big ${cls}">${state}</div>
+      <dl class="kv">${hold}${next}<dt>마지막 신호</dt><dd>${last?`${Q[last.i].d} ${last.type==='buy'?'매수':'매도'} (QQQ ${fmt(c[last.i])})`:'—'}</dd></dl>
+      ${nogo && p===0 ? '<div class="warn">⚠️ 3일선이 161일선은 넘었지만 185일선 아래 — <b>사지 마세요</b> (원글: 역사적으로 7번 모두 손실, 관망 우세)</div>':''}
+    </div></div>`;
+  };
+  $('#cards').innerHTML = card(S5,'5번 · 3/185 + 5% 밴드 매수',5) + card(S4,'4번 · 3/185 돌파 매수',4);
+
+  $('#sum-d').innerHTML = `QQQ <b>${fmt(c[i])}</b> ${sg((c[i]/c[i-1]-1)*100)} · 3일선 <b>${fmt(s3[i])}</b> · 161일선 ${fmt(s161[i])} (${sg((s3[i]/s161[i]-1)*100)}) · 185일선 ${fmt(s185[i])} (${sg((s3[i]/s185[i]-1)*100)}) · 엔벨로프 ${fmt(env[i])}`;
+
+  // 백테스트
+  const from='2015-01-01';
+  const r5=backtest(Q,T,S5.pos,from), r4=backtest(Q,T,S4.pos,from);
+  const one=arr=>{ const p=Array(Q.length).fill(1); return backtest(Q,arr,p,from); };
+  const bq=one(c), bt=one(T);
+  const row=(n,r,w=true)=>`<tr><td>${n}</td><td>${fmt(r.eq*10000,0)}</td><td>${(r.cagr*100).toFixed(2)}%</td><td class="dn">${(r.mdd*100).toFixed(2)}%</td><td>${w&&r.win!=null?(r.win*100).toFixed(1)+'%':'—'}</td><td>${w?r.n:'—'}</td></tr>`;
+  $('#bt').innerHTML = `<table><thead><tr><th>전략 ($10,000 시작)</th><th>최종 자산 $</th><th>CAGR</th><th>MDD</th><th>승률</th><th>매매</th></tr></thead><tbody>
+    ${row('5번 · 3/185 + 5% 밴드',r5)}${row('4번 · 3/185 돌파',r4)}${row('QQQ 보유',bq,false)}${row('TQQQ 보유',bt,false)}</tbody></table>
+    <div class="note">${from} ~ ${Q[i].d} · 이 사이트 데이터로 직접 계산 (세금·차입비용·적립 없음 — 원글 수치와 조건이 다릅니다)</div>`;
+  $('#trades').innerHTML = `<table><thead><tr><th>매수일</th><th>매도일</th><th>보유일</th><th>TQQQ 수익률</th></tr></thead><tbody>${
+    [...r5.trades].reverse().map(t=>`<tr><td>${t.in}</td><td>${t.out||'보유 중'}</td><td>${t.days}</td><td>${sg(t.ret*100,1)}</td></tr>`).join('')}</tbody></table>`;
+
+  // 차트
+  if(!window.Plotly) return;
+  const x=Q.map(r=>r.t), back=Math.max(0,Q.findIndex(r=>r.d>='2015-01-01'));
+  const line=(y,color,name,w=1.4,dash)=>({x,y,name,mode:'lines',line:{color,width:w,dash},hovertemplate:'%{y:.2f}'});
+  const mk=(type)=>{ const e=S5.ev.filter(v=>v.type===type); return {x:e.map(v=>x[v.i]), y:e.map(v=>type==='buy'?Q[v.i].l*0.985:Q[v.i].h*1.015), mode:'markers', name:type==='buy'?'매수':'매도',
+    marker:{symbol:type==='buy'?'triangle-up':'triangle-down', size:9, color:type==='buy'?'#5ad445':'#f23645'}, hoverinfo:'x+name'}; };
+  Plotly.newPlot('plot-d',[
+    {type:'candlestick',x,open:Q.map(r=>r.o),high:Q.map(r=>r.h),low:Q.map(r=>r.l),close:c,name:'QQQ',increasing:{line:{color:'#089981'},fillcolor:'#089981'},decreasing:{line:{color:'#f23645'},fillcolor:'#f23645'}},
+    line(s3,'#f0b429','3일선',1.2), line(s161,'#f23645','161일선',1.6), line(s185,'#4f7cf7','185일선',1.8), line(env,'#8fb0ff','185일선 +5%',1.1,'dot'), mk('buy'), mk('sell')
+  ],{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},height:560,margin:{l:8,r:56,t:10,b:28},
+     showlegend:true,legend:{orientation:'h',y:1.02,x:0,font:{size:11}},hovermode:'x unified',dragmode:'pan',
+     xaxis:{rangeslider:{visible:false},gridcolor:'#262c35',range:[x[back],new Date(x[i].getTime()+10*864e5)],rangebreaks:[{bounds:['sat','mon']}]},
+     yaxis:{gridcolor:'#262c35',side:'right',type:'log',tickfont:{size:10}}},
+    {responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']});
+}
+
+async function init(){
+  $('#today').textContent = new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+  if(!DATA) await loadData();
+  if(DATA && DATA.updated){ const u=new Date(DATA.updated); $('#today').innerHTML += ' · 데이터 '+u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 기준'+((Date.now()-u)/36e5>26?' <span class="err">(갱신 멈춤)</span>':''); }
+  try{ render(); }catch(e){ $('#sum-d').innerHTML=`<span class="err">${e.message}</span>`; $('#cards').innerHTML=`<div class="panel"><div class="sum err">${e.message}</div></div>`; $('#bt').textContent=''; }
+}
+$('#refresh').addEventListener('click',()=>{ DATA=null; init(); });
+const SRC=['https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://cdn.plot.ly/plotly-2.35.2.min.js'];
+const ls = s => new Promise((ok,no)=>{ const e=document.createElement('script'); e.src=s; e.onload=ok; e.onerror=no; document.head.appendChild(e); });
+(async()=>{ const p=loadData(); for(const s of SRC){ try{ await ls(s); if(window.Plotly) break; }catch(e){} } await p; init(); })();
+</script>
+</body>
+</html>
