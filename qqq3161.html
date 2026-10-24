@@ -47,13 +47,12 @@
     <span class="right"><button class="btn" id="refresh" type="button">새로고침</button></span>
   </header>
 
-  <div class="grid" id="cards">
-    <div class="panel"><h2>5번 · 3/185 + 5% 밴드 매수</h2><div class="sum">불러오는 중…</div></div>
-    <div class="panel"><h2>4번 · 3/185 돌파 매수</h2><div class="sum">불러오는 중…</div></div>
+  <div id="cards">
+    <div class="panel"><h2>오늘 신호</h2><div class="sum">불러오는 중…</div></div>
   </div>
 
   <div class="panel">
-    <h2>QQQ 일봉<span class="desc">3일선 · 161일선(매도선) · 185일선(매수선) · 185일선 +5% 엔벨로프 · ▲매수 ▼매도 (5번 전략)</span></h2>
+    <h2>QQQ 일봉<span class="desc">3일선 · 161일선(매도선) · 185일선(매수선) · 185일선 +5% 엔벨로프 · ▲매수 ▼매도</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plot" id="plot-d" style="height:560px"></div>
   </div>
@@ -61,7 +60,7 @@
   <div class="panel">
     <h2>백테스트 (2015년~)<span class="desc">QQQ 신호 → TQQQ 종가 매매 · 거치식 · 세금·차입비용 제외</span></h2>
     <div class="sum"><div class="tbl" id="bt">계산 중…</div>
-      <details style="margin-top:8px"><summary>5번 전략 매매 기록</summary><div class="tbl" id="trades"></div></details>
+      <details style="margin-top:8px"><summary>매매 기록</summary><div class="tbl" id="trades"></div></details>
       <details><summary>원글 백테스트 (2003년~, 월 $1,000 적립 · 세금·차입비용 반영)</summary><div class="tbl"><table>
         <thead><tr><th>전략</th><th>총 자산</th><th>CAGR</th><th>MDD</th><th>승률</th></tr></thead><tbody>
         <tr><td>1. QQQ 보유</td><td>$2,026,560</td><td>13.55%</td><td>−53.71%</td><td>97.85%</td></tr>
@@ -78,13 +77,18 @@
     <div class="sum">
       <ul>
         <li>기준은 <b>QQQ</b> 종가의 3일·161일·185일 단순이동평균, 매매는 <b>TQQQ</b>를 그날 종가로.</li>
-        <li><b>매수 (4번)</b>: 3일선이 185일선을 상향 돌파한 날.</li>
-        <li><b>매수 (5번)</b>: 3일선이 185일선과 185일선 +5% 사이(엔벨로프 안)에 있는 날. 4번이 놓치는 엔벨로프 안 재진입을 잡습니다.</li>
-        <li><b>매도 (공통)</b>: 3일선이 161일선 아래로 내려간 날 → 전량 매도, 현금 대기.</li>
-        <li><b>사지 말 것</b>: 3일선이 185일선 아래인데 161일선만 다시 넘은 경우. 원글 기준 1986년 이후 7번 모두 손실(평균 −7.6%) — 관망.</li>
-        <li>중간 익절 없음 (원글 기준).</li>
+        <li><b>① 3일선이 161일선을 하향 돌파한 날</b>: 무조건 최우선 전량 매도. 그날은 예외 매수도 금지 (보유자·미보유자 공통).</li>
+        <li><b>② 다음 거래일부터 (보유 중)</b>
+          <ul><li>3 &gt; 161 → 보유 (기본) · 매도선 <b>161일선</b></li>
+              <li>185×1.05 &gt; 161 &gt; 3 &gt; 185 → 보유 (예외) · 매도선 <b>185일선</b></li>
+              <li>3 &lt; 185 → 전량 매도</li></ul></li>
+        <li><b>③ 미보유일 때 매수</b>
+          <ul><li>기본 매수: 3일선이 185일선 상향 돌파 또는 185일선~185일선×1.05 밴드 진입 + 3 &gt; 161</li>
+              <li>예외 매수: 185×1.05 &gt; 161 &gt; 3 &gt; 185 (하향 돌파 당일 제외) → 매도선 185일선, 이후 3일선이 161일선 위로 올라가면 매도선이 161일선으로 바뀜</li></ul></li>
+        <li><b>사지 말 것</b>: 3일선이 185일선 아래인데 161일선만 다시 넘은 경우 (원글: 1986년 이후 7번 모두 손실, 평균 −7.6%).</li>
+        <li>중간 익절 없음.</li>
       </ul>
-      <div class="note">매수 신호는 3일선이 161일선 위에 있을 때만 인정했습니다 (161일선 아래면 같은 날 바로 매도 조건이 되기 때문). 5% 엔벨로프는 원글 댓글의 "185×1.05" 설명을 따라 185일선 위 +5% 구간으로 해석했습니다. 출처: 에펨코리아 지옥계단 「[긴급정리] QQQ 3/161/185 완벽 정리」(2026-03-14). 규칙 자동 계산 화면이며 투자 자문이 아닙니다.</div>
+      <div class="note">위 ①~③에 없는 경우(예: 161일선이 185일선×1.05 이상인데 3일선이 그 사이로 내려옴)는 기본 매도선 규칙대로 매도로 처리했습니다. 출처: 에펨코리아 지옥계단 「[긴급정리] QQQ 3/161/185 완벽 정리」(2026-03-14). 규칙 자동 계산 화면이며 투자 자문이 아닙니다.</div>
     </div>
   </div>
 
@@ -100,20 +104,27 @@ const sma=(a,n)=>{ const o=Array(a.length).fill(null); let s=0; for(let i=0;i<a.
 const fmt = (v,d=2) => v==null?'—':v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const sg = (v,d=2) => `<span class="${v>=0?'up':'dn'}">${v>=0?'+':''}${v.toFixed(d)}%</span>`;
 
-/* 신호 계산: 매일 종가 기준 상태 머신 */
-function signals(Q, s3, s161, s185, mode){
-  const pos=Array(Q.length).fill(0), ev=[]; let p=0;
+/* 신호 계산: 매일 종가 기준 (①하향돌파 당일 최우선 매도 → ②보유 판정 → ③매수) */
+function signals(Q, s3, s161, s185){
+  const pos=Array(Q.length).fill(0), mode=Array(Q.length).fill(null), ev=[]; let p=0;
   for(let i=1;i<Q.length;i++){
-    if(s185[i]==null || s185[i-1]==null){ pos[i]=0; continue; }
-    if(p===1 && s3[i] < s161[i]){ p=0; ev.push({i, type:'sell'}); }
-    else if(p===0 && s3[i] >= s161[i]){
-      const buy = mode===4 ? (s3[i-1] < s185[i-1] && s3[i] >= s185[i])
-                           : (s3[i] >= s185[i] && s3[i] <= s185[i]*1.05);
-      if(buy){ p=1; ev.push({i, type:'buy'}); }
+    if(s185[i]==null || s185[i-1]==null || s161[i-1]==null){ continue; }
+    const a=s3[i], b=s161[i], d=s185[i], env=d*1.05;
+    const cross161 = s3[i-1] >= s161[i-1] && a < b;
+    const exc = env > b && b > a && a > d;
+    if(cross161){ if(p===1){ p=0; ev.push({i,type:'sell',why:'3일선 161일선 하향 돌파'}); } }
+    else if(p===1){
+      if(a > b) mode[i]='basic';
+      else if(exc) mode[i]='exc';
+      else { p=0; ev.push({i,type:'sell',why: a<d?'3일선 185일선 아래':'161일선 매도선 이탈'}); }
+    } else {
+      const crossUp185 = s3[i-1] < s185[i-1] && a >= d;
+      if((crossUp185 || (a>=d && a<=env)) && a > b){ p=1; mode[i]='basic'; ev.push({i,type:'buy',why:crossUp185?'185일선 상향 돌파':'185일선 밴드 진입'}); }
+      else if(exc){ p=1; mode[i]='exc'; ev.push({i,type:'buy',why:'예외 매수 (매도선 185일선)'}); }
     }
     pos[i]=p;
   }
-  return {pos, ev};
+  return {pos, mode, ev};
 }
 
 function backtest(Q, T, pos, from){
@@ -139,40 +150,37 @@ function render(){
   const c=Q.map(r=>r.c), s3=sma(c,3), s161=sma(c,161), s185=sma(c,185), env=s185.map(v=>v==null?null:v*1.05);
   const T=Q.map(r=>tmap[r.d] ?? null);
   for(let i=1;i<T.length;i++) if(T[i]==null) T[i]=T[i-1];
-  const i=Q.length-1, S5=signals(Q,s3,s161,s185,5), S4=signals(Q,s3,s161,s185,4);
-
-  // 현재 상태 카드
+  const i=Q.length-1, S5=signals(Q,s3,s161,s185);
   const nogo = s3[i] < s185[i] && s3[i] >= s161[i];
-  const card=(S,title,mode)=>{
-    const p=S.pos[i], last=S.ev.at(-1), today=last&&last.i===i;
+  {
+    const S=S5, p=S.pos[i], last=S.ev.at(-1), today=last&&last.i===i, m=S.mode[i];
     const lastBuy=[...S.ev].reverse().find(e=>e.type==='buy');
-    const inEnv = s3[i]>=s185[i] && s3[i]<=env[i];
     let state, cls;
     if(today) { state = last.type==='buy'?'오늘 매수 신호':'오늘 매도 신호'; cls = last.type==='buy'?'on':'hot'; }
-    else if(p===1){ state='보유 (TQQQ)'; cls='on'; }
+    else if(p===1){ state = m==='exc'?'보유 (예외)':'보유 (기본)'; cls='on'; }
     else { state='현금 대기'; cls='wr'; }
+    const stop = p===1 ? (m==='exc'?s185[i]:s161[i]) : null;
     const hold = p===1 && lastBuy ? `<dt>진입</dt><dd>${Q[lastBuy.i].d} · TQQQ ${fmt(T[lastBuy.i])} → ${fmt(T[i])} ${sg((T[i]/T[lastBuy.i]-1)*100)}</dd>` : '';
-    const next = p===1 ? `<dt>매도 조건</dt><dd>3일선 ${fmt(s3[i])} &lt; 161일선 ${fmt(s161[i])} 이면 매도 (여유 ${sg((s3[i]/s161[i]-1)*100)})</dd>`
-      : mode===5 ? `<dt>매수 조건</dt><dd>3일선이 ${fmt(s185[i])} ~ ${fmt(env[i])} 안 + 161일선 위 → ${inEnv&&s3[i]>=s161[i]?'<span class="on">충족</span>':'<span class="note">미충족</span>'}${s3[i]>env[i]?' · 엔벨로프 위라 추격 매수 안 함':''}</dd>`
-      : `<dt>매수 조건</dt><dd>3일선이 185일선 ${fmt(s185[i])} 상향 돌파 (현재 ${sg((s3[i]/s185[i]-1)*100)})</dd>`;
-    return `<div class="panel"><h2>${title}<span class="desc">${Q[i].d} 기준</span></h2><div class="sum">
+    const next = p===1
+      ? `<dt>매도선</dt><dd><b class="hot">${m==='exc'?'185일선':'161일선'} ${fmt(stop)}</b> — 3일선 ${fmt(s3[i])} (여유 ${sg((s3[i]/stop-1)*100)})${m==='exc'?' · 3일선이 161일선 '+fmt(s161[i])+' 위로 올라가면 매도선이 161일선으로 바뀜':' · 161일선을 하향 돌파하는 날 무조건 매도'}</dd>`
+      : `<dt>기본 매수</dt><dd>3일선이 ${fmt(s185[i])} ~ ${fmt(env[i])} 안 + 161일선 ${fmt(s161[i])} 위</dd><dt>예외 매수</dt><dd>185×1.05 ${fmt(env[i])} &gt; 161 ${fmt(s161[i])} &gt; 3일선 &gt; 185 ${fmt(s185[i])}${env[i]>s161[i]&&s161[i]>s185[i]?'':' <span class="note">(지금은 161일선이 그 구간 밖이라 해당 없음)</span>'}</dd>`;
+    $('#cards').innerHTML = `<div class="panel"><h2>오늘 신호<span class="desc">${Q[i].d} 종가 기준 · 161일선 ${s161[i]<s185[i]?'&lt;':'&gt;'} 185일선</span></h2><div class="sum">
       <div class="big ${cls}">${state}</div>
-      <dl class="kv">${hold}${next}<dt>마지막 신호</dt><dd>${last?`${Q[last.i].d} ${last.type==='buy'?'매수':'매도'} (QQQ ${fmt(c[last.i])})`:'—'}</dd></dl>
-      ${nogo && p===0 ? '<div class="warn">⚠️ 3일선이 161일선은 넘었지만 185일선 아래 — <b>사지 마세요</b> (원글: 역사적으로 7번 모두 손실, 관망 우세)</div>':''}
+      <dl class="kv">${today?`<dt>사유</dt><dd>${last.why}</dd>`:''}${hold}${next}<dt>마지막 신호</dt><dd>${last?`${Q[last.i].d} ${last.type==='buy'?'매수':'매도'} — ${last.why} (QQQ ${fmt(c[last.i])})`:'—'}</dd></dl>
+      ${nogo && p===0 ? '<div class="warn">⚠️ 3일선이 161일선은 넘었지만 185일선 아래 — <b>사지 마세요</b> (역사적으로 7번 모두 손실, 관망 우세)</div>':''}
     </div></div>`;
-  };
-  $('#cards').innerHTML = card(S5,'5번 · 3/185 + 5% 밴드 매수',5) + card(S4,'4번 · 3/185 돌파 매수',4);
+  }
 
   $('#sum-d').innerHTML = `QQQ <b>${fmt(c[i])}</b> ${sg((c[i]/c[i-1]-1)*100)} · 3일선 <b>${fmt(s3[i])}</b> · 161일선 ${fmt(s161[i])} (${sg((s3[i]/s161[i]-1)*100)}) · 185일선 ${fmt(s185[i])} (${sg((s3[i]/s185[i]-1)*100)}) · 엔벨로프 ${fmt(env[i])}`;
 
   // 백테스트
   const from='2015-01-01';
-  const r5=backtest(Q,T,S5.pos,from), r4=backtest(Q,T,S4.pos,from);
+  const r5=backtest(Q,T,S5.pos,from);
   const one=arr=>{ const p=Array(Q.length).fill(1); return backtest(Q,arr,p,from); };
   const bq=one(c), bt=one(T);
   const row=(n,r,w=true)=>`<tr><td>${n}</td><td>${fmt(r.eq*10000,0)}</td><td>${(r.cagr*100).toFixed(2)}%</td><td class="dn">${(r.mdd*100).toFixed(2)}%</td><td>${w&&r.win!=null?(r.win*100).toFixed(1)+'%':'—'}</td><td>${w?r.n:'—'}</td></tr>`;
   $('#bt').innerHTML = `<table><thead><tr><th>전략 ($10,000 시작)</th><th>최종 자산 $</th><th>CAGR</th><th>MDD</th><th>승률</th><th>매매</th></tr></thead><tbody>
-    ${row('5번 · 3/185 + 5% 밴드',r5)}${row('4번 · 3/185 돌파',r4)}${row('QQQ 보유',bq,false)}${row('TQQQ 보유',bt,false)}</tbody></table>
+    ${row('3/161/185 (TQQQ)',r5)}${row('QQQ 보유',bq,false)}${row('TQQQ 보유',bt,false)}</tbody></table>
     <div class="note">${from} ~ ${Q[i].d} · 이 사이트 데이터로 직접 계산 (세금·차입비용·적립 없음 — 원글 수치와 조건이 다릅니다)</div>`;
   $('#trades').innerHTML = `<table><thead><tr><th>매수일</th><th>매도일</th><th>보유일</th><th>TQQQ 수익률</th></tr></thead><tbody>${
     [...r5.trades].reverse().map(t=>`<tr><td>${t.in}</td><td>${t.out||'보유 중'}</td><td>${t.days}</td><td>${sg(t.ret*100,1)}</td></tr>`).join('')}</tbody></table>`;
