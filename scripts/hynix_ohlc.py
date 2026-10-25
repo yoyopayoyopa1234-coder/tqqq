@@ -1,10 +1,10 @@
-"""한국 주식 일·주·월봉 → <이름>_data.json (SK하이닉스·SOXL·QLD)"""
+"""한국 주식 일·주·월봉 → <이름>_data.json (SOXL·QLD)"""
 import json, os, sys
 from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from yahoo_data import yahoo
 
-STOCKS = [("HYNIX", "000660.KS", "hynix_data.json"), ("SOXL", "SOXL", "soxl_data.json"), ("QLD", "QLD", "qld_data.json")]
+STOCKS = [("SOXL", "SOXL", "soxl_data.json"), ("QLD", "QLD", "qld_data.json")]
 
 def fix_bars(bars, daily):
     """야후 주·월봉의 튀는 값(예: QLD 2024-09 고가 94.33)을 같은 기간 일봉으로 다시 계산."""
