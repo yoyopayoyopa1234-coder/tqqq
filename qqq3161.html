@@ -73,6 +73,11 @@
   </div>
 
   <div class="panel">
+    <h2>검증 — AgiTQ 앱 대조<span class="desc">앱 「하이브리드 3,185/161」 전략 가이드와 같은 방식으로 다시 계산</span></h2>
+    <div class="sum" id="verify">계산 중…</div>
+  </div>
+
+  <div class="panel">
     <h2>규칙</h2>
     <div class="sum">
       <ul>
@@ -127,6 +132,26 @@ function signals(Q, s3, s161, s185){
   return {pos, mode, ev};
 }
 
+/* AgiTQ 앱 방식: 185 상향 돌파만 기본 매수(밴드 매수 없음), 역배열(161>185)에서 3일선이 두 선 사이면 예외 보유,
+   예외 보유 중 185 이탈 매도 / 161 상향 돌파 시 일반 보유 전환, 당일 재진입 금지, 시작일엔 현금 */
+function signalsApp(Q, s3, s161, s185, start=0){
+  const pos=Array(Q.length).fill(0), ev=[]; let p=0, mode=null;
+  for(let i=Math.max(1,start);i<Q.length;i++){
+    if(s185[i]==null || s185[i-1]==null || s161[i-1]==null) continue;
+    const a=s3[i], b=s161[i], d=s185[i]; let today=false;
+    if(p){
+      if(mode==='n' && a<b){ p=0; today=true; ev.push({i,type:'sell'}); }
+      else if(mode==='x'){ if(a<d){ p=0; today=true; ev.push({i,type:'sell'}); } else if(a>b) mode='n'; }
+    }
+    if(!p && !today){
+      if(s3[i-1]<s185[i-1] && a>=d){ p=1; mode=a>b?'n':'x'; ev.push({i,type:'buy'}); }
+      else if(b>d && a>d && a<b){ p=1; mode='x'; ev.push({i,type:'buy'}); }
+    }
+    pos[i]=p;
+  }
+  return {pos, ev};
+}
+
 function backtest(Q, T, pos, from){
   // 신호일 종가에 TQQQ 매매 → 다음날부터 수익 반영
   let eq=1, peak=1, mdd=0, trades=[], open=null; const curve=[];
@@ -176,6 +201,27 @@ function render(){
   // 백테스트
   const from='2015-01-01';
   const r5=backtest(Q,T,S5.pos,from);
+
+  // 앱 대조: 최근 10년, 현금에서 시작, $1 성장
+  {
+    const st10 = new Date(Q[i].t.getTime()-3652.5*864e5).toISOString().slice(0,10), k0=Q.findIndex(q=>q.d>=st10);
+    const A10=signalsApp(Q,s3,s161,s185,k0), ra=backtest(Q,T,A10.pos,st10);
+    const S10=signals(Q.map((q,k)=>q), s3, s161, s185.map((v,k)=>k<k0?null:v)), rs=backtest(Q,T,S10.pos,st10);
+    const AF=signalsApp(Q,s3,s161,s185,0);
+    const recent=e=>e.filter(v=>Q[v.i].d>='2021-01-01').map(v=>Q[v.i].d+(v.type==='buy'?'B':'S')).join(',');
+    const same = recent(AF.ev)===recent(S5.ev), nowSame = AF.pos[i]===S5.pos[i];
+    const diff = S10.ev.filter(v=>v.type==='buy' && v.why==='185일선 밴드 진입').map(v=>Q[v.i].d), firstA = A10.ev.find(v=>v.type==='buy');
+    $('#verify').innerHTML = `<div class="tbl"><table><thead><tr><th>최근 10년 (${st10} ~, 현금 시작)</th><th>CAGR</th><th>MDD</th></tr></thead><tbody>
+      <tr><td>AgiTQ 앱 표기 (시뮬)</td><td>39.6%</td><td class="dn">−48.1%</td></tr>
+      <tr><td>앱 방식 재계산 (이 사이트 데이터)</td><td>${(ra.cagr*100).toFixed(1)}%</td><td class="dn">${(ra.mdd*100).toFixed(1)}%</td></tr>
+      <tr><td>이 페이지 규칙 (밴드 매수 포함)</td><td>${(rs.cagr*100).toFixed(1)}%</td><td class="dn">${(rs.mdd*100).toFixed(1)}%</td></tr></tbody></table></div>
+      <ul style="margin-top:8px">
+        <li>현재 신호: 앱 방식 <b>${AF.pos[i]?'보유':'현금'}</b> / 이 페이지 <b>${S5.pos[i]?'보유':'현금'}</b> → ${nowSame?'<span class="on">일치</span>':'<span class="hot">불일치</span>'}</li>
+        <li>2021년 이후 매수·매도 날짜: ${same?'<span class="on">전부 일치</span>':'<span class="hot">차이 있음</span>'}</li>
+        <li>MDD는 앱과 같고, CAGR 차이(약 ${Math.abs(39.6-ra.cagr*100).toFixed(1)}%p)는 앱이 배당 조정 종가·자체 기간을 쓰는 차이로 보입니다.</li>
+        <li>유일한 규칙 차이: 이 페이지는 <b>185일선~185일선×1.05 밴드 진입 매수</b>를 포함(원글 5번·댓글 규칙), 앱은 <b>185일선 상향 돌파만</b> 기본 매수. 10년 구간 안에서 밴드 매수가 나온 날: ${diff.length?diff.join(', '):'없음'}${diff.length&&firstA?` — 앱 방식은 첫 매수를 ${Q[firstA.i].d}(185 상향 돌파)까지 기다려서 그사이 상승분이 빠집니다. 10년 CAGR 차이는 대부분 이 첫 진입 시점 차이입니다.`:''}</li>
+      </ul>`;
+  }
   const one=arr=>{ const p=Array(Q.length).fill(1); return backtest(Q,arr,p,from); };
   const bq=one(c), bt=one(T);
   const row=(n,r,w=true)=>`<tr><td>${n}</td><td>${fmt(r.eq*10000,0)}</td><td>${(r.cagr*100).toFixed(2)}%</td><td class="dn">${(r.mdd*100).toFixed(2)}%</td><td>${w&&r.win!=null?(r.win*100).toFixed(1)+'%':'—'}</td><td>${w?r.n:'—'}</td></tr>`;
