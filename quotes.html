@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>투자 명언</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1100px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .panel h2 { margin:0; padding:9px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; border-bottom:1px solid var(--line); }
+  .panel h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .panel h2 .tools { margin-left:auto; display:flex; gap:4px; align-items:center; font-weight:400; font-size:12px; color:var(--muted); }
+  .sum { padding:8px 12px; font-size:13px; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--line); line-height:1.6; }
+  .sum b { font-weight:600; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:#5ad445; font-weight:600; } .hot { color:#f23645; font-weight:600; }
+  .plot { width:100%; }
+  .status { font-size:12px; color:var(--muted); padding:6px 2px; line-height:1.6; }
+  .err { color:#f23645; }
+  .note { color:var(--muted); font-size:11px; }
+  input[type=range] { width:90px; vertical-align:middle; }
+  .al { display:grid; gap:4px; }
+  .al .row { display:flex; gap:8px; align-items:baseline; }
+  .al .ok { color:#5ad445; } .al .no { color:#5d6675; } .al .wr { color:#f0a030; }
+  .al .v { color:var(--muted); font-size:12px; margin-left:auto; text-align:right; }
+  .stage { display:inline-block; padding:1px 9px; border-radius:999px; font-weight:700; font-size:12px; margin-right:6px; }
+  .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
+  .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+</style>
+<style>.q{margin:0;padding:10px 12px 10px 32px} .q li{margin:0 0 10px} .q li:last-child{margin:0} .q .ko{font-size:14px;line-height:1.5} .q .en{color:var(--muted);font-size:11px;font-style:italic;margin-top:2px}</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html">3/161/185</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="qld.html">QLD</a><a href="koru.html">KORU</a><a href="schd.html">SCHD</a><a href="qqqi.html">QQQI</a><a href="xlk.html">XLK</a><a href="kjp.html">김째아빠</a><a href="quotes.html" class="cur">명언</a></nav>
+    <h1>투자 명언</h1>
+  </header>
+  <div class="panel"><h2>워런 버핏<span class="desc">버크셔 해서웨이 회장 · 가치투자</span></h2><ol class="q"><li><div class="ko">규칙 1: 절대 돈을 잃지 마라. 규칙 2: 규칙 1을 절대 잊지 마라.</div><div class="en">Rule No. 1: Never lose money. Rule No. 2: Never forget rule No. 1.</div></li><li><div class="ko">남들이 탐욕스러울 때 두려워하고, 남들이 두려워할 때 탐욕스러워져라.</div><div class="en">Be fearful when others are greedy and greedy when others are fearful.</div></li><li><div class="ko">가격은 당신이 내는 것이고, 가치는 당신이 얻는 것이다.</div><div class="en">Price is what you pay; value is what you get.</div></li><li><div class="ko">우리가 가장 좋아하는 보유 기간은 영원이다.</div><div class="en">Our favorite holding period is forever.</div></li><li><div class="ko">썰물이 빠져야 누가 벌거벗고 수영했는지 알 수 있다.</div><div class="en">Only when the tide goes out do you discover who&#x27;s been swimming naked.</div></li></ol></div>
+  <div class="panel"><h2>찰리 멍거<span class="desc">버크셔 해서웨이 부회장</span></h2><ol class="q"><li><div class="ko">큰돈은 사고파는 데서가 아니라 기다리는 데서 나온다.</div><div class="en">The big money is not in the buying and selling, but in the waiting.</div></li><li><div class="ko">복리의 첫 번째 규칙: 불필요하게 끊지 마라.</div><div class="en">The first rule of compounding: Never interrupt it unnecessarily.</div></li><li><div class="ko">뒤집어라, 항상 뒤집어 생각하라.</div><div class="en">Invert, always invert.</div></li><li><div class="ko">원래 쉬운 게 아니다. 쉽다고 생각하는 사람은 어리석은 것이다.</div><div class="en">It&#x27;s not supposed to be easy. Anyone who finds it easy is stupid.</div></li><li><div class="ko">매일 아침 일어났을 때보다 조금 더 현명해지려고 노력하며 하루를 보내라.</div><div class="en">Spend each day trying to be a little wiser than you were when you woke up.</div></li></ol></div>
+  <div class="panel"><h2>벤저민 그레이엄<span class="desc">《현명한 투자자》 저자 · 가치투자의 아버지</span></h2><ol class="q"><li><div class="ko">단기적으로 시장은 투표 기계지만, 장기적으로는 저울이다.</div><div class="en">In the short run, the market is a voting machine but in the long run, it is a weighing machine.</div></li><li><div class="ko">투자자의 가장 큰 문제, 심지어 최악의 적은 바로 자기 자신일 가능성이 크다.</div><div class="en">The investor&#x27;s chief problem—and even his worst enemy—is likely to be himself.</div></li><li><div class="ko">현명한 투자자는 낙관론자에게 팔고 비관론자에게서 사는 현실주의자다.</div><div class="en">The intelligent investor is a realist who sells to optimists and buys from pessimists.</div></li><li><div class="ko">건전한 투자의 비결을 세 단어로 줄이면 &#x27;안전 마진&#x27;이다.</div><div class="en">…we venture the motto, Margin of Safety.</div></li><li><div class="ko">투자란 철저한 분석을 통해 원금의 안전과 적절한 수익을 약속하는 행위다. 그렇지 않으면 투기다.</div><div class="en">An investment operation is one which, upon thorough analysis, promises safety of principal and an adequate return. Operations not meeting these requirements are speculative.</div></li></ol></div>
+  <div class="panel"><h2>피터 린치<span class="desc">마젤란 펀드 매니저 · 13년 연 29%</span></h2><ol class="q"><li><div class="ko">무엇을 가졌는지, 왜 가졌는지 알아라.</div><div class="en">Know what you own, and know why you own it.</div></li><li><div class="ko">조정 그 자체보다, 조정에 대비하거나 예측하려다 잃은 돈이 훨씬 많다.</div><div class="en">Far more money has been lost by investors preparing for corrections, or trying to anticipate corrections, than has been lost in corrections themselves.</div></li><li><div class="ko">주식으로 돈을 버는 진짜 열쇠는 겁먹고 빠져나오지 않는 것이다.</div><div class="en">The real key to making money in stocks is not to get scared out of them.</div></li><li><div class="ko">이 업계에서는 잘해도 열 번 중 여섯 번 맞는다.</div><div class="en">In this business, if you&#x27;re good, you&#x27;re right six times out of ten.</div></li><li><div class="ko">모든 주식 뒤에는 기업이 있다. 그 기업이 무엇을 하는지 알아내라.</div><div class="en">Behind every stock is a company. Find out what it&#x27;s doing.</div></li></ol></div>
+  <div class="panel"><h2>존 보글<span class="desc">뱅가드 창업자 · 인덱스펀드의 아버지</span></h2><ol class="q"><li><div class="ko">건초 더미에서 바늘을 찾지 마라. 그냥 건초 더미를 사라.</div><div class="en">Don&#x27;t look for the needle in the haystack. Just buy the haystack!</div></li><li><div class="ko">시간은 당신의 친구이고, 충동은 당신의 적이다.</div><div class="en">Time is your friend; impulse is your enemy.</div></li><li><div class="ko">주식시장은 투자라는 본업을 방해하는 거대한 소음이다.</div><div class="en">The stock market is a giant distraction to the business of investing.</div></li><li><div class="ko">투자에서는 비용을 내지 않은 만큼 얻는다.</div><div class="en">In investing, you get what you don&#x27;t pay for.</div></li><li><div class="ko">계획을 지켜라. (Stay the course)</div><div class="en">Stay the course.</div></li></ol></div>
+  <div class="panel"><h2>하워드 막스<span class="desc">오크트리 캐피털 공동창업자</span></h2><ol class="q"><li><div class="ko">예측할 수는 없다. 대비할 수는 있다.</div><div class="en">You can&#x27;t predict. You can prepare.</div></li><li><div class="ko">너무 시대를 앞서가는 것은 틀린 것과 구별되지 않는다.</div><div class="en">Being too far ahead of your time is indistinguishable from being wrong.</div></li><li><div class="ko">규칙 1: 대부분은 순환한다. 규칙 2: 가장 큰 기회와 손실은 사람들이 규칙 1을 잊을 때 온다.</div><div class="en">Rule No. 1: Most things will prove to be cyclical. Rule No. 2: Some of the greatest opportunities for gain and loss come when other people forget Rule No. 1.</div></li><li><div class="ko">평균 수심 150cm인 강을 건너다 빠져 죽은 키 180cm의 남자를 잊지 마라.</div><div class="en">Never forget the six-foot-tall man who drowned crossing the stream that was five feet deep on average.</div></li><li><div class="ko">세상에서 가장 위험한 것은 위험이 없다는 믿음이 널리 퍼지는 것이다.</div><div class="en">The riskiest thing in the world is the widespread belief that there&#x27;s no risk.</div></li></ol></div>
+  <div class="status">영문은 원문, 한국어는 번역입니다. 그레이엄의 '투표 기계·저울'은 버핏이 스승의 말로 소개하며 널리 알려졌습니다.</div>
+</div>
+</body></html>
