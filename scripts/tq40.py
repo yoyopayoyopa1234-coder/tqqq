@@ -1,47 +1,94 @@
 """TQQQ 40년 환산 주가 → tq40.json (하루 한 번).
 나스닥100(^NDX) 일봉 × 3 − 조달금리(DFF×2) − 운용보수(ER 0.95%) − 스왑 스프레드(SS 1%×2).
-2010-02-11 실제 TQQQ 상장일 가격에 맞춰 이어 붙임 (아기티큐 공개 수식과 같은 방식)."""
+아기티큐 공개 수식과 같은 방식.
+
+- d / syn / real / ndx / dff : 날짜별 환산 종가(배당 반영 실제가에 맞춤), 실제 수정종가, 나스닥100 종가, 기준금리
+- ohlc.TQQQ_1d/1wk/1mo : 1985~2010-02-10은 환산 OHLC, 2010-02-11부터 야후 실제 OHLC (분석 페이지 차트용)
+- ohlc.NDX_1mo : 나스닥100 월봉 (QQQ 상장 전 월봉 RSI 계산용)
+"""
 import csv, io, json, os, sys, time
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 sys.path.insert(0, os.path.dirname(__file__))
-from yahoo_data import get
+from yahoo_data import get, yahoo
 
 FN = "tq40.json"; ER = 0.0095; SS = 0.01
 
+def day(t):
+    return datetime.fromtimestamp(t, timezone.utc).date()
+
+def aggregate(bars, keyf):
+    out = []
+    for b in bars:
+        k = keyf(day(b[0]))
+        if out and out[-1][0] == k:
+            a = out[-1][1]; a[2] = max(a[2], b[2]); a[3] = min(a[3], b[3]); a[4] = b[4]
+        else:
+            out.append((k, list(b)))
+    return out
+
 def main():
     try:
-        if time.time() - json.load(open(FN)).get("ts", 0) < 20 * 3600:
+        old = json.load(open(FN))
+        if time.time() - old.get("ts", 0) < 20 * 3600 and "ohlc" in old:
             print("tq40 최신 — 건너뜀"); return
     except Exception:
         pass
     j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=489024000&period2={int(time.time())}&interval=1d"))
-    r = j["chart"]["result"][0]
-    ndx = [(datetime.fromtimestamp(t, timezone.utc).date(), c) for t, c in zip(r["timestamp"], r["indicators"]["quote"][0]["close"]) if c]
+    r = j["chart"]["result"][0]; q = r["indicators"]["quote"][0]
+    ndx = []
+    for i, t in enumerate(r["timestamp"]):
+        c = q["close"][i]
+        if not c: continue
+        o, h, l = q["open"][i] or c, q["high"][i] or c, q["low"][i] or c
+        ndx.append((t, o, max(h, o, c), min(l, o, c), c))
     dff = {}
     for row in csv.reader(io.StringIO(get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF"))):
         try: dff[date.fromisoformat(row[0])] = float(row[1])
         except Exception: pass
+    dk = sorted(dff)
     j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/TQQQ?period1=1262304000&period2={int(time.time())}&interval=1d&events=div,split"))
     r = j["chart"]["result"][0]
-    tq = {datetime.fromtimestamp(t, timezone.utc).date(): a for t, a in zip(r["timestamp"], r["indicators"]["adjclose"][0]["adjclose"]) if a}
-    dk = sorted(dff); last = dk[0]; k = 0
-    syn = [1.0]
-    for i in range(1, len(ndx)):
-        d0, d1 = ndx[i - 1][0], ndx[i][0]; n = (d1 - d0).days
+    adj = {day(t): a for t, a in zip(r["timestamp"], r["indicators"]["adjclose"][0]["adjclose"]) if a}
+    real = {k: yahoo("TQQQ", k, "max") for k in ("1d", "1wk", "1mo")}
+    start = day(real["1d"][0][0])
+
+    # 환산: 하루 수익률과 장중 비율(시가·고가·저가)을 3배로
+    k = 0; rates = []; syn = [1.0]; bars = [[ndx[0][0], 1.0, 1.0, 1.0, 1.0]]
+    for i in range(len(ndx)):
+        d0 = day(ndx[i][0])
         while k + 1 < len(dk) and dk[k + 1] <= d0: k += 1
-        rate = dff.get(d0, dff[dk[k]]) / 100
-        ret = (ndx[i][1] / ndx[i - 1][1] - 1) * 3 - rate / 360 * n * 2 - ((1 + ER) ** (n / 365) - 1) - ((1 + SS) ** (n / 365) - 1) * 2
-        syn.append(syn[-1] * (1 + ret))
-    start = min(tq)
-    idx = next(i for i, x in enumerate(ndx) if x[0] >= start)
-    scale = tq[ndx[idx][0]] / syn[idx] if ndx[idx][0] in tq else tq[start] / syn[idx]
+        rates.append(dff.get(d0, dff[dk[k]]))
+        if i == 0: continue
+        n = (d0 - day(ndx[i - 1][0])).days; rate = rates[i - 1] / 100
+        cost = rate / 360 * n * 2 + ((1 + ER) ** (n / 365) - 1) + ((1 + SS) ** (n / 365) - 1) * 2
+        pc, p = ndx[i - 1][4], syn[-1]
+        lev = lambda x: p * max(0.01, 1 + (x / pc - 1) * 3 - cost)
+        c = lev(ndx[i][4]); o = lev(ndx[i][1])
+        h = max(lev(ndx[i][2]), o, c); l = min(lev(ndx[i][3]), o, c)
+        syn.append(c); bars.append([ndx[i][0], o, h, l, c])
+    si = next(i for i, b in enumerate(ndx) if day(b[0]) >= start)
+    s_adj = adj[day(ndx[si][0])] / syn[si] if day(ndx[si][0]) in adj else adj[min(adj)] / syn[si]
+    s_raw = real["1d"][0][4] / syn[si]
+    sb = [[b[0]] + [round(v * s_raw, 6) for v in b[1:]] for b in bars[:si]]
+
+    wk = lambda d: d - timedelta(days=d.weekday())
+    mo = lambda d: (d.year, d.month)
+    first_w, first_m = wk(day(real["1wk"][0][0])), mo(day(real["1mo"][0][0]))
+    ohlc = {
+        "TQQQ_1d": sb + real["1d"],
+        "TQQQ_1wk": [b for kk, b in aggregate(sb, wk) if kk < first_w] + real["1wk"],
+        "TQQQ_1mo": [b for kk, b in aggregate(sb, mo) if kk < first_m] + real["1mo"],
+        "NDX_1mo": [[b[0], round(b[4], 2)] for kk, b in aggregate([list(x) for x in ndx], mo)],
+    }
     out = {"ts": int(time.time()), "start": start.isoformat(), "er": ER, "ss": SS,
-           "d": [x[0].isoformat() for x in ndx],
-           "syn": [round(v * scale, 6) for v in syn],
-           "real": [round(tq[x[0]], 4) if x[0] in tq else None for x in ndx],
-           "ndx": [round(x[1], 2) for x in ndx]}
+           "d": [day(x[0]).isoformat() for x in ndx],
+           "syn": [round(v * s_adj, 6) for v in syn],
+           "real": [round(adj[day(x[0])], 4) if day(x[0]) in adj else None for x in ndx],
+           "ndx": [round(x[4], 2) for x in ndx],
+           "dff": rates,
+           "ohlc": ohlc}
     json.dump(out, open(FN, "w"), separators=(",", ":"))
-    print("tq40", len(ndx), out["d"][0], out["d"][-1])
+    print("tq40", len(ndx), out["d"][0], out["d"][-1], {k: len(v) for k, v in ohlc.items()})
 
 if __name__ == "__main__":
     main()
