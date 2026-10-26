@@ -37,6 +37,7 @@
 .gauge .mark{position:absolute;top:-5px;width:4px;height:22px;background:var(--fg);border-radius:2px;transform:translateX(-50%);box-shadow:0 0 6px rgba(255,255,255,.5);transition:left 1s ease}
 .gauge .tk{position:absolute;top:14px;font-size:10px;color:var(--muted);transform:translateX(-50%)}
 .fgrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.fgrow .score{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums}
+.btn.fr.on{border-color:var(--accent);color:var(--accent)} .panel h2 .tools{margin-left:auto;display:flex;gap:4px} #plot-fg{margin:0 4px}
 .cap{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:14px}</style>
 </head><body>
 <div class="wrap">
@@ -45,6 +46,10 @@
     <h1>공탐 매매법</h1>
   </header>
   <div class="panel"><h2>오늘 공포·탐욕 지수<span class="desc">CNN Fear &amp; Greed</span></h2><div class="sum" id="fg">불러오는 중…</div></div>
+  <div class="panel"><h2>공포·탐욕 지수 추이<span class="desc" id="fgh-desc">2011~</span>
+    <span class="tools"><button class="btn fr" data-y="1" type="button">1년</button><button class="btn fr" data-y="5" type="button">5년</button><button class="btn fr" data-y="0" type="button">전체</button></span></h2>
+    <div id="plot-fg" style="height:300px"></div>
+    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 점선 = 옮기기 기준 85(QLD) · 90(TQQQ·SOXL) · 5년·전체 보기의 노란 선 = 20일 평균</div></div>
   <div class="panel">
     <h2>공탐 QLD 매매법<span class="desc">나스닥 2배 · 매월 적립 + 극단적 탐욕 때 일부 QQQ로</span></h2>
     <div class="sum fg-now" data-g="85" data-f="30" data-t="QLD">불러오는 중…</div>
@@ -98,6 +103,38 @@
     document.querySelectorAll('.fg-now').forEach(el=>{ const g=+el.dataset.g, t=el.dataset.t;
       el.innerHTML = s>=g ? `<b style="color:#f23645">오늘 ${g} 이상 — 보유 ${t}의 ${el.dataset.f}%를 QQQ로 옮길 날 (최근 한 달 안에 옮겼으면 건너뜀)</b>` : `이번 달 적립: <b style="color:var(--accent)">${t}</b> · 옮기기 기준 ${g}까지 ${(g-s).toFixed(0)} 남음 — 오늘은 할 일 없음`; });
   }catch(e){ document.getElementById('fg').textContent='CNN 데이터를 받지 못했습니다.'; }
+})();
+/* ── 공탐 지수 추이 (fg_hist.json) ── */
+let FGH=null, FGY=1; try{ FGY=+(localStorage.getItem('fg-years')??1); }catch(e){}
+function drawFG(){
+  if(!FGH||!window.Plotly) return;
+  const x=FGH.d.map(s=>new Date(s+'T00:00:00Z')), y=FGH.v, n=x.length;
+  const x0= FGY? new Date(x[n-1].getTime()-FGY*365.25*864e5) : x[0];
+  const k0=x.findIndex(t=>t>=x0), vis=y.slice(k0), avg=vis.reduce((a,b)=>a+b,0)/vis.length;
+  const cnt=g=>{ let c=0,last=-99; for(let i=k0;i<n;i++) if(y[i]>=g&&i-last>21){c++;last=i;} return c; };
+  document.querySelectorAll('.fr').forEach(b=>b.classList.toggle('on',+b.dataset.y===FGY));
+  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)} · 85 이상 ${cnt(85)}번 · 90 이상 ${cnt(90)}번`;
+  const band=(a,b,c)=>({type:'rect',xref:'paper',x0:0,x1:1,yref:'y',y0:a,y1:b,fillcolor:c,line:{width:0},layer:'below'});
+  const hl=(v,c)=>({type:'line',xref:'paper',x0:0,x1:1,yref:'y',y0:v,y1:v,line:{color:c,width:1,dash:'dash'}});
+  const last=y[n-1], col=last<25?'#f23645':last<45?'#f0a030':last<55?'#c9cfd8':last<75?'#8be37a':'#5ad445';
+  Plotly.react('plot-fg',[
+    {x,y,type:'scatter',mode:'lines',name:'공탐 지수',line:{color:FGY===1?'#e6e9ee':'rgba(230,233,238,.35)',width:FGY===1?1.6:0.8},hovertemplate:'%{x|%Y-%m-%d} <b>%{y:.0f}</b><extra></extra>'},
+    ...(FGY===1?[]:[{x,y:y.map((_,i)=>i<19?null:y.slice(i-19,i+1).reduce((p,q)=>p+q,0)/20),type:'scatter',mode:'lines',name:'20일 평균',line:{color:'#f0b429',width:1.6},hoverinfo:'skip'}]),
+    {x:[x[n-1]],y:[last],type:'scatter',mode:'markers+text',marker:{size:9,color:col,line:{color:'#0f1216',width:2}},text:[last.toFixed(0)],textposition:'top left',textfont:{color:col,size:12},hoverinfo:'skip'}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:30,r:10,t:8,b:28},showlegend:false,hovermode:'x',
+     xaxis:{gridcolor:'#262c35',range:[x0,new Date(x[n-1].getTime()+(FGY===1?7:30)*864e5)]},yaxis:{range:[0,100],gridcolor:'rgba(0,0,0,0)',tickvals:[0,25,45,55,75,100]},
+     shapes:[band(0,25,'rgba(242,54,69,.16)'),band(25,45,'rgba(240,160,48,.12)'),band(45,55,'rgba(138,147,163,.10)'),band(55,75,'rgba(139,227,122,.10)'),band(75,100,'rgba(90,212,69,.16)'),hl(85,'#f0b429'),hl(90,'#f23645')]},
+    {displayModeBar:false,responsive:true});
+}
+document.querySelectorAll('.fr').forEach(b=>b.addEventListener('click',()=>{ FGY=+b.dataset.y; try{localStorage.setItem('fg-years',FGY);}catch(e){} drawFG(); }));
+(async()=>{
+  const SRC=['https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js','https://cdn.plot.ly/plotly-2.35.2.min.js'];
+  const load=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});
+  const dp=fetch('fg_hist.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null).catch(()=>null);
+  for(const s of SRC){ try{ await load(s); if(window.Plotly) break; }catch(e){} }
+  FGH=await dp;
+  if(!FGH){ document.getElementById('fgh-desc').textContent='데이터 준비 중'; return; }
+  drawFG();
 })();
 </script>
 </body></html>
