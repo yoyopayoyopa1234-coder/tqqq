@@ -9,7 +9,7 @@
 import csv, io, json, os, sys, time
 from datetime import datetime, timezone, date, timedelta
 sys.path.insert(0, os.path.dirname(__file__))
-from yahoo_data import get, yahoo
+from yahoo_data import get
 
 FN = "tq40.json"; ER = 0.0095; SS = 0.01
 
@@ -26,10 +26,21 @@ def aggregate(bars, keyf):
             out.append((k, list(b)))
     return out
 
+def ohlc_since(sym, iv, p1=1262304000):
+    """야후 range=max는 일·주봉을 듬성듬성 보내므로 기간을 직접 지정해서 받음."""
+    j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?period1={p1}&period2={int(time.time())}&interval={iv}"))
+    r = j["chart"]["result"][0]; q = r["indicators"]["quote"][0]; out = []
+    for i, t in enumerate(r["timestamp"]):
+        c = q["close"][i]
+        if c is None: continue
+        o, h, l = q["open"][i] or c, q["high"][i] or c, q["low"][i] or c
+        out.append([t, round(o, 4), round(max(h, o, c), 4), round(min(l, o, c), 4), round(c, 4)])
+    return out
+
 def main():
     try:
         old = json.load(open(FN))
-        if time.time() - old.get("ts", 0) < 20 * 3600 and "ohlc" in old:
+        if time.time() - old.get("ts", 0) < 20 * 3600 and len(old.get("ohlc", {}).get("TQQQ_1d", [])) > 9000:
             print("tq40 최신 — 건너뜀"); return
     except Exception:
         pass
@@ -49,7 +60,7 @@ def main():
     j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/TQQQ?period1=1262304000&period2={int(time.time())}&interval=1d&events=div,split"))
     r = j["chart"]["result"][0]
     adj = {day(t): a for t, a in zip(r["timestamp"], r["indicators"]["adjclose"][0]["adjclose"]) if a}
-    real = {k: yahoo("TQQQ", k, "max") for k in ("1d", "1wk", "1mo")}
+    real = {k: ohlc_since("TQQQ", k) for k in ("1d", "1wk", "1mo")}
     start = day(real["1d"][0][0])
 
     # 환산: 하루 수익률과 장중 비율(시가·고가·저가)을 3배로
