@@ -62,7 +62,7 @@
   </div>
 
   <div class="panel">
-    <h2>주봉 · Global M2
+    <h2>주봉 · Global M2 3일 평균
       <span class="tools">오프셋 <input type="range" id="m2off" min="0" max="120" value="0"> <span id="m2offv">0</span>일</span></h2>
     <div class="sum" id="sum-b">불러오는 중…</div>
     <div class="plot" id="plot-b" style="height:480px"></div>
@@ -137,7 +137,7 @@ function chartD(){
   $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 5일선 ${fmt(ma5[i])} · 218일선 ${fmt(ma218[i])} (${c[i]>ma218[i]?'위':'아래'}, ${pct(c[i],ma218[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}${synNote()}`;
   const L = base(620); L.yaxis=ax({domain:[0.36,1], type:isLong()?'log':'linear'}); L.yaxis2=ax({domain:[0,0.30]});
   const back=startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; if(!isLong()) L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
-  if(isLong()){ const v=r.slice(back); L.yaxis.range=[Math.log10(Math.min(...v.map(d=>d.l))*0.8), Math.log10(Math.max(...v.map(d=>d.h))*1.25)]; }
+  { const v=r.slice(back), lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h)); L.yaxis.range= isLong() ? [Math.log10(lo*0.8), Math.log10(hi_*1.25)] : [lo*0.95, hi_*1.05]; }
   L.shapes=[...synShade(x), hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
   L.annotations=[[160,'#f23645'],[50,'#2962ff']].map(([y,col])=>({xref:'paper',x:0,yref:'y2',y,text:String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
   const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[Math.min(40,...vis)-5, Math.max(170,...vis)+5];
@@ -152,7 +152,7 @@ function chartB(){
   const r = ohlc('TQQQ_1wk'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
   const L = base(480); L.yaxis=ax({type:isLong()?'log':'linear'}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
   const back = startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+30*86400000)]; L.shapes=synShade(x);
-  if(isLong()){ L.yaxis.range=[Math.log10(Math.min(...r.map(d=>d.l))*0.8), Math.log10(Math.max(...r.map(d=>d.h))*1.25)]; }
+  { const v=r.slice(back), lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h)); L.yaxis.range= isLong() ? [Math.log10(lo*0.8), Math.log10(hi_*1.25)] : [lo*0.95, hi_*1.05]; }
   const tr=[candle(r)];
   const M2 = DATA && DATA.m2 && DATA.m2.rows && DATA.m2.rows.length ? DATA.m2 : null;
   let m2txt = '<span class="err">Global M2 데이터 없음</span>';
@@ -160,9 +160,9 @@ function chartB(){
     const off=+$('#m2off').value, rows=M2.rows, mx=rows.map(a=>new Date(new Date(a[0]).getTime()+off*86400000)), n=rows.length-1;
     const peakI = rows.reduce((b,a,k)=> a[1]>rows[b][1]?k:b, Math.max(0,n-260));
     const ago = rows[Math.max(0,n-63)];
-    tr.push(line(mx, rows.map(a=>a[1]), '#2e9d4a', 'Global M2', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5}}));
+    tr.push(line(mx, rows.map((a,k)=>k<2?null:(rows[k][1]+rows[k-1][1]+rows[k-2][1])/3), '#2e9d4a', 'Global M2 3일 평균', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5,shape:'spline',smoothing:0.6}}));
     const vis = rows.slice(Math.max(0,rows.findIndex(a=>new Date(a[0])>=new Date('2015-01-01')))).map(a=>a[1]); L.yaxis2.range=[Math.min(...vis)*0.98, Math.max(...vis)*1.02];
-    m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
+    m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}, 3일 평균 $${((rows[n][1]+rows[n-1][1]+rows[n-2][1])/3).toFixed(1)}조) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
       + `<br><span class="note">${M2.countries.join('+')} · 각국 최신 발표값 × 일별 환율${M2.notes&&M2.notes.length?' · '+M2.notes.join(' · '):''}</span>`;
   }
   $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 주) · ${m2txt}${synNote()}`;

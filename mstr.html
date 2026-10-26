@@ -61,7 +61,7 @@
   </div>
 
   <div class="panel">
-    <h2>주봉 · Global M2
+    <h2>주봉 · Global M2 3일 평균
       <span class="tools">오프셋 <input type="range" id="m2off" min="0" max="120" value="0"> <span id="m2offv">0</span>일</span></h2>
     <div class="sum" id="sum-b">불러오는 중…</div>
     <div class="plot" id="plot-b" style="height:480px"></div>
@@ -149,9 +149,9 @@ function chartB(){
     const off=+$('#m2off').value, rows=M2.rows, mx=rows.map(a=>new Date(new Date(a[0]).getTime()+off*86400000)), n=rows.length-1;
     const peakI = rows.reduce((b,a,k)=> a[1]>rows[b][1]?k:b, Math.max(0,n-260));
     const ago = rows[Math.max(0,n-63)];
-    tr.push(line(mx, rows.map(a=>a[1]), '#2e9d4a', 'Global M2', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5}}));
+    tr.push(line(mx, rows.map((a,k)=>k<2?null:(rows[k][1]+rows[k-1][1]+rows[k-2][1])/3), '#2e9d4a', 'Global M2 3일 평균', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5,shape:'spline',smoothing:0.6}}));
     const vis = rows.slice(Math.max(0,rows.findIndex(a=>new Date(a[0])>=new Date('2015-01-01')))).map(a=>a[1]); L.yaxis2.range=[Math.min(...vis)*0.98, Math.max(...vis)*1.02];
-    m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
+    m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}, 3일 평균 $${((rows[n][1]+rows[n-1][1]+rows[n-2][1])/3).toFixed(1)}조) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
       + `<br><span class="note">${M2.countries.join('+')} · 각국 최신 발표값 × 일별 환율${M2.notes&&M2.notes.length?' · '+M2.notes.join(' · '):''}</span>`;
   }
   $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 주) · ${m2txt}`;
