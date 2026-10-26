@@ -60,6 +60,24 @@
     </div>
   </div>
 
+  <div class="panel" id="eff-panel">
+    <h2>공탐 가성비형<span class="desc">매달 레버리지만 적립 · 극단적 탐욕 때 일부를 S&amp;P로 옮겨 잠금</span></h2>
+    <div class="sum" id="eff-body">불러오는 중…</div>
+    <div class="sum" style="border-top:1px solid var(--line)">
+      <b>규칙</b> ① 매월 첫 거래일 적립: 지수 0~10 <b>SOXL</b> · 10~40 <b>TQQQ</b> · 40~100 <b>QLD</b> ② 지수 <b>85 이상</b>인 날, 들고 있는 SOXL·TQQQ·QLD를 각각 <b>30% 팔아 S&amp;P 500으로</b> 옮김 · 옮긴 뒤 21거래일은 다시 안 옮김 ③ 옮긴 S&amp;P는 계속 보유<br>
+      <b>백테스트</b> 2014.1~2026.10 · 위와 같은 조건 · 가성비 = 연환산 ÷ 최대낙폭
+      <table style="width:100%;border-collapse:collapse;margin-top:6px;font-size:12px;font-variant-numeric:tabular-nums">
+        <tr style="color:var(--muted);text-align:right"><td style="text-align:left">전략</td><td>최종/투입</td><td>연환산</td><td>최대낙폭</td><td>가성비</td></tr>
+        <tr style="text-align:right"><td style="text-align:left">QQQ만 적립</td><td>3.8배</td><td>19.4%</td><td>−32%</td><td>0.61</td></tr>
+        <tr style="text-align:right;color:var(--accent);font-weight:600"><td style="text-align:left">공탐 가성비형</td><td>5.0배</td><td>23.0%</td><td>−41%</td><td>0.56</td></tr>
+        <tr style="text-align:right"><td style="text-align:left">QLD만 적립</td><td>8.5배</td><td>30.3%</td><td>−62%</td><td>0.49</td></tr>
+        <tr style="text-align:right"><td style="text-align:left">3구간 (위)</td><td>6.3배</td><td>26.2%</td><td>−60%</td><td>0.44</td></tr>
+        <tr style="text-align:right"><td style="text-align:left">4구간 (위)</td><td>9.1배</td><td>31.1%</td><td>−72%</td><td>0.43</td></tr>
+      </table>
+      <div class="note" style="margin-top:6px">12년간 옮기기 8번. 효과 대부분은 ②의 85 이상 옮기기에서 나오고, ①의 종목 고르기는 QLD만 사는 것보다 연 1.6%p 정도 더하는 수준입니다. 옮기는 비율 30~50%는 결과가 비슷했지만, 기준을 80으로 낮추면 옮기기가 20번으로 늘며 가성비가 0.49로 떨어집니다. 레버리지 없는 QQQ만 적립보다 가성비가 높지는 않았습니다. 옮길 때 양도세는 빠져 있습니다. 투자 자문이 아닙니다.</div>
+    </div>
+  </div>
+
 </div>
 <script>
 const $ = s => document.querySelector(s);
@@ -71,7 +89,9 @@ async function fgPick(){
     if(!fg||fg.score==null) throw 0;
     const s=fg.score, [tk,zone]= s<10?['SOXL','0~10']: s<40?['TQQQ','10~40']: s<70?['QLD','40~70']:['S&P 500','70~100'];
     $('#fg-body').innerHTML=`공포·탐욕 지수 <b>${s.toFixed(0)}</b> (${zone}) · 1주 전 ${fg.prev_week!=null?fg.prev_week.toFixed(0):'—'} · 1달 전 ${fg.prev_month!=null?fg.prev_month.toFixed(0):'—'}<br>매수 종목: <b style="color:var(--accent);font-size:16px">${tk}</b>`;
-  }catch(e){ $('#fg-body').innerHTML='<span class="note">CNN 데이터를 받지 못했습니다.</span>'; }
+    const t2= s<10?'SOXL': s<40?'TQQQ':'QLD';
+    $('#eff-body').innerHTML=`공포·탐욕 지수 <b>${s.toFixed(0)}</b> · 이번 달 적립: <b style="color:var(--accent);font-size:16px">${t2}</b><br>${s>=85?'<b style="color:#f23645">오늘 85 이상: 보유 레버리지의 30%를 S&amp;P 500으로 옮길 날입니다 (최근 21거래일 안에 옮겼으면 건너뜀)</b>':`옮기기 기준 85까지 ${(85-s).toFixed(0)} 남음 · 오늘은 옮길 것 없음`}`;
+  }catch(e){ $('#fg-body').innerHTML=$('#eff-body').innerHTML='<span class="note">CNN 데이터를 받지 못했습니다.</span>'; }
 }
 fgPick();
 
