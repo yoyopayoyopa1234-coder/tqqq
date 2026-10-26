@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>위기 대출 매매법</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1100px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .panel h2 { margin:0; padding:9px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; border-bottom:1px solid var(--line); }
+  .panel h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .panel h2 .tools { margin-left:auto; display:flex; gap:4px; align-items:center; font-weight:400; font-size:12px; color:var(--muted); }
+  .sum { padding:8px 12px; font-size:13px; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--line); line-height:1.6; }
+  .sum b { font-weight:600; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:#5ad445; font-weight:600; } .hot { color:#f23645; font-weight:600; }
+  .plot { width:100%; }
+  .status { font-size:12px; color:var(--muted); padding:6px 2px; line-height:1.6; }
+  .err { color:#f23645; }
+  .note { color:var(--muted); font-size:11px; }
+  input[type=range] { width:90px; vertical-align:middle; }
+  .al { display:grid; gap:4px; }
+  .al .row { display:flex; gap:8px; align-items:baseline; }
+  .al .ok { color:#5ad445; } .al .no { color:#5d6675; } .al .wr { color:#f0a030; }
+  .al .v { color:var(--muted); font-size:12px; margin-left:auto; text-align:right; }
+  .stage { display:inline-block; padding:1px 9px; border-radius:999px; font-weight:700; font-size:12px; margin-right:6px; }
+  .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
+  .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+</style>
+<style>.big{font-size:22px;font-weight:700;color:var(--accent)} table.t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums} table.t td{padding:3px 2px;text-align:right} table.t td:first-child{text-align:left} table.t tr.h td{color:var(--muted)} .ok{color:#089981} .bad{color:#f23645}.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.pick>div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}.pick .l{font-size:11px;color:var(--muted)}.pick .v{font-size:20px;font-weight:700;color:var(--accent)} table.t td.g{color:var(--accent);font-weight:600}.inp{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px}.inp input{width:64px} .inp select{width:auto} .inp input,.inp select{font:inherit;font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html">3/161/185</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="qld.html">QLD</a><a href="koru.html">KORU</a><a href="schd.html">SCHD</a><a href="qqqi.html">QQQI</a><a href="xlk.html">XLK</a><a href="kjp.html">김째아빠</a><a href="q161.html">3/161</a><a href="snow.html">눈덩이</a><a href="fg.html">공탐</a><a href="top.html">고점신호</a><a href="simple.html">간단지표</a><a href="tqvfbb.html">TQ VF·BB</a><a href="loan.html" class="cur">위기대출</a><a href="quotes.html">명언</a></nav>
+    <h1>위기 대출 매매법</h1>
+    <span class="date" id="today"></span>
+  </header>
+
+  <div class="panel">
+    <h2>지금 상태<span class="desc">QQQ 종가 기준 · 평소에는 아무것도 하지 않음</span></h2>
+    <div class="sum" id="now">불러오는 중…</div>
+  </div>
+
+  <div class="panel">
+    <h2>규칙<span class="desc">닷컴·리먼급 위기에만 대출 · 40년간 2번</span></h2>
+    <div class="sum">
+      ① <b>위기 감지</b> QQQ(나스닥100)가 <b>2년 최고가 대비 −40%</b> 아래로 → 아직 사지 않고 대기<br>
+      ② <b>대출 매수</b> 그 뒤 QQQ가 <b>200일선 위</b>에 있고 <b>200일선이 20거래일 전보다 올라가 있으면</b>(바닥 확인) → 대출금 전액으로 매수<br>
+      ③ <b>상환</b> 평가액이 <b>대출금의 2배</b> · 위기 전 고점 회복 · 10년 중 먼저 오는 때 → 전량 팔고 대출 상환<br>
+      ④ <b>손절</b> 보유 중 QQQ가 <b>200일선보다 10% 아래</b>로 → 전량 팔고 상환 (가짜 회복 대비) · 아직 −40% 아래면 ②부터 다시<br>
+      <span class="note">떨어지는 중에 사지 않는 것이 핵심입니다. 닷컴 때 −40%에서 바로 샀다면 그 뒤로도 −70% 넘게 더 빠져 대출금을 거의 다 잃었습니다. 200일선 대신 120일선을 쓰면 2002년 반짝 반등에 속았고, ④ 손절이 그 손실을 막았습니다.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>40년 검증<span class="desc">1986~ · 원화 대출 → 달러 자산 → 원화 상환 (환율 반영) · 세금 제외</span></h2>
+    <div class="sum">
+      <div class="inp">대출금 <input id="amt" type="number" value="2" step="0.5" min="0.5">억 · 금리 <input id="rate" type="number" value="5" step="0.5" min="0">% · 종목
+        <select id="asset"><option value="L">QLD (2배)</option><option value="Q">QQQ (1배)</option><option value="T">TQQQ (3배)</option></select></div>
+    </div>
+    <div class="sum" id="bt" style="border-top:1px solid var(--line)">계산 중…</div>
+    <div id="plot-l" style="height:360px"></div>
+    <div class="sum note">나스닥100(로그) · 회색 ▼ 위기 감지(−40%) · 초록 ▲ 대출 매수 · 빨강 ● 상환 · 초록 배경 = 대출 보유 구간. 2010-02-11 이전 QLD·TQQQ는 나스닥100 × 2·3 − 조달금리 − 운용보수 − 스왑 스프레드 환산 주가(실제보다 낮게 나오는 쪽). 환율: FRED DEXKOUS. 이자는 단리로 매년 내는 것으로 계산. 투자 자문이 아닙니다.</div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const day=t=>new Date(t*1000).toISOString().slice(0,10);
+let J=null,B=null,Q=null,G=null;
+const TH=-0.40, LB=20, STOP=0.10, TARGET=2, MAXY=10;
+function hiN(v,n){ const hi=[],dq=[]; for(let i=0;i<v.length;i++){ while(dq.length&&v[dq.at(-1)]<=v[i]) dq.pop(); dq.push(i); if(dq[0]<=i-n) dq.shift(); hi.push(v[dq[0]]); } return hi; }
+function sma(v,n){ const p=[0]; v.forEach(x=>p.push(p.at(-1)+x)); return v.map((_,i)=>i<n-1?null:(p[i+1]-p[i+1-n])/n); }
+/* 위기 감지 → 바닥 확인 → 매수 → 상환/손절 (상태와 사건 목록) */
+function episodes(nd,dates,price,fx,amt,rate){
+  const N=nd.length, hi=hiN(nd,504), m=sma(nd,200), dd=nd.map((v,i)=>v/hi[i]-1), yrs=(a,b)=>(new Date(dates[b])-new Date(dates[a]))/31557600000;
+  const ev=[]; let i=504, state={s:'대기'};
+  while(i<N){
+    if(dd[i]>TH){ i++; continue; }
+    const peak=hi[i], det=i; let j=i;
+    while(j<N && !(nd[j]>m[j] && m[j-LB]!=null && m[j]>m[j-LB])) j++;
+    if(j>=N){ state={s:'위기',det}; break; }
+    const usd=amt/(fx?fx[j]:1), sh=usd/price[j]; let worst=0, x=null, why='';
+    for(let k=j;k<N;k++){ const y=yrs(j,k), val=sh*price[k]*(fx?fx[k]:1), net=val-amt-amt*rate*y; worst=Math.min(worst,net);
+      if(val>=TARGET*amt){x=k;why='2배';break;} if(nd[k]>=peak){x=k;why='고점 회복';break;} if(y>=MAXY){x=k;why='10년';break;} if(nd[k]<m[k]*(1-STOP)){x=k;why='손절';break;} }
+    const k=x??N-1, y=yrs(j,k), val=sh*price[k]*(fx?fx[k]:1);
+    ev.push({det,j,k,done:x!=null,why,y,val,interest:amt*rate*y,net:val-amt-amt*rate*y,worst,fx0:fx?fx[j]:null,fx1:fx?fx[k]:null,peak});
+    if(x==null){ state={s:'보유',e:ev.at(-1)}; break; }
+    if(why==='손절'){ i=k+1; continue; }
+    let k2=k; while(k2<N&&dd[k2]<-0.10) k2++; i=k2+1;
+  }
+  return {ev,state,dd,hi,m};
+}
+function renderNow(){
+  const r=Q.ohlc.QQQ_1d, c=r.map(x=>x[4]), dates=r.map(x=>day(x[0])), n=c.length-1, hi=hiN(c,504), m=sma(c,200);
+  const res=episodes(c,dates,c,null,1,0), dd=c[n]/hi[n]-1, st=res.state.s;
+  const up=m[n]>m[n-LB], above=c[n]>m[n];
+  const msg= st==='대기' ? `<b style="color:#5ad445">대기</b> — 위기 아님. 대출할 때가 아닙니다.`
+    : st==='위기' ? `<b style="color:#f0b429">위기 감지</b> (${dates[res.state.det]}) — 바닥 확인(200일선 위 + 200일선 상승) 전까지 사지 않습니다.`
+    : `<b style="color:#f23645">대출 보유 중</b> (${dates[res.state.e.j]} 매수)`;
+  $('#now').innerHTML=`${dates[n]} 종가 · QQQ <b>${c[n].toFixed(2)}</b><br>
+    2년 최고가 ${hi[n].toFixed(2)} 대비 <b>${(dd*100).toFixed(1)}%</b> · 위기 기준(−40%) ${(hi[n]*0.6).toFixed(2)} — 지금보다 ${((hi[n]*0.6/c[n]-1)*100).toFixed(1)}%<br>
+    200일선 ${m[n].toFixed(2)} (${above?'위':'아래'} · 20거래일 전보다 ${up?'상승':'하락'})
+    <div style="margin-top:8px;font-size:15px">${msg}</div>`;
+}
+function backtest(){
+  const amt=+$('#amt').value*1e8, rate=(+$('#rate').value||0)/100, asset=$('#asset').value;
+  const {d,nd,dt,S,fx,N}=G, res=episodes(nd,d,S[asset],fx,amt,rate);
+  const imm=(()=>{ // 비교: 위기 감지 즉시 매수 (바닥 확인 없이, 손절 없이)
+    const hi=hiN(nd,504), out=[]; let i=504;
+    while(i<N){ if(nd[i]/hi[i]-1>TH){i++;continue;} const peak=hi[i], sh=amt/fx[i]/S[asset][i]; let x=null, worst=0;
+      for(let k=i;k<N;k++){ const y=(dt[k]-dt[i])/31557600000, val=sh*S[asset][k]*fx[k], net=val-amt-amt*rate*y; worst=Math.min(worst,net); if(val>=2*amt||nd[k]>=peak||y>=10){x=k;break;} }
+      const k=x??N-1, y=(dt[k]-dt[i])/31557600000; out.push({i,k,net:sh*S[asset][k]*fx[k]-amt-amt*rate*y,worst});
+      let k2=k; while(k2<N&&nd[k2]/hi[k2]-1<-0.10) k2++; i=k2+1; }
+    return out; })();
+  const eok=v=>(v>=0?'+':'')+(v/1e8).toFixed(2)+'억', name={L:'QLD',Q:'QQQ',T:'TQQQ'}[asset];
+  const fxHit=res.ev.filter(e=>e.fx1/e.fx0-1<=-0.10), lose=res.ev.filter(e=>e.net<0);
+  const verdict=`표본이 ${res.ev.length}번(${res.ev.map(e=>d[e.j].slice(0,4)).join('·')})뿐이라 통계적 근거는 약합니다. `
+    + (lose.length? `${lose.map(e=>d[e.j].slice(0,4)).join('·')}년 대출은 원화 기준 손실(${lose.map(e=>eok(e.net)).join(', ')})이었습니다. ` : '모든 대출이 원화 기준 수익이었습니다. ')
+    + (fxHit.length? `원화로 빌려 달러 자산을 사기 때문에, ${fxHit.map(e=>`${d[e.j].slice(0,4)}년처럼 환율이 ${e.fx0.toFixed(0)}→${e.fx1.toFixed(0)}원으로 내리면(원화 강세) 달러 수익의 상당 부분이 사라집니다`).join(' · ')}. ` : '환율 변화가 결과를 크게 바꿀 수 있습니다(위기 때는 보통 원화가 약해져 있어 회복기에 환손실이 나기 쉽습니다). ')
+    + `레버리지 ETF는 목표(대출금 2배)에 빨리 닿아 이자·환율에 노출되는 기간이 짧았던 덕을 봤지만, 가짜 회복이면 손절(200일선 −10%) 때 손실이 가장 큽니다. 수익의 22%는 양도세로 빠지고, 이자는 매달 따로 낼 수 있어야 합니다.`;
+  const tot=res.ev.reduce((s,e)=>s+e.net,0), totI=imm.reduce((s,e)=>s+e.net,0);
+  $('#bt').innerHTML=`<table class="t"><tr class="h"><td>대출 매수</td><td>상환 · 이유</td><td>기간</td><td>환율</td><td>중간 최악</td><td>이자</td><td>순익</td></tr>
+    ${res.ev.map(e=>`<tr><td>${d[e.j]}</td><td>${e.done?d[e.k]+' · '+e.why:'보유 중'}</td><td>${e.y.toFixed(1)}년</td><td>${e.fx0.toFixed(0)}→${e.fx1.toFixed(0)}</td><td>${eok(e.worst)}</td><td>${eok(-e.interest)}</td><td class="g">${eok(e.net)}</td></tr>`).join('')}</table>
+    <div class="note" style="margin-top:6px">${name} · ${(amt/1e8).toFixed(1)}억 · 금리 ${(rate*100).toFixed(1)}% → 40년 동안 대출 ${res.ev.length}번, 순익 합계 <b>${eok(tot)}</b>${res.ev.length?` (매년 이자 ${(amt*rate/1e4).toFixed(0)}만원 · 월 ${(amt*rate/12/1e4).toFixed(0)}만원을 따로 낼 수 있어야 함)`:''}.<br>
+    비교 — 위기 감지(−40%) <b>즉시</b> 샀다면: ${imm.map(e=>`${d[e.i].slice(0,7)} 매수 → ${eok(e.net)} (중간 최악 ${eok(e.worst)})`).join(' · ')} · 합계 <b class="bad">${eok(totI)}</b></div>
+    <div class="verdict" style="margin-top:8px">${verdict}</div>`;
+  if(!window.Plotly) return;
+  const a=504, x=dt.slice(a), sh=res.ev.map(e=>({type:'rect',xref:'x',yref:'paper',x0:dt[e.j],x1:dt[e.k],y0:0,y1:1,fillcolor:'rgba(90,212,69,.12)',line:{width:0},layer:'below'}));
+  const dets=[...new Set(res.ev.map(e=>e.det).concat(res.state.det!=null?[res.state.det]:[]))];
+  Plotly.react('plot-l',[{x,y:nd.slice(a),name:'나스닥100',type:'scatter',mode:'lines',line:{color:'#e6e9ee',width:1.1}},
+    {x:dets.map(i=>dt[i]),y:dets.map(i=>nd[i]),name:'위기 감지',mode:'markers',type:'scatter',marker:{symbol:'triangle-down',size:10,color:'#8a93a3'}},
+    {x:res.ev.map(e=>dt[e.j]),y:res.ev.map(e=>nd[e.j]),name:'대출 매수',mode:'markers',type:'scatter',marker:{symbol:'triangle-up',size:11,color:'#5ad445'}},
+    {x:res.ev.filter(e=>e.done).map(e=>dt[e.k]),y:res.ev.filter(e=>e.done).map(e=>nd[e.k]),name:'상환',mode:'markers',type:'scatter',marker:{size:9,color:'#f23645'}}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:10,t:10,b:28},legend:{orientation:'h',y:1.1},xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35'},hovermode:'closest',shapes:sh},{displayModeBar:false,responsive:true});
+}
+function prep(){
+  const d=J.d, N=d.length, nd=J.ndx, dff=J.dff, si=d.indexOf(J.start), dt=d.map(x=>new Date(x+'T00:00:00Z'));
+  const real=k=>new Map(B.adj[k].map(r=>[day(r[0]),r[1]])), RQ=real('QQQ'), RL=real('QLD');
+  const T=d.map((_,i)=> i<si||J.real[i]==null? J.syn[i] : J.real[i]), S={T, L:[1], Q:[1]};
+  for(let i=1;i<N;i++){ const k=(dt[i]-dt[i-1])/864e5, r=dff[i-1]/100, x=nd[i]/nd[i-1]-1;
+    S.L.push(S.L.at(-1)*(1+(i>si&&RL.has(d[i])&&RL.has(d[i-1]) ? RL.get(d[i])/RL.get(d[i-1])-1 : 2*x-r/360*k-(1.0095**(k/365)-1)-(1.01**(k/365)-1))));
+    S.Q.push(S.Q.at(-1)*(1+(i>si&&RQ.has(d[i])&&RQ.has(d[i-1]) ? RQ.get(d[i])/RQ.get(d[i-1])-1 : x))); }
+  let lastFx=null; const fx=J.krw.map(v=>{ if(v!=null) lastFx=v; return lastFx??900; });
+  G={d,nd,dt,S,fx,N};
+}
+['amt','rate','asset'].forEach(id=>$('#'+id).addEventListener('change',()=>{ try{ backtest(); }catch(e){ $('#bt').innerHTML='<span class="note">오류: '+e.message+'</span>'; } }));
+const PLOTLY_SRC = [
+  'https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js',
+  'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
+  'https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js',
+  'https://cdn.plot.ly/plotly-2.35.2.min.js',
+];
+const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+(async()=>{
+  const q='?'+Math.floor(Date.now()/600000), get=u=>fetch(u+q).then(r=>r.ok?r.json():null).catch(()=>null);
+  const dataP=Promise.all([get('tq40.json'),get('bt_data.json'),get('tqqq_data.json')]).then(([a,b,c])=>{J=a;B=b;Q=c;});
+  for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
+  await dataP;
+  try{ if(Q) renderNow(); else throw 0; }catch(e){ $('#now').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중')+'</span>'; }
+  try{ if(J&&B&&J.krw){ prep(); backtest(); } else throw 0; }catch(e){ $('#bt').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중 (환율 데이터 갱신 대기)')+'</span>'; }
+})();
+</script>
+</body></html>
