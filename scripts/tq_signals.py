@@ -116,8 +116,13 @@ def main():
     S = run_strategy("SPX", spx, tq, 0.025, True)
     out = {"updated": NOW.isoformat(timespec="minutes"), "spx": S, "fg": fear_greed(), "extra": extra}
     try:
-        from tq_bt40 import run as bt40
+        out["qqq"] = run_strategy("QQQ", daily("QQQ"), tq, 0.02, False)     # 200큐큐단 β (qqq200.html)
+    except Exception as e:
+        print("QQQ 신호 실패", e)
+    try:
+        from tq_bt40 import run as bt40, run_qqq
         out["bt40"] = bt40()
+        out["bt40q"] = run_qqq()
     except Exception as e:
         print("40년 백테스트 실패", e)
     json.dump(out, open("tq.json", "w"), ensure_ascii=False, separators=(",", ":"))

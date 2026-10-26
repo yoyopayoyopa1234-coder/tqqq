@@ -1,4 +1,4 @@
-"""TQQQ 신호판(SPX ±2.5% V2) 40년 백테스트 — tq40.json(나스닥100 3배 환산 TQQQ·S&P500) + bt_data.json(SPY·QQQ 수정종가).
+"""TQQQ 신호판(SPX ±2.5% V2)·200큐큐단(QQQ ±2% β) 40년 백테스트 — tq40.json(나스닥100 3배 환산 TQQQ·S&P500) + bt_data.json(SPY·QQQ 수정종가).
 
 규칙 (신호판과 동일, 신호일 종가 체결):
 - SPX 종가 > 200일선×1.025 → SGOV로 TQQQ 3분할 매수 (3거래일)
@@ -7,6 +7,7 @@
 - SPX 종가 < 200일선×0.975 → 전량 SGOV
 SPYM = 2010년부터 SPY 수정종가(배당 포함), 그 전은 S&P500 지수(배당 제외). SGOV = 연방기금금리(DFF) 일할.
 세후: 해외주식 양도세 22%를 해마다 실현손익(손익 통산, 기본공제 무시)에 매김.
+200큐큐단(아기티큐 β): 나스닥100 종가(QQQ 대용)와 200일선 ±2%, 익절 기준 = TQQQ 평단가, TS −25%는 사이클당 1회.
 """
 import json
 from datetime import date, datetime, timezone
@@ -27,19 +28,28 @@ def load(tq40="tq40.json", bt="bt_data.json"):
         a, b = d[i - 1], d[i]
         SP.append(SP[-1] * (spy[b] / spy[a] if a in spy and b in spy else spx[i] / spx[i - 1]))
         Q.append(Q[-1] * (qqq[b] / qqq[a] if a in qqq and b in qqq else ndx[i] / ndx[i - 1]))
-    ma, s = [None] * N, 0.0
-    for i in range(N):
-        s += spx[i]
-        if i >= 200: s -= spx[i - 200]
-        if i >= 199: ma[i] = s / 200
-    return dict(d=d, dd=[date.fromisoformat(x) for x in d], T=T, SP=SP, Q=Q, spx=spx, ma=ma, dff=j["dff"], start=j["start"])
+    def sma(v):
+        out, t = [None] * N, 0.0
+        for i in range(N):
+            t += v[i]
+            if i >= 200: t -= v[i - 200]
+            if i >= 199: out[i] = t / 200
+        return out
+    return dict(d=d, dd=[date.fromisoformat(x) for x in d], T=T, SP=SP, Q=Q, spx=spx, ndx=ndx, ma=sma(spx), mandx=sma(ndx),
+                dff=j["dff"], start=j["start"], krw=j.get("krw"))
+
+SPX_V2 = dict(sig="spx", band=0.025, ts="chain", ref="signal")
+QQQ_B = dict(sig="ndx", band=0.02, ts="once", ref="avg")
 
 
-def sim(D, a, b, band=0.025, tax=False, lag=0):
-    """lag=0: 신호일 종가 체결, lag=1: 다음 거래일 종가 체결."""
-    d, dd, T, SP, spx, ma, dff = D["d"], D["dd"], D["T"], D["SP"], D["spx"], D["ma"], D["dff"]
-    P = {"cash": 1.0, "tq": 0.0, "sp": 0.0, "btq": 0.0, "bsp": 0.0}
-    state, left, ent, pk, mx, hs, hb = "OUT", 0, 0, 0, 0, set(), set()
+def sim(D, a, b, band=0.025, tax=False, lag=0, sig="spx", ts="chain", ref="signal", tp=True):
+    """lag=0: 신호일 종가 체결, lag=1: 다음 거래일 종가 체결.
+    sig: 'spx'(S&P500) / 'ndx'(나스닥100=QQQ 대용) · ts: 'chain'(고점 리셋 반복) / 'once'(사이클당 1회) / None
+    ref: 'signal'(매수 신호일 TQQQ 종가) / 'avg'(3분할 평단가) — 익절 수익률 기준."""
+    d, dd, T, SP, dff = D["d"], D["dd"], D["T"], D["SP"], D["dff"]
+    spx, ma = (D["spx"], D["ma"]) if sig == "spx" else (D["ndx"], D["mandx"])
+    P = {"cash": 1.0, "tq": 0.0, "sp": 0.0, "btq": 0.0, "bsp": 0.0, "usd": 0.0, "sh": 0.0}
+    state, left, ent, pk, mx, hs, hb, tsd = "OUT", 0, 0, 0, 0, set(), set(), False
     yr, yg, cur, n, q = d[a][:4], [0.0], [], 0, []
 
     def do(act):
@@ -48,6 +58,7 @@ def sim(D, a, b, band=0.025, tax=False, lag=0):
             P["btq"] *= 1 - f; P["tq"] -= x; P["sp"] += x; P["bsp"] += x
         elif act[0] == "buy":
             x = P["cash"] / act[1]; P["cash"] -= x; P["tq"] += x; P["btq"] += x
+            P["usd"] += x; P["sh"] += x / T[act[2]]
         else:
             yg[0] += P["tq"] - P["btq"] + P["sp"] - P["bsp"]
             P["cash"] += P["tq"] + P["sp"]; P["tq"] = P["sp"] = P["btq"] = P["bsp"] = 0.0
@@ -69,16 +80,21 @@ def sim(D, a, b, band=0.025, tax=False, lag=0):
         if ma[i] is not None:
             up, lo = ma[i] * (1 + band), ma[i] * (1 - band)
             if state == "OUT" and spx[i] > up:
-                state, ent, pk, mx, hs, hb, left = "IN", T[i], T[i], 0, set(), set(), 3; n += 1
+                state, ent, pk, mx, hs, hb, left, tsd = "IN", T[i], T[i], 0, set(), set(), 3, False; n += 1
+                P["usd"] = P["sh"] = 0.0
             elif state == "IN":
+                if ref == "avg" and P["sh"] > 0: ent = P["usd"] / P["sh"]
                 pk = max(pk, T[i]); mx = max(mx, T[i] / ent - 1)
-                for x in SMALL:
-                    if x not in hs and mx * 100 >= x: hs.add(x); q.append(("sell", 0.10))
-                for x in BIG:
-                    if x not in hb and mx * 100 >= x: hb.add(x); q.append(("sell", 0.50))
-                if T[i] <= pk * 0.75: q.append(("sell", 0.50)); pk = T[i]
+                if tp:
+                    for x in SMALL:
+                        if x not in hs and mx * 100 >= x: hs.add(x); q.append(("sell", 0.10))
+                    for x in BIG:
+                        if x not in hb and mx * 100 >= x: hb.add(x); q.append(("sell", 0.50))
+                if ts and not tsd and T[i] <= pk * 0.75:
+                    q.append(("sell", 0.50)); pk = T[i]
+                    if ts == "once": tsd = True
                 if spx[i] < lo: state, left, q = "OUT", 0, [("exit",)]
-            if state == "IN" and left > 0: q.append(("buy", left)); left -= 1
+            if state == "IN" and left > 0: q.append(("buy", left, i + lag)); left -= 1
         if not lag:
             for act in q: do(act)
             q = []
@@ -110,8 +126,8 @@ def drawdowns(D, cur, a, top=3):
     return [{"dd": round(r * 100, 1), "peak": p, "low": l} for r, p, l in sorted(out)[:top]]
 
 
-def run(tq40="tq40.json", bt="bt_data.json"):
-    D = load(tq40, bt); d, N = D["d"], len(D["d"])
+def run(tq40="tq40.json", bt="bt_data.json", cfg=SPX_V2, D=None):
+    D = D or load(tq40, bt); d, N = D["d"], len(D["d"])
     idx = lambda s: next(i for i, x in enumerate(d) if x >= s)
     b = N - 1; last = D["dd"][b]
     ten = date(last.year - 10, last.month, last.day).isoformat()
@@ -119,14 +135,14 @@ def run(tq40="tq40.json", bt="bt_data.json"):
     rows = []
     for name, s0 in periods:
         a = idx(s0)
-        cur, n = sim(D, a, b); curt, _ = sim(D, a, b, tax=True)
+        cur, n = sim(D, a, b, **cfg); curt, _ = sim(D, a, b, tax=True, **cfg)
         hold = lambda A: [A[i] / A[a] for i in range(a, b + 1)]
         c, m, x = stats(D, cur, a, b)
         rows.append({"name": name, "from": d[a], "cagr": c, "mdd": m, "x": x, "tax": stats(D, curt, a, b)[0],
                      "cyc": round(n / ((last - D["dd"][a]).days / 365.25), 2),
                      "tqqq": stats(D, hold(D["T"], ), a, b)[:2], "qqq": stats(D, hold(D["Q"]), a, b)[:2], "spx": stats(D, hold(D["SP"]), a, b)[:2]})
-    a = idx("1986-10-01"); cur, _ = sim(D, a, b)
-    nxt = stats(D, sim(D, a, b, lag=1)[0], a, b)[:2]
+    a = idx("1986-10-01"); cur, _ = sim(D, a, b, **cfg)
+    nxt = stats(D, sim(D, a, b, lag=1, **cfg)[0], a, b)[:2]
     # 월말 곡선 (차트용)
     ch = {"d": [], "v2": [], "tqqq": [], "qqq": [], "spx": []}
     for i in range(a, b + 1):
@@ -137,7 +153,29 @@ def run(tq40="tq40.json", bt="bt_data.json"):
     return {"asof": d[b], "rows": rows, "next_day": nxt, "dd": drawdowns(D, cur, a), "chart": ch}
 
 
+def run_qqq(tq40="tq40.json", bt="bt_data.json"):
+    """200큐큐단 β 40년 + 규칙 바꿔 보기(같은 40년)."""
+    D = load(tq40, bt); out = run(cfg=QQQ_B, D=D)
+    d, N = D["d"], len(D["d"]); a = next(i for i, x in enumerate(d) if x >= "1986-10-01"); b = N - 1
+    var = [("200큐큐단 β (원문: TS 사이클당 1회)", QQQ_B),
+           ("TS 연쇄 (고점 리셋 후 반복)", dict(QQQ_B, ts="chain")),
+           ("TS 없음 (익절만)", dict(QQQ_B, ts=None)),
+           ("익절·TS 없음 (밴드만)", dict(QQQ_B, ts=None, tp=False)),
+           ("밴드 ±2.5%", dict(QQQ_B, band=0.025)),
+           ("TQQQ 신호판 (SPX ±2.5% V2)", SPX_V2)]
+    out["var"] = []
+    for name, c in var:
+        cur, n = sim(D, a, b, **c); ct, _ = sim(D, a, b, tax=True, **c)
+        x, m, v = stats(D, cur, a, b)
+        out["var"].append({"name": name, "cagr": x, "mdd": m, "tax": stats(D, ct, a, b)[0], "cyc": round(n / ((D["dd"][b] - D["dd"][a]).days / 365.25), 2)})
+    return out
+
+
 if __name__ == "__main__":
     r = run()
     for x in r["rows"]: print(x)
     print(r["dd"], r["next_day"])
+    r = run_qqq()
+    for x in r["rows"]: print(x)
+    print(r["dd"], r["next_day"])
+    for x in r["var"]: print(x)

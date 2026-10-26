@@ -34,121 +34,150 @@
 </style>
 <style>.big{font-size:22px;font-weight:700;color:var(--accent)} table.t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums} table.t td{padding:3px 2px;text-align:right} table.t td:first-child{text-align:left} table.t tr.h td{color:var(--muted)} .ok{color:#089981} .bad{color:#f23645}.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.pick>div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}.pick .l{font-size:11px;color:var(--muted)}.pick .v{font-size:20px;font-weight:700;color:var(--accent)} table.t td.g{color:var(--accent);font-weight:600}.inp{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px}.inp input{width:64px}.inp select{width:auto}.inp input,.inp select{font:inherit;font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 table.t tr.rec td{color:var(--accent);font-weight:600}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}.tw table.t td{white-space:nowrap;padding:3px 6px}.tw table.t td:first-child{white-space:normal;min-width:150px}
 </style>
 </head><body>
 <div class="wrap">
   <header>
-    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html">3/161/185</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="koru.html">KORU</a><a href="kjp.html">김째아빠</a><a href="q161.html">3/161</a><a href="snow.html">눈덩이</a><a href="fg.html">공탐</a><a href="simple.html">간단지표</a><a href="tqvfbb.html">TQ VF·BB</a><a href="loan.html" class="cur">위기대출</a><a href="quotes.html">명언</a></nav>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="qqq200.html">200큐큐단</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html">3/161/185</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="koru.html">KORU</a><a href="kjp.html">김째아빠</a><a href="q161.html">3/161</a><a href="snow.html">눈덩이</a><a href="fg.html">공탐</a><a href="simple.html">간단지표</a><a href="tqvfbb.html">TQ VF·BB</a><a href="loan.html" class="cur">위기대출</a><a href="quotes.html">명언</a></nav>
     <h1>위기 대출 매매법</h1>
     <span class="date" id="today"></span>
   </header>
 
   <div class="panel">
-    <h2>지금 상태<span class="desc">자기 돈 = 간단지표 공격형 · 대출 = 닷컴·리먼급 위기에만</span></h2>
+    <h2>지금 상태<span class="desc">자기 돈 = TQQQ 신호판 · 대출 = 닷컴·리먼급 위기 뒤 신호판 매수 신호에만</span></h2>
     <div class="sum" id="now">불러오는 중…</div>
   </div>
 
   <div class="panel">
-    <h2>규칙<span class="desc">공격형 계좌에 위기 때만 대출을 얹는 방식</span></h2>
+    <h2>규칙<span class="desc">신호판 계좌에 위기 때만 대출 2억을 얹는 방식</span></h2>
     <div class="sum">
-      <b>자기 돈</b> 간단지표 공격형 그대로 — QQQ 52주 고점 대비 −10% 이내 TQQQ · −15%까지 QLD · 그 아래 현금<br>
-      ① <b>위기 감지</b> QQQ가 <b>2년 최고가 대비 −40%</b> 아래 (닷컴·리먼급, 40년간 2번) → 대출 준비만<br>
-      ② <b>대출 매수</b> 그 뒤 QQQ가 <b>200일선 위</b>이고 200일선이 20거래일 전보다 올라가 있으면(바닥 확인) → 대출금 전액 <b>TQQQ</b><br>
-      ③ <b>상환</b> 대출 평가액이 <b>대출금의 2배</b> 또는 나스닥이 위기 전 고점 회복 → 팔고 갚기 (수익은 공격형 계좌로)<br>
-      ④ <b>손절</b> QQQ가 200일선보다 <b>10% 아래</b>로 → 팔고 갚기 (가짜 회복 대비)<br>
-      <span class="note">대출은 바닥을 확인한 뒤에 들어가므로 위기 첫 하락의 낙폭은 공격형 그대로 겪습니다. 대신 회복을 크게 앞당깁니다. 위기 기준을 −30%로 낮추면 1987년 위기에서 대출 뒤 하락이 이어져 계좌가 −89~−96%까지 빠졌고, 떨어지는 중에 바로 사면(바닥 확인 없이) 리먼 때 계좌 최대낙폭이 −76%까지 커졌습니다.</span>
+      <b>자기 돈</b> <a href="index.html" style="color:var(--accent)">TQQQ 신호판</a> 그대로 — S&amp;P500 200일선 ±2.5% 밴드, 소·대익절 SPYM, 연쇄 TS, 하단 이탈 시 SGOV<br>
+      ① <b>위기 감지</b> 나스닥100(QQQ)이 <b>2년 최고가 대비 −40%</b> 아래 (닷컴·리먼급, 40년간 2번) → 대출 준비만, 아직 사지 않음<br>
+      ② <b>대출 매수</b> 그 뒤 <b>신호판 매수 신호</b>(S&amp;P500이 200일선 +2.5% 돌파)가 처음 나오는 날 → 대출금 전액 <b>TQQQ</b> (신호판이 바닥 확인 역할)<br>
+      ③ <b>상환</b> 대출로 산 TQQQ 평가액이 <b>대출금의 2배</b>가 되면 → 전부 팔아 갚기 (남은 수익은 자기 계좌로) · 대출분은 익절·TS 없이 그대로 둠<br>
+      ④ <b>손절 상환</b> 2배 전에 <b>신호판 전량 탈출 신호</b>(200일선 −2.5% 이탈)가 나오면 → 대출분도 전부 팔아 갚기<br>
+      <span class="note">대출분에도 신호판 익절·TS를 그대로 적용하면 TQQQ를 조금씩 SPYM으로 덜어 내서 2배에 닿기 전에 탈출 신호를 맞았고, 가성비가 대출 안 한 것과 같았습니다. 그래서 대출분은 2배까지 그대로 두고 신호판의 매수·탈출 신호만 따릅니다. 대출은 신호판이 다시 매수할 때 들어가므로 위기 첫 하락은 신호판 계좌가 그대로 겪습니다.</span>
     </div>
   </div>
 
   <div class="panel">
-    <h2>위기별 검증<span class="desc">위기 전 공격형 계좌 고점에서 6년 · 원화 기준(환율 반영) · 세금 제외</span></h2>
-    <div class="sum"><div class="inp">자기 돈 <input id="own" type="number" value="2" step="0.5" min="0.5">억 · 대출 <input id="amt" type="number" value="2" step="0.5" min="0.5">억 · 금리 <input id="rate" type="number" value="5" step="0.5" min="0">%</div></div>
+    <h2>위기별 검증<span class="desc">위기 전 신호판 계좌 고점에서 6년 · 원화 기준(환율 반영) · 이자 차감 · 세금 제외</span></h2>
+    <div class="sum"><div class="inp">자기 돈 <input id="own" type="number" value="2" step="0.5" min="0.5">억 · 대출 <input id="amt" type="number" value="2" step="0.5" min="0.5">억 · 금리 <input id="rate" type="number" value="5" step="0.5" min="0">% · 위기 기준 <select id="th"><option value="-0.40">−40% (기본)</option><option value="-0.35">−35%</option><option value="-0.30">−30%</option></select></div></div>
     <div class="sum" id="bt" style="border-top:1px solid var(--line)">계산 중…</div>
-    <div class="sum" style="display:flex;gap:6px;align-items:center;padding-bottom:0"><span class="note">계좌 흐름:</span><span id="cbtn"></span></div>
+    <div class="sum" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:0"><span class="note">계좌 흐름:</span><span id="cbtn"></span></div>
     <div id="plot-l" style="height:320px"></div>
-    <div class="sum note" id="pnote">계좌 평가액 = 공격형 계좌 + 대출로 산 TQQQ − 대출 원금 − 이자. 가성비 = 6년 연복리 ÷ 계좌 최대낙폭. 2010-02-11 이전 TQQQ·QLD는 나스닥100 × 3·2 − 조달금리 − 운용보수 − 스왑 스프레드 환산 주가(실제보다 낮게 나오는 쪽). 환율 FRED DEXKOUS. 투자 자문이 아닙니다.</div>
+    <div class="sum note">계좌 평가액 = 신호판 계좌 + 대출로 산 TQQQ − 대출 원금 − 그때까지 이자(이자는 따로 낸다고 보고 차감). 상환 뒤 남은 수익은 현금으로 둠(보수적). 가성비 = 6년 연복리 ÷ 계좌 최대낙폭(위기 전 고점 기준). 2010-02-11 이전 TQQQ는 나스닥100 × 3 − 조달금리 − 운용보수 − 스왑 스프레드 환산 주가(실제보다 낮게 나오는 쪽). 환율 FRED DEXKOUS. 투자 자문이 아닙니다.</div>
   </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
 $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
 const day=t=>new Date(t*1000).toISOString().slice(0,10);
-let J=null,B=null,Q=null,G=null;
+let J=null,B=null,Q=null,TQ=null,G=null;
 function hiN(v,n){ const hi=[],dq=[]; for(let i=0;i<v.length;i++){ while(dq.length&&v[dq.at(-1)]<=v[i]) dq.pop(); dq.push(i); if(dq[0]<=i-n) dq.shift(); hi.push(v[dq[0]]); } return hi; }
 function sma(v,n){ const p=[0]; v.forEach(x=>p.push(p.at(-1)+x)); return v.map((_,i)=>i<n-1?null:(p[i+1]-p[i+1-n])/n); }
-const aggOf=(v,h)=>{ const x=v/h-1; return x>=-0.10?'T':x>=-0.15?'L':'C'; };
+const eok=v=>(v/1e8).toFixed(2)+'억', md=v=>v<=-100?'<b class="bad">−100% 넘음 (빚)</b>':v.toFixed(0)+'%';
+
 function renderNow(){
-  const r=Q.ohlc.QQQ_1d, c=r.map(x=>x[4]), dates=r.map(x=>day(x[0])), n=c.length-1, h52=hiN(c,252), h2=hiN(c,504), m=sma(c,200);
-  const pos=aggOf(c[n],h52[n]), name={T:'TQQQ',L:'QLD',C:'현금(SGOV)'}, dd2=c[n]/h2[n]-1;
-  let det=null; for(let i=504;i<=n;i++){ if(c[i]/h2[i]-1<=-0.40){ det=i; } }
+  const r=Q.ohlc.QQQ_1d, c=r.map(x=>x[4]), dates=r.map(x=>day(x[0])), n=c.length-1, h2=hiN(c,504), dd2=c[n]/h2[n]-1, th=-0.40;
+  let det=null; for(let i=0;i<=n;i++) if(c[i]/h2[i]-1<=th) det=i;
   const crisis= det!=null && c.slice(det).every((v,k)=>v/h2[det+k]-1<-0.10);
-  const confirm= c[n]>m[n] && m[n]>m[n-20];
-  const loan= !crisis ? '<b style="color:#5ad445">대기</b> — 위기 아님. 대출할 때가 아닙니다.' : confirm ? '<b style="color:#f23645">대출 매수 신호</b> — 위기 뒤 바닥 확인' : `<b style="color:#f0b429">위기 감지</b> (${dates[det]}) — 바닥 확인 전까지 대기`;
-  $('#now').innerHTML=`${dates[n]} 종가 · QQQ <b>${c[n].toFixed(2)}</b>
-   <div class="pick"><div><div class="l">자기 돈 (공격형)</div><div class="v">${name[pos]}</div><div class="note">52주 고점 대비 ${((c[n]/h52[n]-1)*100).toFixed(1)}%</div></div>
-   <div><div class="l">대출</div><div class="v" style="font-size:16px">${!crisis?'대기':confirm?'매수 신호':'위기 감지'}</div><div class="note">2년 고점 대비 ${(dd2*100).toFixed(1)}% · 위기 기준 ${(h2[n]*0.6).toFixed(2)}</div></div></div>
+  const S=TQ&&TQ.spx, IN=S&&S.state==='IN', cy=S&&S.cycle;
+  const bought= crisis && IN && cy && cy.entry_date>=dates[det];
+  const loan= !crisis ? '<b style="color:#5ad445">대기</b> — 위기 아님. 대출할 때가 아닙니다.'
+    : bought ? `<b style="color:#f23645">대출 매수 신호</b> — 위기(${dates[det]}) 뒤 신호판 매수 신호 ${cy.entry_date}`
+    : `<b style="color:#f0b429">위기 감지</b> (${dates[det]}) — 신호판 매수 신호(S&P500 ${S?S.up.toLocaleString():'—'} 위 마감)까지 대기`;
+  $('#now').innerHTML=`${dates[n]} 종가 · QQQ <b>${c[n].toFixed(2)}</b> · 2년 최고 ${h2[n].toFixed(2)}
+   <div class="pick"><div><div class="l">자기 돈 (TQQQ 신호판)</div><div class="v">${S?(IN?'TQQQ 보유':'SGOV 대피'):'—'}</div><div class="note">${S?`S&P500 ${S.idx.toLocaleString()} · 200일선 대비 ${S.dist_ma>0?'+':''}${S.dist_ma}%`:''}</div></div>
+   <div><div class="l">대출</div><div class="v" style="font-size:16px">${!crisis?'대기':bought?'매수 신호':'위기 감지'}</div><div class="note">2년 고점 대비 ${(dd2*100).toFixed(1)}% · 위기 기준선 ${(h2[n]*0.6).toFixed(2)}</div></div></div>
    <div style="margin-top:6px">${loan}</div>`;
 }
+
 function prep(){
-  const d=J.d, N=d.length, nd=J.ndx, dff=J.dff, si=d.indexOf(J.start), dt=d.map(x=>new Date(x+'T00:00:00Z'));
-  const real=k=>new Map(B.adj[k].map(r=>[day(r[0]),r[1]])), RQ=real('QQQ'), RL=real('QLD');
-  const T=d.map((_,i)=> i<si||J.real[i]==null? J.syn[i] : J.real[i]), R={T:[0],L:[0],Q:[0],C:[0]};
-  for(let i=1;i<N;i++){ const k=(dt[i]-dt[i-1])/864e5, r=dff[i-1]/100, x=nd[i]/nd[i-1]-1;
-    R.T.push(T[i]/T[i-1]-1);
-    R.L.push(i>si&&RL.has(d[i])&&RL.has(d[i-1]) ? RL.get(d[i])/RL.get(d[i-1])-1 : 2*x-r/360*k-(1.0095**(k/365)-1)-(1.01**(k/365)-1));
-    R.Q.push(i>si&&RQ.has(d[i])&&RQ.has(d[i-1]) ? RQ.get(d[i])/RQ.get(d[i-1])-1 : x); R.C.push(r/360*k); }
+  const d=J.d, N=d.length, nd=J.ndx, spx=J.spx, dff=J.dff, si=d.indexOf(J.start), dt=d.map(x=>new Date(x+'T00:00:00Z'));
+  const T=d.map((_,i)=> i<si||J.real[i]==null? J.syn[i] : J.real[i]);
+  const spy=new Map(B.adj.SPY.map(r=>[day(r[0]),r[1]])), SP=[1];
+  for(let i=1;i<N;i++) SP.push(SP[i-1]*(spy.has(d[i])&&spy.has(d[i-1])? spy.get(d[i])/spy.get(d[i-1]) : spx[i]/spx[i-1]));
   let lf=null; const fx=J.krw.map(v=>{ if(v!=null) lf=v; return lf??900; });
-  const h52=hiN(nd,252), h2=hiN(nd,504), m200=sma(nd,200), agg=nd.map((v,i)=>aggOf(v,h52[i])), dd2=nd.map((v,i)=>v/h2[i]-1);
-  const S0=d.findIndex(x=>x>='1986-10-01'), E=Array(N).fill(null); let ub=1/fx[S0];
-  for(let i=S0;i<N;i++){ if(i>S0) ub*=1+R[agg[i-1]][i]; E[i]=ub*fx[i]; }
-  const crises=th=>{ const out=[]; let i=504; while(i<N){ if(dd2[i]<=th){ out.push(i); let k=i; while(k<N&&dd2[k]<-0.10) k++; i=k+1; } else i++; } return out; };
-  G={d,N,nd,dt,R,fx,h2,m200,agg,E,S0,crises};
+  const ma=sma(spx,200), h2=hiN(nd,504), dd2=nd.map((v,i)=>v/h2[i]-1), buy=Array(N).fill(false), ext=Array(N).fill(false);
+  let st='OUT'; for(let i=0;i<N;i++){ if(ma[i]==null) continue; if(st==='OUT'&&spx[i]>ma[i]*1.025){ st='IN'; buy[i]=true; } else if(st==='IN'&&spx[i]<ma[i]*0.975){ st='OUT'; ext[i]=true; } }
+  G={d,N,nd,spx,dff,dt,T,SP,fx,ma,h2,dd2,buy,ext};
+  const S0=d.findIndex(x=>x>='1986-10-01'), u=sim(S0,N-1); G.S0=S0; G.E=Array(N).fill(null);
+  u.forEach((v,k)=>G.E[S0+k]=v*fx[S0+k]/fx[S0]);
+  G.crises=th=>{ const out=[]; let i=504; while(i<N){ if(dd2[i]<=th){ out.push(i); let k=i; while(k<N&&dd2[k]<-0.10) k++; i=k+1; } else i++; } return out; };
 }
-function runWin(det,o){ // o: {rule:'none'|'ma200'|'agg'|'now', asset:'T'|'L'|'Q'|'follow', own, loan, rate, size, stop}
-  const {d,N,nd,dt,R,fx,h2,m200,agg,E,S0}=G; let pk=Math.max(S0,det-504); for(let i=pk;i<=det;i++) if(E[i]>E[pk]) pk=i;
+// TQQQ 신호판(SPX ±2.5% V2) — scripts/tq_bt40.py와 같은 계산 (USD 1에서 시작, 신호일 종가 체결)
+function sim(a,b){
+  const {T,SP,spx,ma,dff,dt}=G, SMALL=[10,25,50], BIG=[...Array(12)].map((_,k)=>100*2**k);
+  let cash=1,tq=0,sp=0,state='OUT',left=0,ent=0,pk=0,mx=0,hs=new Set(),hb=new Set(); const cur=[];
+  const sell=f=>{ const x=tq*f; tq-=x; sp+=x; };
+  for(let i=a;i<=b;i++){
+    if(i>a){ tq*=T[i]/T[i-1]; sp*=SP[i]/SP[i-1]; cash*=1+dff[i-1]/100/360*((dt[i]-dt[i-1])/864e5); }
+    if(ma[i]!=null){ const up=ma[i]*1.025, lo=ma[i]*0.975;
+      if(state==='OUT'&&spx[i]>up){ state='IN'; ent=pk=T[i]; mx=0; hs=new Set(); hb=new Set(); left=3; }
+      else if(state==='IN'){ pk=Math.max(pk,T[i]); mx=Math.max(mx,T[i]/ent-1);
+        for(const x of SMALL) if(!hs.has(x)&&mx*100>=x){ hs.add(x); sell(0.10); }
+        for(const x of BIG) if(!hb.has(x)&&mx*100>=x){ hb.add(x); sell(0.50); }
+        if(T[i]<=pk*0.75){ sell(0.50); pk=T[i]; }
+        if(spx[i]<lo){ state='OUT'; left=0; cash+=tq+sp; tq=sp=0; } }
+      if(state==='IN'&&left>0){ const x=cash/left; cash-=x; tq+=x; left--; } }
+    cur.push(cash+tq+sp); }
+  return cur;
+}
+function runWin(det,o){ // o: {rule:'none'|'sig'|'now', mode:'board'|'hold', x2, exit, size}
+  const {d,N,dt,T,fx,E,S0,buy,ext}=G; let pk=Math.max(S0,det-504); for(let i=pk;i<=det;i++) if(E[i]>E[pk]) pk=i;
   let end=pk; while(end<N-1&&(dt[end]-dt[pk])/31557600000<6) end++;
-  let lu=0,active=false,done=false,princ=0,t0=null,real=0,pos='C',entry=null,exit=null,why=''; const net=[];
+  let entry=null; if(o.rule==='sig'){ for(let i=det;i<=end;i++) if(buy[i]){ entry=i; break; } } else if(o.rule==='now') entry=det;
+  const lc= entry==null? null : o.mode==='board'? sim(entry,end) : T.slice(entry,end+1).map(v=>v/T[entry]);
+  let real=0,active=false,done=false,princ=0,units=0,t0=0,exit=null,why=''; const net=[];
   for(let i=pk;i<=end;i++){
-    if(active) lu*=1+R[pos][i];
     const ownv=o.own*E[i]/E[pk];
-    if(active){ const y=(dt[i]-dt[t0])/31557600000, val=lu*fx[i], st=o.stop&&nd[i]<m200[i]*0.9;
-      if(val>=2*princ||nd[i]>=h2[det]||y>=10||st){ real+=val-princ-princ*o.rate*y; active=false; done=true; exit=i; why=val>=2*princ?'2배':nd[i]>=h2[det]?'고점 회복':st?'손절':'10년'; }
-      else pos= o.asset==='follow'? agg[i] : o.asset; }
-    if(o.rule!=='none'&&!done&&!active&&i>=det){
-      const go= o.rule==='ma200' ? (nd[i]>m200[i]&&m200[i]>m200[i-20]) : o.rule==='agg' ? agg[i]==='T' : true;
-      if(go){ active=true; t0=i; princ= o.size? Math.min(o.loan,o.size*ownv) : o.loan; lu=princ/fx[i]; entry=i; pos= o.asset==='follow'? agg[i] : o.asset; } }
-    net.push(ownv+real+(active? lu*fx[i]-princ-princ*o.rate*(dt[i]-dt[t0])/31557600000 : 0));
+    if(entry!=null&&i===entry&&!done){ active=true; princ=o.size?Math.min(o.loan,ownv*o.size):o.loan; units=princ/fx[i]; t0=i; }
+    if(active){ const val=units*lc[i-entry]*fx[i], intr=princ*o.rate*(dt[i]-dt[t0])/31557600000;
+      const w= o.x2&&val>=o.x2*princ ? o.x2+'배' : o.exit&&ext[i]&&i>entry ? '탈출 신호' : '';
+      if(w){ real+=val-princ-intr; active=false; done=true; exit=i; why=w; net.push(ownv+real); continue; }
+      net.push(ownv+real+val-princ-intr); }
+    else net.push(ownv+real);
   }
-  let peak=net[0], mdd=0, dropped=false, rec=null; net.forEach((v,k)=>{ peak=Math.max(peak,v); mdd=Math.min(mdd,v/peak-1); if(v<net[0]*0.95) dropped=true; if(rec==null&&dropped&&v>=net[0]) rec=k; });
+  let peak=net[0], mdd=0, tk=0, pv=net[0]; net.forEach((v,k)=>{ peak=Math.max(peak,v); if(v/peak-1<mdd){ mdd=v/peak-1; tk=k; pv=peak; } });
+  let rk=null; for(let k=tk;k<net.length;k++) if(net[k]>=pv){ rk=k; break; }
   const y=(dt[end]-dt[pk])/31557600000;
-  return {pk,end,entry,exit,why,princ,net,mdd:mdd*100,endv:net.at(-1),cagr:((Math.max(net.at(-1),1)/net[0])**(1/y)-1)*100,rec:rec!=null?(dt[pk+rec]-dt[pk])/31557600000:null};
+  return {pk,end,entry,exit,why,princ,net,mdd:mdd*100,low:pk+tk,endv:net.at(-1),cagr:((Math.max(net.at(-1),1)/net[0])**(1/y)-1)*100,rec:rk!=null?(dt[pk+rk]-dt[pk+tk])/31557600000:null};
 }
-const V=[['대출 없음',{rule:'none'}],['2억 → QQQ',{rule:'ma200',asset:'Q',stop:true}],['2억 → QLD',{rule:'ma200',asset:'L',stop:true}],['2억 → TQQQ (추천)',{rule:'ma200',asset:'T',stop:true},'rec'],
-  ['계좌만큼만 → TQQQ',{rule:'ma200',asset:'T',stop:true,size:1}],['공격형 복귀 때 대출, 공격형 따라감',{rule:'agg',asset:'follow'}],['바닥 확인 없이 바로 → 공격형 따라감',{rule:'now',asset:'follow'}]];
+const V=[['대출 없음 (신호판만)',{rule:'none'}],
+  ['대출도 신호판 규칙 그대로 · 탈출 때 상환',{rule:'sig',mode:'board',exit:true}],
+  ['대출도 신호판 규칙 그대로 · 6년 계속 보유',{rule:'sig',mode:'board'}],
+  ['신호판 매수 신호에 TQQQ · 2배 또는 탈출 때 상환 (추천)',{rule:'sig',mode:'hold',x2:2,exit:true},'rec'],
+  ['추천 방식 · 대출은 자기 계좌만큼만',{rule:'sig',mode:'hold',x2:2,exit:true,size:1}],
+  ['추천 방식 · 1.5배에 상환',{rule:'sig',mode:'hold',x2:1.5,exit:true}],
+  ['바닥 확인 없이 위기 감지 즉시 TQQQ',{rule:'now',mode:'hold',x2:2,exit:true}]];
+const REC=3;
 function backtest(){
-  const own=+$('#own').value*1e8, loan=+$('#amt').value*1e8, rate=(+$('#rate').value||0)/100, {d}=G;
-  const eok=v=>(v/1e8).toFixed(2)+'억', cs=G.crises(-0.40);
+  const own=+$('#own').value*1e8, loan=+$('#amt').value*1e8, rate=(+$('#rate').value||0)/100, th=+$('#th').value, {d}=G;
+  const cs=G.crises(th);
   const res=cs.map(det=>V.map(([nm,o,cls])=>({nm,cls,r:runWin(det,{...o,own,loan,rate})})));
   const avg=V.map((_,k)=>res.reduce((s,c)=>s+c[k].r.cagr/Math.abs(c[k].r.mdd),0)/res.length);
-  const lev=res.map(c=>{ const r=c[3].r, e=r.entry; if(e==null) return {y:'-',own:0,pct:0,r:'-'}; const o=c[0].r.net[e-r.pk]; return {y:d[e].slice(0,4),own:o,pct:(o/own*100).toFixed(0),r:(loan/o).toFixed(1)}; });
-  $('#bt').innerHTML=res.map((c,ci)=>`<b>${d[cs[ci]].slice(0,4)}년 위기</b> <span class="note">(공격형 계좌 고점 ${d[c[0].r.pk]} · 위기 감지 ${d[cs[ci]]})</span>
-    <table class="t" style="margin:4px 0 10px"><tr class="h"><td>방법</td><td>대출 기간</td><td>계좌 최대낙폭</td><td>6년 뒤</td><td>연복리</td><td>회복</td></tr>
-    ${c.map(x=>`<tr class="${x.cls||''}"><td>${x.nm}</td><td>${x.r.entry!=null?d[x.r.entry].slice(0,7)+'→'+(x.r.exit!=null?d[x.r.exit].slice(0,7)+' '+x.r.why:'보유')+(x.r.princ&&x.r.princ<loan-1?' ('+eok(x.r.princ)+')':''):'-'}</td><td>${x.r.mdd.toFixed(0)}%</td><td>${eok(x.r.endv)}</td><td>${x.r.cagr.toFixed(1)}%</td><td>${x.r.rec!=null?x.r.rec.toFixed(1)+'년':'못함'}</td></tr>`).join('')}</table>`).join('')
-   + `<table class="t"><tr class="h"><td>두 위기 평균 가성비</td>${V.map(v=>`<td>${v[0].replace(' (추천)','').replace('공격형 복귀 때 대출, 공격형 따라감','공격형 복귀·따라감').replace('바닥 확인 없이 바로 → 공격형 따라감','바로 대출').replace('계좌만큼만 → TQQQ','계좌만큼 TQQQ')}</td>`).join('')}</tr><tr><td></td>${avg.map((a,k)=>`<td${k===3?' style="color:var(--accent);font-weight:600"':''}>${a.toFixed(2)}</td>`).join('')}</tr></table>
-   <div class="verdict" style="margin-top:8px">추천 방식은 닷컴 때 계좌 최대낙폭도 줄였습니다(대출이 몇 달 만에 2배가 되어 그 현금이 2004~2006년 하락을 받쳐 줌). 리먼 때는 회복이 빨라진 대신 2010년 조정에서 최대낙폭이 더 깊어졌습니다. 위기가 2번뿐이라 표본이 아주 작습니다. 대출이 들어갈 때 공격형 계좌는 ${lev.map(x=>x.y+'년 '+eok(x.own)+'(위기 전의 '+x.pct+'%)').join(' · ')}이라, <b>대출 ${eok(loan)}은 남은 계좌의 ${lev.map(x=>x.r).join('·')}배</b>를 더 얹는 셈입니다. 가짜 회복이면 손절(200일선 −10%) 때 계좌가 크게 줄 수 있고, 이자는 매달 따로 낼 수 있어야 합니다.</div>`;
-  G.res=res; G.cs=cs; drawPath(0);
+  const lev=res.map(c=>{ const r=c[REC].r, e=r.entry; if(e==null) return null; const o=c[0].r.net[e-r.pk]; return {y:d[e].slice(0,7),own:o,pct:(o/own*100).toFixed(0),x:(loan/o).toFixed(1)}; }).filter(Boolean);
+  const best=Math.max(...avg);
+  $('#bt').innerHTML=res.map((c,ci)=>`<b>${d[cs[ci]].slice(0,4)}년 위기</b> <span class="note">(신호판 계좌 고점 ${d[c[0].r.pk]} · 위기 감지 ${d[cs[ci]]})</span>
+    <div class="tw"><table class="t" style="margin:4px 0 10px"><tr class="h"><td>방법</td><td>대출 기간</td><td>계좌 최대낙폭 (바닥)</td><td>6년 뒤</td><td>연복리</td><td>가성비</td><td>바닥→회복</td></tr>
+    ${c.map(x=>`<tr class="${x.cls||''}"><td>${x.nm}</td><td>${x.r.entry!=null?d[x.r.entry].slice(0,7)+'→'+(x.r.exit!=null?d[x.r.exit].slice(0,7)+' '+x.r.why:'보유 중')+(x.r.princ&&x.r.princ<loan-1?' ('+eok(x.r.princ)+')':''):'—'}</td><td>${md(x.r.mdd)} <span class="note">${d[x.r.low].slice(0,7)}</span></td><td>${eok(x.r.endv)}</td><td>${x.r.cagr.toFixed(1)}%</td><td>${(x.r.cagr/Math.abs(x.r.mdd)).toFixed(2)}</td><td>${x.r.rec!=null?(x.r.rec<0.1?'바로':x.r.rec.toFixed(1)+'년'):'6년 안에 못함'}</td></tr>`).join('')}</table></div>`).join('')
+   + `<div class="tw"><table class="t"><tr class="h"><td>${cs.length}번 위기 평균</td><td>가성비</td><td>최악 낙폭</td><td>6년 뒤 평균</td></tr>${V.map((v,k)=>`<tr class="${k===REC?'rec':''}"><td>${v[0]}</td><td${avg[k]>=best-0.005?' class="ok" style="font-weight:700"':''}>${avg[k].toFixed(2)}</td><td>${md(Math.min(...res.map(c=>c[k].r.mdd)))}</td><td>${eok(res.reduce((s,c)=>s+c[k].r.endv,0)/res.length)}</td></tr>`).join('')}</table></div>
+   <div style="margin-top:8px">${th<=-0.395?`닷컴 때는 대출이 8개월 만에 2배가 되어 그 현금이 2004년 하락을 받쳐 줬고 계좌 최대낙폭도 줄었습니다. 리먼 때는 6년 뒤 자산이 커진 대신, 대출 직후 2009년 7월 조정이 이미 줄어든 계좌에 겹쳐 최대낙폭은 더 깊어졌습니다.`:`위기 기준을 낮추면 1987년 블랙먼데이(−35%)가 들어오는데, 대출 뒤 1988년 하락에 계좌가 거의 바닥까지 갔습니다. 2022년(−35%)은 대출이 크게 벌었습니다. 표본이 몇 개뿐이라 기준을 낮출수록 위험이 커집니다.`} 위기가 ${cs.length}번뿐이라 표본이 아주 작습니다. 대출이 들어갈 때 신호판 계좌는 ${lev.map(x=>x.y+' '+eok(x.own)+'(위기 전의 '+x.pct+'%)').join(' · ')}라서, <b>대출 ${eok(loan)}은 남은 계좌의 ${lev.map(x=>x.x).join('·')}배</b>를 더 얹는 셈입니다. 탈출 신호로 손절하면 손실은 자기 계좌에서 갚아야 하고, 이자는 매달 따로 낼 수 있어야 합니다.</div>`;
+  G.res=res; G.cs=cs; drawPath(Math.min(G.sel||0,cs.length-1));
 }
 function drawPath(ci){
-  if(!window.Plotly||!G.res) return; const {dt}=G, c=G.res[ci], base=c[0].r, rec=c[3].r, x=dt.slice(base.pk,base.end+1);
+  G.sel=ci; if(!window.Plotly||!G.res) return; const {dt}=G, c=G.res[ci], base=c[0].r, rec=c[REC].r, x=dt.slice(base.pk,base.end+1);
   const ev=[]; if(rec.entry!=null) ev.push({x:[dt[rec.entry]],y:[rec.net[rec.entry-base.pk]/1e8],name:'대출 매수',mode:'markers',marker:{symbol:'triangle-up',size:11,color:'#5ad445'}});
-  if(rec.exit!=null) ev.push({x:[dt[rec.exit]],y:[rec.net[rec.exit-base.pk]/1e8],name:'상환',mode:'markers',marker:{size:9,color:'#f23645'}});
-  Plotly.react('plot-l',[{x,y:base.net.map(v=>v/1e8),name:'공격형만',line:{color:'#8a93a3',width:1.4}},{x,y:rec.net.map(v=>v/1e8),name:'공격형 + 위기 대출(TQQQ)',line:{color:'#f0b429',width:2}},...ev].map(o=>({type:'scatter',mode:o.mode||'lines',...o})),
+  if(rec.exit!=null) ev.push({x:[dt[rec.exit]],y:[rec.net[rec.exit-base.pk]/1e8],name:'상환 ('+rec.why+')',mode:'markers',marker:{size:9,color:'#f23645'}});
+  Plotly.react('plot-l',[{x,y:base.net.map(v=>v/1e8),name:'신호판만',line:{color:'#8a93a3',width:1.4}},{x,y:rec.net.map(v=>v/1e8),name:'신호판 + 위기 대출',line:{color:'#f0b429',width:2}},...ev].map(o=>({type:'scatter',mode:o.mode||'lines',...o})),
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:10,t:10,b:28},legend:{orientation:'h',y:1.12},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',title:{text:'계좌(억)',font:{size:10}}},hovermode:'x unified'},{displayModeBar:false,responsive:true});
   $('#cbtn').innerHTML=G.cs.map((det,k)=>`<button class="btn" style="${k===ci?'border-color:var(--accent);color:var(--accent)':''}" onclick="drawPath(${k})">${G.d[det].slice(0,4)}년 위기</button>`).join(' ');
 }
-['own','amt','rate'].forEach(id=>$('#'+id).addEventListener('change',()=>{ try{ backtest(); }catch(e){ $('#bt').innerHTML='<span class="note">오류: '+e.message+'</span>'; } }));
+['own','amt','rate','th'].forEach(id=>$('#'+id).addEventListener('change',()=>{ try{ backtest(); }catch(e){ $('#bt').innerHTML='<span class="note">오류: '+e.message+'</span>'; } }));
 const PLOTLY_SRC = [
-  'https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js',
+  'https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js',
   'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
   'https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js',
   'https://cdn.plot.ly/plotly-2.35.2.min.js',
@@ -156,11 +185,11 @@ const PLOTLY_SRC = [
 const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
 (async()=>{
   const q='?'+Math.floor(Date.now()/600000), get=u=>fetch(u+q).then(r=>r.ok?r.json():null).catch(()=>null);
-  const dataP=Promise.all([get('tq40.json'),get('bt_data.json'),get('tqqq_data.json')]).then(([a,b,c])=>{J=a;B=b;Q=c;});
+  const dataP=Promise.all([get('tq40.json'),get('bt_data.json'),get('tqqq_data.json'),get('tq.json')]).then(([a,b,c,t])=>{J=a;B=b;Q=c;TQ=t;});
   for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
   await dataP;
   try{ if(Q) renderNow(); else throw 0; }catch(e){ $('#now').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중')+'</span>'; }
-  try{ if(J&&B&&J.krw){ prep(); backtest(); } else throw 0; }catch(e){ $('#bt').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중')+'</span>'; }
+  try{ if(J&&B&&J.krw&&J.spx){ prep(); backtest(); } else throw 0; }catch(e){ $('#bt').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중')+'</span>'; }
 })();
 </script>
 </body></html>
