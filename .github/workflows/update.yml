@@ -23,6 +23,8 @@ jobs:
         continue-on-error: true
       - run: python scripts/bt_data.py
         continue-on-error: true
+      - run: python scripts/tq40.py
+        continue-on-error: true
       - run: python scripts/tq_signals.py
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,6 +35,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
-          git add tq.json tq_state.json verify_summary.json $(ls bt_data.json tqqq_data.json soxl_data.json qld_data.json koru_data.json schd_data.json qqqi_data.json xlk_data.json 2>/dev/null)
+          git add tq.json tq_state.json verify_summary.json $(ls tq40.json bt_data.json tqqq_data.json soxl_data.json qld_data.json koru_data.json schd_data.json qqqi_data.json xlk_data.json 2>/dev/null)
           git diff --cached --quiet || git commit -m "data: $(date -u +%F' '%H:%M)"
           for i in 1 2 3 4; do git push && break; git pull --rebase -X theirs || { git rebase --abort; git pull --no-rebase -X ours; }; sleep 3; done
