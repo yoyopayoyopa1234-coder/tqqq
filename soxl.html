@@ -60,7 +60,7 @@
   </div>
 
   <div class="panel">
-    <h2>주봉 · Global M2 3일 평균
+    <h2>3일봉 · Global M2 3일 평균
       <span class="tools">오프셋 <input type="range" id="m2off" min="0" max="120" value="0"> <span id="m2offv">0</span>일</span></h2>
     <div class="sum" id="sum-b">불러오는 중…</div>
     <div class="plot" id="plot-b" style="height:480px"></div>
@@ -133,10 +133,12 @@ function chartD(){
     line(x,disp,'#2bb58f','이격도(200)',{yaxis:'y2', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);
 }
 
+/* 3일봉: 일봉 3개씩 묶음 (가장 최근 3거래일이 마지막 봉) — Global M2 3일 평균과 같은 간격 */
+function bars3(r){ const out=[]; for(let e=r.length;e>0;e-=3){ const s=Math.max(0,e-3), g=r.slice(s,e); out.unshift({t:g[0].t,o:g[0].o,h:Math.max(...g.map(x=>x.h)),l:Math.min(...g.map(x=>x.l)),c:g.at(-1).c}); } return out; }
 function chartB(){
-  const r = ohlc('SOXL_1wk'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
+  const r = bars3(ohlc('SOXL_1d')), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
   const L = base(480); L.yaxis=ax({}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
-  const back = Math.max(0, x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+30*86400000)];
+  const back = Math.max(0, x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)];
   const tr=[candle(r)];
   const M2 = DATA && DATA.m2 && DATA.m2.rows && DATA.m2.rows.length ? DATA.m2 : null;
   let m2txt = '<span class="err">Global M2 데이터 없음</span>';
@@ -149,7 +151,7 @@ function chartB(){
     m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}, 3일 평균 $${((rows[n][1]+rows[n-1][1]+rows[n-2][1])/3).toFixed(1)}조) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
       + `<br><span class="note">${M2.countries.join('+')} · 각국 최신 발표값 × 일별 환율${M2.notes&&M2.notes.length?' · '+M2.notes.join(' · '):''}</span>`;
   }
-  $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 주) · ${m2txt}`;
+  $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (최근 3일) · ${m2txt}`;
   Plotly.react('plot-b', tr, L, cfg);
 }
 
