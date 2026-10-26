@@ -186,7 +186,7 @@ function backtest(){
   $('#base').innerHTML=`<div class="tw"><table class="t"><tr class="h"><td>자기 돈 바탕</td><td>40년 연복리 · 최대낙폭 (자기 돈만)</td><td>위기 ${cs.length}번 평균 가성비</td><td>위기 최악 낙폭</td><td>위기 전 금액 회복까지 (${cs.map(c=>d[c].slice(0,4)).join(' · ')})</td><td>6년 뒤 평균</td></tr>
     ${br.map((x,k)=>`<tr class="${(win?k===1:k===3)?'rec':''}"><td>${x.nm}</td><td>${x.s.c.toFixed(1)}% · ${x.s.m.toFixed(0)}% <span class="note">(${(x.s.c/Math.abs(x.s.m)).toFixed(2)})</span></td><td>${x.sc.toFixed(2)}</td><td>${md(x.worst)}</td><td>${x.rr.map(r=>r.reci!=null?((G.dt[r.reci]-G.dt[r.pk])/31557600000).toFixed(1)+'년':'6년 안에 못함').join(' · ')}</td><td>${eok(x.endv)}</td></tr>`).join('')}</table></div>
     <div style="margin-top:6px">${win?`<b>신호판이 더 낫습니다</b> — 공격형은 40년 연복리가 ${(br[2].s.c-br[0].s.c).toFixed(1)}%p 높지만 최대낙폭이 ${Math.abs(br[2].s.m).toFixed(0)}%로 깊고(신호판 ${Math.abs(br[0].s.m).toFixed(0)}%), 위기 구간에서는 공격형 계좌가 닷컴·리먼 하락을 더 많이 맞아 대출을 얹어도 가성비가 ${br[3].sc.toFixed(2)}에 그칩니다(신호판 ${br[1].sc.toFixed(2)}). 그래서 이 페이지는 신호판을 바탕으로 둡니다.`:`<b>지금 설정에서는 공격형 바탕이 더 낫습니다</b> (위기 평균 가성비 ${br[3].sc.toFixed(2)} vs 신호판 ${br[1].sc.toFixed(2)}).`}</div>
-    <div class="note">공격형도 신호일 종가 체결로 맞춰 비교(간단지표 페이지는 다음 날 종가 체결이라 숫자가 조금 다름). 원화 기준이라 환율 변동이 들어가 있습니다.</div>`;
+    <div class="note">공격형은 간단지표 페이지에서 지운 옛 규칙(52주 고점 −10% TQQQ / −15% QLD)이지만 비교용으로 남겨 둠. 둘 다 신호일 종가 체결, 원화 기준이라 환율 변동이 들어가 있습니다.</div>`;
 }
 function drawPath(ci){
   G.sel=ci; if(!window.Plotly||!G.res) return; const {dt}=G, c=G.res[ci], base=c[0].r, rec=c[REC].r, x=dt.slice(base.pk,base.end+1);
