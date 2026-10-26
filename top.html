@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>공탐 고점 신호판</title>
+<title>고점 신호판</title>
 <style>
   :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
   * { box-sizing:border-box; }
@@ -40,12 +40,26 @@ table.t tr.sig td:first-child{color:#f23645;font-weight:600}</style>
 <div class="wrap">
   <header>
     <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html">3/161/185</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="qld.html">QLD</a><a href="koru.html">KORU</a><a href="schd.html">SCHD</a><a href="qqqi.html">QQQI</a><a href="xlk.html">XLK</a><a href="kjp.html">김째아빠</a><a href="q161.html">3/161</a><a href="snow.html">눈덩이</a><a href="fg.html">공탐</a><a href="top.html" class="cur">고점신호</a><a href="simple.html">간단지표</a><a href="quotes.html">명언</a></nav>
-    <h1>공탐 고점 신호판</h1>
+    <h1>고점 신호판</h1>
     <span class="date" id="today"></span>
   </header>
 
   <div class="panel">
-    <h2>지금 몇 단계인가<span class="desc">CNN 공포·탐욕 지수 일별 기록 기준</span></h2>
+    <h2>고점 확인 신호<span class="desc">고점을 맞히지 않고, 꺾인 걸 빨리 확인해서 피하기 · QQQ 종가 기준</span></h2>
+    <div class="sum" id="ex-now">불러오는 중…</div>
+    <div class="sum" style="border-top:1px solid var(--line)">
+      <b>정상</b> QQQ가 52주 최고 종가 대비 −10% 이내 → TQQQ 보유 · <b>경고</b> −10% 아래 → TQQQ를 <b>QLD</b>로 낮춤 · <b>탈출</b> −15% 아래 → 전량 <b>현금(SGOV)</b> · <b>복귀</b> 다시 −10% 이내 → TQQQ<br>
+      <span class="note">간단지표 공격형과 같은 규칙입니다. 이 규칙이 고점을 미리 알려주지는 않습니다. QQQ −10%면 TQQQ는 이미 −30% 가까이 빠진 뒤라, "더 큰 하락을 피하는 장치"로 보는 게 맞습니다.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>탈출 신호 40년 기록<span class="desc">1986~ · QQQ 52주 고점 −15% 탈출 → −10% 이내 복귀 · 2010년 이전 TQQQ는 환산 주가</span></h2>
+    <div class="sum" id="ex-log">계산 중…</div>
+  </div>
+
+  <div class="panel">
+    <h2>참고: 공탐 패턴 단계<span class="desc">극공포 → 극탐욕 → 공포 → 탐욕 → 극탐욕 · 아래 검증상 고점 예측력 없음</span></h2>
     <div class="sum" id="now">불러오는 중…</div>
   </div>
 
@@ -58,14 +72,14 @@ table.t tr.sig td:first-child{color:#f23645;font-weight:600}</style>
   </div>
 
   <div class="panel">
-    <h2>과거 검증<span class="desc">2011~ · 신호 다음 QQQ·TQQQ가 실제로 어떻게 움직였나 (배당 반영 수정종가)</span></h2>
+    <h2>참고: 공탐 패턴 검증<span class="desc">2011~ · 신호 다음 QQQ·TQQQ가 실제로 어떻게 움직였나 (배당 반영 수정종가)</span></h2>
     <div class="sum" id="bt">계산 중…</div>
     <div id="plot-t" style="height:440px"></div>
     <div class="sum note">위: QQQ(로그) · ● 빨강 = 고점 신호 · ● 회색 = 무시한 첫 극탐욕 · 아래: 공포·탐욕 지수와 구간. 투자 자문이 아닙니다.</div>
   </div>
 
   <div class="panel">
-    <h2>신호 기록<span class="desc">6개월 최대하락 = 신호일 종가 대비 이후 126거래일 중 가장 낮은 종가</span></h2>
+    <h2>참고: 공탐 패턴 신호 기록<span class="desc">6개월 최대하락 = 신호일 종가 대비 이후 126거래일 중 가장 낮은 종가</span></h2>
     <div class="sum" id="log">—</div>
   </div>
 </div>
@@ -74,7 +88,35 @@ const $=s=>document.querySelector(s);
 $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
 const day=t=>new Date(t*1000).toISOString().slice(0,10);
 const EF=25, FE=45, GR=55, EG=75;
-let H=null,B=null,TQ=null;
+let H=null,B=null,TQ=null,QD=null,J=null;
+/* ── 고점 확인 신호 (52주 고점 −10% / −15%) ── */
+function hiSeries(v){ const hi=[], dq=[]; for(let i=0;i<v.length;i++){ while(dq.length&&v[dq.at(-1)]<=v[i]) dq.pop(); dq.push(i); if(dq[0]<=i-252) dq.shift(); hi.push(v[dq[0]]); } return hi; }
+function exitState(dd){ let st='정상'; const out=[]; dd.forEach(x=>{ if(x<-0.15) st='탈출'; else if(st==='탈출'){ if(x>=-0.10) st='정상'; } else st = x<-0.10?'경고':'정상'; out.push(st); }); return out; }
+function exitBoard(){
+  const r=QD.ohlc.QQQ_1d, c=r.map(x=>x[4]), n=c.length, hi=hiSeries(c), dd=c.map((v,i)=>v/hi[i]-1), st=exitState(dd), i=n-1;
+  const t=QD.ohlc.TQQQ_1d, tc=t.map(x=>x[4]), th=hiSeries(tc), tdd=tc.at(-1)/th.at(-1)-1;
+  let since=i; while(since>0&&st[since-1]===st[i]) since--;
+  const hold={정상:'TQQQ',경고:'QLD',탈출:'현금(SGOV)'}[st[i]];
+  const box=(k,sub)=>`<div class="${st[i]===k?(k==='탈출'?'fire':'now'):''}"><b>${k}</b>${sub}</div>`;
+  $('#ex-now').innerHTML=`${day(r[i][0])} 종가 · QQQ <b>${c[i].toFixed(2)}</b> · 52주 최고 ${hi[i].toFixed(2)} 대비 <b>${(dd[i]*100).toFixed(1)}%</b> · TQQQ 52주 고점 대비 ${(tdd*100).toFixed(1)}%
+   <div class="steps" style="grid-template-columns:repeat(3,1fr)">${box('정상','−10% 이내 · TQQQ')}${box('경고','−10~−15% · QLD')}${box('탈출','−15% 아래 · 현금')}</div>
+   지금: <b style="color:${st[i]==='정상'?'#5ad445':st[i]==='경고'?'#f0b429':'#f23645'}">${st[i]}</b> (${day(r[since][0])}부터) → 보유 <b>${hold}</b><br>
+   <span class="note">경고 선(−10%) QQQ ${(hi[i]*0.9).toFixed(2)}${st[i]==='정상'?' — 지금보다 '+((hi[i]*0.9/c[i]-1)*100).toFixed(1)+'%':''} · 탈출 선(−15%) ${(hi[i]*0.85).toFixed(2)}${st[i]!=='탈출'?' — 지금보다 '+((hi[i]*0.85/c[i]-1)*100).toFixed(1)+'%':' · 복귀 선(−10%) '+(hi[i]*0.9).toFixed(2)}</span>`;
+}
+function exitLog(){
+  const d=J.d, N=d.length, nd=J.ndx, si=d.indexOf(J.start), T=d.map((_,i)=> i<si||J.real[i]==null? J.syn[i] : J.real[i]);
+  const hi=hiSeries(nd), dd=nd.map((v,i)=>v/hi[i]-1), th=hiSeries(T); const ev=[]; let out=false, ex=0;
+  for(let i=252;i<N;i++){ if(!out&&dd[i]<-0.15){ out=true; ex=i; } else if(out&&dd[i]>=-0.10){ out=false; ev.push([ex,i]); } }
+  if(out) ev.push([ex,null]);
+  const rows=ev.map(([e,r])=>{ const end=r??N-1; let lo=e, tlo=T[e]; for(let k=e;k<=end;k++){ if(nd[k]<nd[lo]) lo=k; tlo=Math.min(tlo,T[k]); }
+    return {e,r,tqAt:(T[e]/th[e]-1)*100, nFur:(nd[lo]/nd[e]-1)*100, tFur:(tlo/T[e]-1)*100, reVs:r!=null?(T[r]/T[e]-1)*100:null}; });
+  const done=rows.filter(x=>x.reVs!=null), saved=done.filter(x=>x.reVs<0), big=rows.filter(x=>x.tFur<=-50);
+  const avg=a=>a.reduce((s,x)=>s+x,0)/Math.max(1,a.length), f=v=>(v>=0?'+':'')+v.toFixed(0)+'%';
+  $('#ex-log').innerHTML=`<div class="verdict" style="border-color:rgba(240,180,41,.35);background:rgba(240,180,41,.07)"><b>보험 같은 신호입니다.</b> 40년간 탈출 ${rows.length}번 중 ${done.length-saved.length}번은 다시 살 때 TQQQ가 판 가격보다 평균 ${f(avg(done.filter(x=>x.reVs>=0).map(x=>x.reVs)))} 비쌌습니다(헛탈출 비용). 대신 ${big.length}번(${big.map(x=>d[x.e].slice(0,4)).join('·')})은 TQQQ가 그 뒤로 ${big.map(x=>f(x.tFur)).join(' / ')} 더 빠지는 걸 피했습니다. 레버리지는 한 번의 −90~−100%가 모든 걸 지우기 때문에, 자잘한 비용을 내고 이 몇 번을 피하는 게 40년 성적(연 25.5%, 최대낙폭 −64%)을 만든 핵심입니다.</div>
+   <table class="t" style="margin-top:8px"><tr class="h"><td>탈출일</td><td>그때 TQQQ 고점대비</td><td>이후 더 빠진 폭 (QQQ · TQQQ)</td><td>복귀일 · 판 가격 대비</td></tr>
+   ${rows.slice().reverse().map(x=>`<tr class="${x.tFur<=-50?'sig':''}"><td>${d[x.e]}</td><td>${x.tqAt.toFixed(0)}%</td><td>${x.nFur.toFixed(0)}% · ${x.tFur.toFixed(0)}%</td><td>${x.r!=null?d[x.r]+' · '+f(x.reVs):'진행 중'}</td></tr>`).join('')}</table>
+   <div class="note" style="margin-top:6px">빨간 날짜 = 탈출 뒤 TQQQ가 −50% 이상 더 빠진 큰 하락장. "판 가격 대비"가 플러스면 다시 비싸게 산 것(비용), 마이너스면 싸게 다시 산 것(이득).</div>`;
+}
 function machine(F){ let st=0; const ev=[], stage=[], since=[]; let cyc={};
   F.forEach((f,i)=>{ const prev=st;
     if(f<EF){ st=1; if(prev!==1) cyc={1:i}; }
@@ -125,7 +167,7 @@ function run(){
   const x=days.map(d=>new Date(d+'T00:00:00Z')), mk=(t,c,s)=>{ const e=ev.filter(z=>z[1]===t); return {x:e.map(z=>x[z[0]]),y:e.map(z=>Q[z[0]]),mode:'markers',type:'scatter',name:t==='고점'?'고점 신호':'1차(무시)',marker:{size:s,color:c,line:{color:'#0f1216',width:1}},hovertemplate:'%{x|%Y-%m-%d}<extra>'+(t==='고점'?'고점 신호':'1차')+'</extra>'}; };
   const band=(a,b,c)=>({type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:a,y1:b,fillcolor:c,line:{width:0},layer:'below'});
   Plotly.react('plot-t',[{x,y:Q,name:'QQQ',type:'scatter',mode:'lines',line:{color:'#e6e9ee',width:1.2}},mk('1차','#8a93a3',7),mk('고점','#f23645',10),
-    {x,y:F,name:'공탐',type:'scatter',mode:'lines',yaxis:'y2',line:{color:'#f0b429',width:0.8}}],
+    {x,y:F.map((_,i)=>i<2?null:(F[i]+F[i-1]+F[i-2])/3),name:'공탐(3일 평균)',type:'scatter',mode:'lines',yaxis:'y2',line:{color:'#f0b429',width:0.9}}],
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:40,r:10,t:10,b:28},legend:{orientation:'h',y:1.08},hovermode:'closest',
      xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',domain:[0.38,1],gridcolor:'#262c35'},yaxis2:{domain:[0,0.32],range:[0,100],tickvals:[25,45,55,75],gridcolor:'rgba(0,0,0,0)'},
      shapes:[band(0,25,'rgba(242,54,69,.16)'),band(25,45,'rgba(240,160,48,.12)'),band(45,55,'rgba(138,147,163,.1)'),band(55,75,'rgba(139,227,122,.1)'),band(75,100,'rgba(90,212,69,.16)')]},{displayModeBar:false,responsive:true});
@@ -139,9 +181,11 @@ const PLOTLY_SRC = [
 const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
 (async()=>{
   const q='?'+Math.floor(Date.now()/600000), get=u=>fetch(u+q).then(r=>r.ok?r.json():null).catch(()=>null);
-  const dataP=Promise.all([get('fg_hist.json'),get('bt_data.json'),get('tq.json')]).then(([a,b,c])=>{H=a;B=b;TQ=c;});
+  const dataP=Promise.all([get('fg_hist.json'),get('bt_data.json'),get('tq.json'),get('tqqq_data.json'),get('tq40.json')]).then(([a,b,c,e,f])=>{H=a;B=b;TQ=c;QD=e;J=f;});
   for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
   await dataP;
+  try{ if(QD) exitBoard(); }catch(e){ $('#ex-now').innerHTML='<span class="note">오류: '+e.message+'</span>'; }
+  try{ if(J) exitLog(); }catch(e){ $('#ex-log').innerHTML='<span class="note">오류: '+e.message+'</span>'; }
   if(!H||!B){ $('#now').innerHTML=$('#bt').innerHTML='<span class="note">데이터 준비 중</span>'; return; }
   try{ run(); }catch(e){ $('#bt').innerHTML='<span class="note">오류: '+e.message+'</span>'; }
 })();
