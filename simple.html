@@ -32,7 +32,7 @@
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
 </style>
-<style>.big{font-size:22px;font-weight:700;color:var(--accent)} table.t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums} table.t td{padding:3px 2px;text-align:right} table.t td:first-child{text-align:left} table.t tr.h td{color:var(--muted)} .ok{color:#089981} .bad{color:#f23645}.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}.pick>div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}.pick .l{font-size:11px;color:var(--muted)}.pick .v{font-size:20px;font-weight:700;color:var(--accent)} table.t td.g{color:var(--accent);font-weight:600}</style>
+<style>.big{font-size:22px;font-weight:700;color:var(--accent)} table.t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums} table.t td{padding:3px 2px;text-align:right} table.t td:first-child{text-align:left} table.t tr.h td{color:var(--muted)} .ok{color:#089981} .bad{color:#f23645}.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}.pick>div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}.pick .l{font-size:11px;color:var(--muted)}.pick .v{font-size:20px;font-weight:700;color:var(--accent)} table.t td.g{color:var(--accent);font-weight:600} .tw{overflow-x:auto;-webkit-overflow-scrolling:touch} .tw table.t td{white-space:nowrap}</style>
 </head><body>
 <div class="wrap">
   <header>
@@ -47,7 +47,7 @@
   </div>
 
   <div class="panel">
-    <h2>규칙<span class="desc">52주 고점 + S&amp;P500 200일선 + 200일선 이격도 + TS·리밸런싱 · 40년 가성비 0.40 이상 5가지 + TQQQ 신호판 비교 · 신호일 종가 체결</span></h2>
+    <h2>규칙<span class="desc">52주 고점 + S&amp;P500 200일선 + 200일선 이격도 + TS·리밸런싱 · 40년 가성비 0.40 이상 6가지 + TQQQ 신호판·3/161·3/161/185·김째아빠·눈덩이 비교 · 신호일 종가 체결</span></h2>
     <div class="sum">
       <b style="color:#22d3ee">종합형 (S&amp;P500 200일선 + 52주 고점 + 200일선 이격도 + 절반 투자)</b> 가성비 0.54 이상 목표 — 40년 17.4% · −30%로 0.59, 세후 0.40<br>
       &nbsp;· S&amp;P500이 <b>200일선 아래</b> 또는 QQQ가 52주 고점 대비 <b>−15%보다 아래</b> → <b>SGOV</b> 전부<br>
@@ -78,6 +78,18 @@
       &nbsp;· <b>TS</b> 신고가 구간에서 TQQQ가 구간 최고가 대비 −25%면 → 전부 SGOV (구간이 바뀔 때까지)<br>
       &nbsp;· 40년 29.6% · −43%로 가성비 0.68, 세후 23.9% · −51%로 0.47, 승률 85%(26회 왕복, 평균 익절 +95% · 평균 손절 −16%). 전반 20년 0.75 · 후반 0.64 (다음 날 체결이면 28.2% · −44%, 승률 81%)<br>
       <span class="note"><b>주의 — 과최적화 위험 "매우높음".</b> 밴드 덕에 매매 횟수가 신호판 수준으로 줄어 승률은 높지만, TQQQ 100%라 TS −25% 하나에 성적이 걸려 있습니다. TS를 −20%로 바꾸면 0.32, −30%면 0.53, 과열 기준을 10%/20%로 바꾸면 0.56/0.51, 확인을 1일이나 5일로 바꾸면 0.57로 무너집니다. 최대낙폭 −43%는 2018년 1월 → 2020년 2월(2018년 2월·10~12월 급락)과 1997년 10~12월에서 나왔고, 1987년은 10월 16일에 밴드 아래로 깨져 그날 종가에 나와 블랙먼데이를 피했습니다(다음 날 체결이면 못 피함). 세 조건(세후 0.42·연복리 25%·승률 73%)을 동시에 넘기는 규칙은 모두 이렇게 TQQQ 100%에 TS를 얹은 모양이었습니다.</span><br>
+      <b style="color:#f0b429">절충형 (신호판 밴드 + 신고가 구간만 TQQQ 60%)</b> 과최적화 위험 "낮음"이면서 신호판보다 가성비·연복리·승률이 모두 같거나 높은 것을 목표<br>
+      &nbsp;· <b>들어가기·나오기</b>는 TQQQ 신호판과 똑같이 S&amp;P500이 200일선 <b>+2.5% 위</b>면 투자 시작, <b>−2.5% 아래</b>면 전부 SGOV (52주 고점 조건·확인 일수 없음)<br>
+      &nbsp;· <b>투자 중</b> QQQ가 52주 고점 <b>−10% 이내</b>면 → <b>TQQQ 60% + SPYM 40%</b> · 그 밖이면 → <b>QQQ</b> 전부 (과열 규칙 없음)<br>
+      &nbsp;· <b>안전장치</b> 매달 첫 거래일에 60 : 40으로 다시 맞춤 · TQQQ가 이 구간 최고가 대비 <b>−25%</b>면 TQQQ 몫을 SGOV로(구간이 바뀔 때까지)<br>
+      &nbsp;· 40년 24.7% · −41%로 가성비 0.60, 세후 20.4% · −42%로 0.49, 승률 75%(24회 왕복, 평균 익절 +81% · 평균 손절 −8%) — 같은 기준의 신호판은 23.6% · −44%(0.54), 세후 0.40, 승률 71%. 전반 20년 0.61 · 후반 0.62. 최대낙폭은 2000-03 → 05(S&amp;P500이 밴드 아래로 가기 전에 나스닥이 먼저 −40%), 2021-11 → 2022-04, 2004-01 → 2005-04<br>
+      <span class="note"><b>과최적화 점검</b> — 숫자가 밴드 2.5%·신고가 구간 −10%·TQQQ 60%·TS −25% 네 개뿐이고(밴드는 신호판 숫자 그대로), 한 칸씩 바꾸면 밴드 ±2%/±3% 0.57/0.61, TQQQ 50%/70% 0.62/0.59, TS −20% 0.59, 신고가 구간 −8%/−12% 0.45/0.48, TS −30% 0.44 → 최악 −27%, 중앙값 −4%, 전반·후반 비슷으로 2점 '낮음'. 단, 더 잘게 보면 신고가 구간을 −9%로만 바꿔도 0.42로 떨어집니다. 1998년 6월처럼 QQQ가 고점 −9~−10% 사이에서 오르내리면 구간이 바뀌며 TS 기준 고점이 리셋되는 탓이라, 이 부분엔 운이 섞여 있다고 보는 게 맞습니다. TS를 빼고 대신 과열 20% → QQQ 규칙을 넣은 변형(밴드 2.5% · 구간 −7% · TQQQ 70%)은 0.54 · 22.5% · 승률 75%로 신호판과 비슷한 수준에서 가장 평평했고(한 칸 최악 −14%, '매우낮음'), TS 없이는 가성비 0.54~0.55 · 연복리 23% 언저리가 한계였습니다. 신호판을 세 가지 모두 넘기면서 '낮음'인 규칙은 이 계열(신호판 밴드 + TQQQ 일부 + TS)에서만 나왔고, 신호판 자체의 TS를 1회로 바꾼 것(0.57 · 24.7% · 승률 71%)은 한 칸 최악 −36%로 '중간'이었습니다.</span><br>
+      <b style="color:#8a93a3">비교 — 다른 페이지 매매법을 같은 40년 기준으로</b> (원작자 숫자 그대로 · 신호일 종가 체결 · QQQ 대신 나스닥100, TQQQ 대신 환산 TQQQ)<br>
+      &nbsp;· <b>3/161</b> 나스닥100 3일선 &gt; 161일선이면 TQQQ, 아니면 SGOV → 40년 21.7% · <b>−97%</b>(0.22), 승률 33%(84회). 2000~03년 닷컴 붕괴 때 3일선이 161일선을 수없이 넘나들며 −97%<br>
+      &nbsp;· <b>3/161/185</b> 3일선이 185일선 상향 돌파·밴드 안이면 매수, 161일선 이탈 매도, 역배열 예외 보유 → 24.2% · −95%(0.25), 승률 35%(95회)<br>
+      &nbsp;· <b>김째아빠</b> 3/161 + TQQQ 200일선 점수(2점 TQQQ · 1점 QLD · 0점 SGOV), 20일 변동성 6.2% 이상 또는 이격도 151% 과열(118%까지)이면 SGOV → 29.1% · −53%(0.55), 세후 0.40, 승률 39%(107회). 전반 20년 0.30 · 후반 0.89로 성적이 2010년 이후에 몰려 있음<br>
+      &nbsp;· <b>눈덩이</b> TQQQ 5일선/220일선 골든크로스 전액 매수 · 데드크로스 전량 매도(쿨다운 5일), 하락장에서 QQQ 고점 −10%/−22% DIP 매수, +15%/+68%/+350% 익절 → 24.4% · −53%(0.46), 세후 0.35, 승률 58%(50회)<br>
+      <span class="note">네 가지 모두 TQQQ 100%를 들고 QQQ·TQQQ 자체 지표만 보는 방식이라 S&amp;P500 200일선을 보는 위 규칙들보다 최대낙폭이 큽니다. 각 페이지의 10~15년 성적은 실제 QQQ·TQQQ 수정종가(2010년~)로 계산한 것이고, 여기 40년 숫자는 1986년부터 환산 TQQQ로 돌린 것이라 다릅니다. 오늘 신호는 각 페이지에서 보세요.</span><br>
       <span class="note">고급형은 TQQQ 비중이 커서 숫자 민감도가 더 큽니다. 신고가 구간 TQQQ 60~80%, 과열 20%, 확인 2~5일은 0.65~0.79로 버텼지만, <b>TS를 −22%나 −28%로만 바꿔도 0.63</b>, −20%면 0.51(1990·1996·2010년 급락에서 −25%가 딱 맞게 걸렸기 때문), 과열 기준을 10%로 낮추면 0.50, 신고가 구간 해제를 −10%/−15%로 하면 0.59/0.60으로 떨어집니다. 즉 성적의 상당 부분이 몇 번의 급락에서 −25% 손절이 운 좋게 맞아떨어진 데서 나옵니다.</span><br>
       <span class="note">복합형은 규칙이 많아 과최적화 위험이 있어서 숫자를 하나씩 바꿔 봤습니다. 리밸런싱 분기마다·안 함, TQQQ 비중 40~60%, 과열 20~25%, 신호판 구간 −3~−7%/−12% 해제, 탈출 −20%는 0.55~0.62로 버텼지만, TS를 −20%로 좁히거나(0.48) 탈출을 −12%로 당기거나(0.44) 과열 기준을 10%로 낮추면(0.52) 크게 나빠졌습니다. 수익 대부분은 2010년 이후에서 나옵니다.</span><br>
       <span class="note">종합형을 만들 때 5·20·60·120·200일선, 이평선 교차·정배열, 볼린저밴드 하단·폭(변동성), 52주 고점, S&amp;P500 200일선을 점수로 합치거나 단계별로 묶는 수천 가지 조합을 시험했습니다. TQQQ 100%로는 가성비 0.5 안팎이 한계였고, 0.54를 넘긴 건 모두 "S&amp;P500 200일선 + 52주 고점 + 과열 시 1배 + TQQQ 절반" 구조였습니다(TQQQ 구간을 −3~−7%, 과열 기준을 10~20%로 바꿔도 탈출선이 −12~−15%면 0.50~0.56을 유지했고, 탈출선을 −20%로 늦추면 최대낙폭이 −40%로 커져 0.4 안팎으로 떨어졌습니다 — −15% 탈출이 핵심). 이평선 교차·볼린저밴드 폭은 더해도 나아지지 않아 뺐습니다.</span><br>
@@ -90,7 +102,7 @@
     <div class="sum" id="bt">계산 중…</div>
     <div id="plot-g" style="height:340px"></div>
     <div id="plot-a" style="height:230px"></div>
-    <div class="sum note">위: $1 성장(로그), 파란 배경 = 환산 구간 · 아래: 최근 5년 나스닥100과 52주 고점 −5%·−10%·−15% 선, 배경 = 고급형 단계(파랑 TQQQ 70%+SPYM 30% · 보라 QLD · 청록 QQQ(과열) · 회색 SGOV, TS 발동 여부는 표시 안 함). 모든 백테스트는 아기티큐 200슨피단 검증 코드와 같이 신호가 난 날 종가에 체결한 것으로 계산합니다(실제로는 장 마감 직전 가격으로 매매). 신호 다음 날 체결로 늦추면 대부분 0.01~0.05 낮아지고, 1987년 블랙먼데이를 하루 늦게 맞는 신호판은 −57%로 커집니다.<br>
+    <div class="sum note">위: $1 성장(로그), 파란 배경 = 환산 구간, 점선 = 다른 페이지 매매법(3/161 · 3/161/185 · 김째아빠 · 눈덩이) · 아래: 최근 5년 나스닥100과 52주 고점 −5%·−10%·−15% 선, 배경 = 고급형 단계(파랑 TQQQ 70%+SPYM 30% · 보라 QLD · 청록 QQQ(과열) · 회색 SGOV, TS 발동 여부는 표시 안 함). 모든 백테스트는 아기티큐 200슨피단 검증 코드와 같이 신호가 난 날 종가에 체결한 것으로 계산합니다(실제로는 장 마감 직전 가격으로 매매). 신호 다음 날 체결로 늦추면 대부분 0.01~0.05 낮아지고, 1987년 블랙먼데이를 하루 늦게 맞는 신호판은 −57%로 커집니다.<br>
     2010-02-11 이전 TQQQ·QLD는 나스닥100 × 3·2 − 조달금리 − 운용보수 0.95% − 스왑 스프레드 1% 환산 주가(아기티큐 공개 수식, 실제보다 낮게 나오는 쪽), QQQ는 나스닥100 가격지수(배당 제외). 이후는 실제 수정종가. 투자 자문이 아닙니다.</div>
   </div>
 </div>
@@ -113,7 +125,7 @@ function renderNow(){
   $('#now').innerHTML=`${day(r[i][0])} 종가 · QQQ <b>${c[i].toFixed(2)}</b><br>
   52주 최고 종가 ${hi.toFixed(2)} (${hiD}) 대비 <b>${(dd*100).toFixed(1)}%</b> · −5% 선 ${(hi*0.95).toFixed(2)} · −10% 선 ${(hi*0.9).toFixed(2)} · −15% 선 ${(hi*0.85).toFixed(2)} · −20% 선 ${(hi*0.8).toFixed(2)}<br>
   S&amp;P500 ${SP?SP.idx.toLocaleString():'—'} · 200일선 ${SP?SP.ma200.toLocaleString():'—'} → ${SP?tag(spUp,spUp?'위':'아래'):'—'} · QQQ 200일선 ${ma.toFixed(2)} 대비 ${((c[i]/ma-1)*100).toFixed(1)}% ${tag(c[i]/ma<=1.15,c[i]/ma>1.15?'(과열 +15% 넘음)':'(과열 아님)')}
-  <div class="pick">${Object.keys(NAMES).map(k=>`<div><div class="l">${NAMES[k]}</div><div class="v">${s[k]}</div><div class="note">${s[k]==='TQQQ 50%'?'나머지 50% SGOV · ':''}어제 ${ps[k]}${ps[k]!==s[k]?' → <b class="bad">바뀜</b>':''}</div></div>`).join('')}<div id="pickJ"><div class="l">복합형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickK"><div class="l">고급형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickL"><div class="l">확장형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickB"><div class="l">밴드형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickS"><div class="l">TQQQ 신호판</div><div class="v" style="font-size:15px">—</div></div></div>`;
+  <div class="pick">${Object.keys(NAMES).map(k=>`<div><div class="l">${NAMES[k]}</div><div class="v">${s[k]}</div><div class="note">${s[k]==='TQQQ 50%'?'나머지 50% SGOV · ':''}어제 ${ps[k]}${ps[k]!==s[k]?' → <b class="bad">바뀜</b>':''}</div></div>`).join('')}<div id="pickJ"><div class="l">복합형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickK"><div class="l">고급형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickL"><div class="l">확장형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickB"><div class="l">밴드형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickZ"><div class="l">절충형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickS"><div class="l">TQQQ 신호판</div><div class="v" style="font-size:15px">—</div></div></div>`;
 }
 function backtest(){
   const d=J.d, N=d.length, nd=J.ndx, dff=J.dff, si=d.indexOf(J.start), dt=d.map(x=>new Date(x+'T00:00:00Z'));
@@ -143,9 +155,11 @@ function backtest(){
       if(!top&&dv>=-cfg.tIn) top=true; else if(top&&dv<-cfg.tOut) top=false;
       lv.push(nd[i]/m2>cfg.oh?'X':top?'T':cfg.split?(dv>=-cfg.split?'M1':'M2'):'M'); } return lv; }
   const CJ={eIn:0.10,eOut:0.15,tIn:0.05,tOut:0.10,oh:1.15,confirm:1}, CK={eIn:0.10,eOut:0.15,tIn:0.05,tOut:0.12,oh:1.15,confirm:3}, CL={eIn:0.10,eOut:0.20,tIn:0.05,tOut:0.12,oh:1.15,confirm:3}, CB={eIn:0.10,eOut:0.20,tIn:0.05,tOut:0.12,oh:1.15,confirm:3,bIn:0.025,bOut:0.02};
-  const lvJ=mkLevels(CJ), lvK=mkLevels(CK), lvL=mkLevels(CL), lvB=mkLevels(CB);
-  const WJ={T:{T:0.5,S:0.5},M:{L:1},X:{Q:1},C:{C:1}}, WK={T:{T:0.7,S:0.3},M:{L:1},X:{Q:1},C:{C:1}}, WL={T:{T:0.7,S:0.3},M:{L:1},X:{Q:1},C:{C:1}}, WB={T:{T:1},M:{L:1},X:{Q:1},C:{C:1}};
-  const engineJ=(a,b,tax)=>engineH(lvJ,WJ,a,b,tax), engineK=(a,b,tax)=>engineH(lvK,WK,a,b,tax), engineL=(a,b,tax)=>engineH(lvL,WL,a,b,tax), engineB=(a,b,tax)=>engineH(lvB,WB,a,b,tax);
+  // 절충형: 신호판 밴드(±2.5%)만으로 진입·탈출, 52주 고점 −10% 이내면 T(TQQQ 60%+SPYM 40%) 아니면 M(QQQ). 52주 진입·탈출 조건과 과열 규칙 없음(Infinity)
+  const CZ={eIn:Infinity,eOut:Infinity,tIn:0.10,tOut:0.10,oh:Infinity,confirm:1,bIn:0.025,bOut:0.025};
+  const lvJ=mkLevels(CJ), lvK=mkLevels(CK), lvL=mkLevels(CL), lvB=mkLevels(CB), lvZ=mkLevels(CZ);
+  const WJ={T:{T:0.5,S:0.5},M:{L:1},X:{Q:1},C:{C:1}}, WK={T:{T:0.7,S:0.3},M:{L:1},X:{Q:1},C:{C:1}}, WL={T:{T:0.7,S:0.3},M:{L:1},X:{Q:1},C:{C:1}}, WB={T:{T:1},M:{L:1},X:{Q:1},C:{C:1}}, WZ={T:{T:0.6,S:0.4},M:{Q:1},X:{Q:1},C:{C:1}};
+  const engineJ=(a,b,tax)=>engineH(lvJ,WJ,a,b,tax), engineK=(a,b,tax)=>engineH(lvK,WK,a,b,tax), engineL=(a,b,tax)=>engineH(lvL,WL,a,b,tax), engineB=(a,b,tax)=>engineH(lvB,WB,a,b,tax), engineZ=(a,b,tax)=>engineH(lvZ,WZ,a,b,tax);
   function engineH(lvJ,WJ,a,b,tax){ let cur=lvJ[a], h={}, bs={}, v=1, pk=1, mdd=0, sw=0, pkd=d[a], w=['',''], yr=d[a].slice(0,4), yg=0, tpk=T[a], cut=false, vs=cur!=='C'?1:0; const cv=[1], tr=[];
     const setW=tw=>{ const nh={}; for(const k in tw) nh[k]=v*tw[k];
       for(const k of new Set([...Object.keys(h),...Object.keys(nh)])){ const o=h[k]||0, n=nh[k]||0;
@@ -163,9 +177,9 @@ function backtest(){
     if(tax){ for(const k in h) yg+=h[k]-(bs[k]||0); if(yg>0) v-=yg*0.22; }
     if(vs) tr.push(v/vs-1);
     const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,sw:sw/y,cv,w,cur,cut,tpk,tr}; }
-  for(const [id,nm,eng,lv,tq,rest] of [['pickJ','복합형',engineJ,lvJ,50,50],['pickK','고급형',engineK,lvK,70,30],['pickL','확장형',engineL,lvL,70,30],['pickB','밴드형',engineB,lvB,100,0]]){ // 오늘(마지막 거래일) 신호
+  for(const [id,nm,eng,lv,tq,rest,mlab] of [['pickJ','복합형',engineJ,lvJ,50,50],['pickK','고급형',engineK,lvK,70,30],['pickL','확장형',engineL,lvL,70,30],['pickB','밴드형',engineB,lvB,100,0],['pickZ','절충형',engineZ,lvZ,60,40,'QQQ']]){ // 오늘(마지막 거래일) 신호
     const e=eng(Math.max(1,d.findIndex(x=>x>='1986-10-01')),N-1,false), st=lv[N-1], dv=nd[N-1]/hi[N-1]-1, hasT=st==='T'||st==='M1';
-    const txt= hasT ? (e.cut&&e.cur===st?(rest?`SPYM ${rest}% + SGOV ${tq}%`:'SGOV (TS)'):(rest?`TQQQ ${tq}% + SPYM ${rest}%`:'TQQQ')) : (st==='M'||st==='M2')?'QLD':st==='X'?'QQQ':'SGOV';
+    const txt= hasT ? (e.cut&&e.cur===st?(rest?`SPYM ${rest}% + SGOV ${tq}%`:'SGOV (TS)'):(rest?`TQQQ ${tq}% + SPYM ${rest}%`:'TQQQ')) : (st==='M'||st==='M2')?(mlab||'QLD'):st==='X'?'QQQ':'SGOV';
     const el=document.getElementById(id); if(el) el.innerHTML=`<div class="l">${nm}</div><div class="v" style="font-size:${txt.length>6?15:20}px">${txt}</div><div class="note">${d[N-1]} 나스닥100 종가 기준 · 52주 고점 대비 ${(dv*100).toFixed(1)}%${hasT&&e.cur===st?(e.cut?' · TS 발동됨 — 구간이 바뀌거나 탈출 뒤 다시 들어올 때까지 TQQQ 없음':` · TS선 TQQQ ${(e.tpk*0.75).toFixed(2)}`):''}</div>`; }
   { const S=TQ&&TQ.spx, el=document.getElementById('pickS'); if(el&&S){ const IN=S.state==='IN'; el.innerHTML=`<div class="l">TQQQ 신호판</div><div class="v">${IN?'TQQQ':'SGOV'}</div><div class="note">${IN?'보유':'대피'} · S&P500 ${S.idx.toLocaleString()} · 밴드 ${S.lo.toLocaleString()}~${S.up.toLocaleString()}${S.cycle&&S.cycle.ts_line?` · TS선 TQQQ ${S.cycle.ts_line}`:''} · <a href="index.html" style="color:var(--accent)">신호판 페이지</a></div>`; } }
   // ── TQQQ 신호판 (S&P500 200일선 ±2.5% V2: 3분할·소익절 10/25/50%→10%·대익절 100/200/400…→50%·연쇄 TS −25%→50% SPYM·하단 이탈 전량 SGOV) — 신호 다음 날 종가 체결 ──
@@ -198,11 +212,41 @@ function backtest(){
     if(tax){ if(cur!=='C') yg+=v-basis; if(yg>0) v-=yg*0.22; }
     if(vs) tr.push(v/vs-1);
     const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,sw:sw/y,cv,w,tr}; }
+  // ── 다른 페이지 매매법을 같은 40년 기준으로(원작자 숫자 그대로 · QQQ→나스닥100, TQQQ→환산 TQQQ · 신호일 종가 체결) ──
+  const preT=[0]; T.forEach(v=>preT.push(preT.at(-1)+v)); const mT=(k,i)=>i>=k-1?(preT[i+1]-preT[i+1-k])/k:null;
+  const pos161=d.map((_,i)=>{ const a=mav(3,i), b=mav(161,i); return b!=null&&a>b?'T':'C'; });   // 3/161 (q161.html)
+  const pos3185=d.map(()=>'C'); { let p=0; for(let i=1;i<N;i++){ const a=mav(3,i), b=mav(161,i), e=mav(185,i), a0=mav(3,i-1), b0=mav(161,i-1), e0=mav(185,i-1); if(e==null||e0==null||b0==null) continue;   // 3/161/185 (qqq3161.html signals)
+      const env=e*1.05, cross161=a0>=b0&&a<b, exc=env>b&&b>a&&a>e;
+      if(cross161){ if(p===1) p=0; } else if(p===1){ if(!(a>b)&&!exc) p=0; } else { const up185=a0<e0&&a>=e; if((up185||(a>=e&&a<=env))&&a>b) p=1; else if(exc) p=1; }
+      pos3185[i]=p?'T':'C'; } }
+  const posK=d.map(()=>'C'); { let hot=false; for(let i=220;i<N;i++){ const t200=mT(200,i), q3=mav(3,i), q161=mav(161,i); if(t200==null||q161==null) continue;   // 김째아빠 (kjp.html compute)
+      let mu=0; const rr=[]; for(let k=i-19;k<=i;k++){ const x=T[k]/T[k-1]-1; rr.push(x); mu+=x; } mu/=20; const vol=Math.sqrt(rr.reduce((s,x)=>s+(x-mu)**2,0)/20)*100;
+      const disp=T[i]/t200*100; if(disp>=151) hot=true; else if(hot&&disp<=118) hot=false;
+      const sc=(q3>q161)+(T[i]>t200); posK[i]=(vol>=6.2||hot)?'C':['C','L','T'][sc]; } }
+  const RSI=[null]; { let g=0,l=0; for(let i=1;i<N;i++){ const c=T[i]-T[i-1], u=Math.max(c,0), w=Math.max(-c,0); if(i<=14){ g+=u/14; l+=w/14; } else { g=(g*13+u)/14; l=(l*13+w)/14; } RSI.push(i>=14?(l===0?100:100-100/(1+g/l)):null); } }
+  // 눈덩이 (snow.html run): 5/220 골든크로스 전액 매수·데드크로스 전량 매도(쿨다운 5일), 하락장 DIP −10%(20%, RSI≤35면 30%)/−22%(50%), −40% 아래 중단, +15/+68/+350% 익절(보유량 50/35/15%만 유지). 대기 자금은 기준금리, 세금은 해마다 현금에서(모자라면 일부 매도)
+  function engineN(a,b,tax){ const TP=[[15,.5],[68,.35],[350,.15]];
+    let cash=1, sh=0, cost=0, cool=0, d1=false, d2=false, tpi=0, pkSh=0, pk=1, mdd=0, pkd=d[a], w=['',''], vs=0, yr=d[a].slice(0,4), yg=0, v=1, sw=0; const cv=[1], tr=[];
+    for(let i=a+1;i<=b;i++){ cash*=1+ret.C[i]; v=cash+sh*T[i];
+      if(tax&&d[i].slice(0,4)!==yr){ if(yg>0){ const t_=yg*0.22; if(cash>=t_) cash-=t_; else { const rem=t_-cash; cash=0; sh-=Math.min(sh,rem/T[i]); } } yr=d[i].slice(0,4); yg=0; v=cash+sh*T[i]; }
+      const m220=mT(220,i), m220p=mT(220,i-1), bull=m220!=null&&mT(5,i)>m220, pb=m220p!=null&&mT(5,i-1)>m220p, gc=bull&&!pb, dc=!bull&&pb;
+      if(cool>0) cool--;
+      else if(dc&&sh>0){ yg+=sh*(T[i]-cost); cash+=sh*T[i]; sh=0; cool=5; d1=d2=false; tpi=0; tr.push(cash/vs-1); vs=0; sw++; }
+      else if(gc){ if(sh===0) vs=v; sh=v/T[i]; cash=0; cost=T[i]; d1=d2=false; tpi=0; pkSh=sh; sw++; }
+      if(cool===0&&!bull){ const ddq=nd[i]/hi[i]-1;
+        if(ddq>-0.40){ for(const [f,c,fr] of [['1',ddq<=-0.10&&!d1,(RSI[i]??50)<=35?.3:.2],['2',ddq<=-0.22&&!d2,.5]]){ if(!c) continue;
+            const amt=Math.min(cash,v*fr); if(amt>0){ if(sh===0) vs=v; const n=amt/T[i]; cost=(cost*sh+amt)/(sh+n); sh+=n; cash-=amt; pkSh=sh; tpi=0; sw++; }
+            if(f==='1') d1=true; else d2=true; } } }
+      if(sh>0&&cost>0){ const gg=(T[i]/cost-1)*100; while(tpi<TP.length&&gg>=TP[tpi][0]){ const keep=pkSh*TP[tpi][1]; if(sh>keep){ yg+=(sh-keep)*(T[i]-cost); cash+=(sh-keep)*T[i]; sh=keep; sw++; } tpi++; } }
+      v=cash+sh*T[i]; if(v>pk){pk=v;pkd=d[i];} if(v/pk-1<mdd){mdd=v/pk-1;w=[pkd,d[i]];} cv.push(v); }
+    if(sh>0&&vs) tr.push(v/vs-1);
+    if(tax&&yg>0) v-=yg*0.22;
+    const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,sw:sw/y,cv,w,tr}; }
   const runTax=(pos,a,b)=>engine(pos,a,b,true);
   const fixed=a=>d.map(()=>a);
   const run=(pos,a,b)=>engine(pos,a,b,false);
   const at=s=>d.findIndex(x=>x>=s), end=s=>{const k=d.findIndex(x=>x>s); return k<0?N-1:k-1;};
-  const S=[...KS.map(k=>[NAMES[k],pos[k]]),['복합형',null,engineJ],['고급형',null,engineK],['확장형',null,engineL],['밴드형',null,engineB],['TQQQ 신호판',null,engineS],['QQQ 보유',fixed('Q')],['QLD 보유',fixed('L')],['TQQQ 보유',fixed('T')]], NS=KS.length+5;
+  const S=[...KS.map(k=>[NAMES[k],pos[k]]),['복합형',null,engineJ],['고급형',null,engineK],['확장형',null,engineL],['밴드형',null,engineB],['절충형',null,engineZ],['TQQQ 신호판',null,engineS],['3/161',pos161],['3/161/185',pos3185],['김째아빠',posK],['눈덩이',null,engineN],['QQQ 보유',fixed('Q')],['QLD 보유',fixed('L')],['TQQQ 보유',fixed('T')]], NO=KS.length+6, NS=NO+4;   // NO: 간단지표 6가지 + 신호판 · NS: + 다른 페이지 4가지
   const per=[['40년 (1986-10~)',at('1986-10-01'),N-1],['2000~2009 닷컴·금융위기',at('2000-01-03'),end('2009-12-31')],['TQQQ 상장 후 (2010-02~)',at('2010-02-11'),N-1],['최근 10년',at(new Date(dt[N-1]-315576e6).toISOString().slice(0,10)),N-1]];
   const res=per.map(([nm,a,b])=>({nm,a,b,r:S.map(([_,p,fn])=>fn?fn(a,b,false):run(p,a,b))}));
   const halves=[['전반 20년 (1986-10 ~ 2006-09)',at('1986-10-01'),end('2006-09-30')],['후반 20년 (2006-10 ~)',at('2006-10-01'),N-1]].map(([nm,a,b])=>({nm,r:S.map(([_,p,fn])=>fn?fn(a,b,false):run(p,a,b))}));
@@ -210,7 +254,7 @@ function backtest(){
   const all=res[0].r;
   const tax=S.map(([_,p,fn],k)=>k<NS?(fn?fn(res[0].a,N-1,true):runTax(p,res[0].a,N-1)):null);
   const best=Math.max(...tax.filter(Boolean).map(t=>t.c/Math.abs(t.m)));
-  const RISK={'종합형':['낮음','#8be37a'],'복합형':['중간','#f0b429'],'고급형':['중간','#f0b429'],'확장형':['높음','#f0a030'],'밴드형':['매우높음','#f23645'],'TQQQ 신호판':['중간','#f0b429']};
+  const RISK={'종합형':['낮음','#8be37a'],'복합형':['중간','#f0b429'],'고급형':['중간','#f0b429'],'확장형':['높음','#f0a030'],'밴드형':['매우높음','#f23645'],'절충형':['낮음','#8be37a'],'TQQQ 신호판':['중간','#f0b429'],'3/161':['낮음','#8be37a'],'3/161/185':['중간','#f0b429'],'김째아빠':['높음','#f0a030'],'눈덩이':['매우높음','#f23645']};
   const wr=r=>{ const t=r.tr||[]; if(!t.length) return '—'; const w=t.filter(x=>x>0).length; return `<b>${(w/t.length*100).toFixed(0)}%</b> <span class="note">(${t.length}회)</span>`; };
   $('#bt').innerHTML=`<div class="tw"><table class="t"><tr class="h"><td>연복리 · 최대낙폭</td><td>40년</td><td>가성비</td><td>세후 가성비</td><td>승률 (왕복 거래)</td><td>과최적화 위험</td><td>2000~09</td><td>최근 10년</td><td>매매/년</td></tr>
   ${S.map((s_,k)=>`<tr${k===NS?' style="border-top:1px solid var(--line)"':''}><td${k<NS?' class="g"':''}>${s_[0]}</td><td>${f(res[0].r[k])}</td><td${k<NS?' class="g"':''}>${(res[0].r[k].c/Math.abs(res[0].r[k].m)).toFixed(2)}</td><td>${tax[k]?`<span${(tax[k].c/Math.abs(tax[k].m))>=best-0.005?' class="ok" style="font-weight:700"':''}>${(tax[k].c/Math.abs(tax[k].m)).toFixed(2)}</span>`:'—'}</td><td>${k<NS?wr(res[0].r[k]):'—'}</td><td>${RISK[s_[0]]?`<b style="color:${RISK[s_[0]][1]}">${RISK[s_[0]][0]}</b>`:'—'}</td><td>${f(res[1].r[k])}</td><td>${f(res[3].r[k])}</td><td>${res[0].r[k].sw.toFixed(1)}</td></tr>`).join('')}</table></div>
@@ -222,17 +266,22 @@ function backtest(){
   <tr><td>고급형</td><td>8</td><td>0.68 → 0.50 (−27%, 과열 10%)</td><td>−3%</td><td>차이 있음</td><td><b style="color:#f0b429">중간</b></td></tr>
   <tr><td>확장형</td><td>8</td><td>0.70 → 0.52 (−27%, 과열 10%)</td><td>−6%</td><td>차이 있음</td><td><b style="color:#f0a030">높음</b></td></tr>
   <tr><td>밴드형</td><td>9</td><td>0.68 → 0.32 (−53%, TS −20%)</td><td>−11%</td><td>차이 있음</td><td><b style="color:#f23645">매우높음</b></td></tr>
-  <tr><td>TQQQ 신호판</td><td>4 (원작자가 정함)</td><td>0.54 → 0.44 (−18%, 밴드 ±2%)</td><td>−7%</td><td>차이 있음</td><td><b style="color:#f0b429">중간</b></td></tr></table></div>
-  <div class="note">점수: 숫자 개수(2개 이하 0 · 3~4개 1 · 5~6개 2 · 7~8개 3 · 9개 이상 4) + 최악 하락(15% 미만 0 · 15~30% 1 · 30~45% 2 · 45% 이상 3) + 중앙값 하락(5% 미만 0 · 5~10% 1 · 10% 초과 2) + 전반·후반(비슷 0 · 차이 1 · 한쪽만 2) → 0~1 매우낮음, 2~3 낮음, 4~5 중간, 6~7 높음, 8 이상 매우높음. 매우낮음은 없습니다 — TQQQ에 40년 가성비 0.4를 넘기는 규칙은 어느 것이든 숫자를 몇 개는 골라야 했습니다. 신호판은 밴드·TS·익절 숫자를 원작자(아기티큐)가 정한 것이라 제가 이 데이터에 끼워 맞춘 건 아니지만, 전반(0.50)·후반(0.63) 차이가 있어 점수로는 '중간'입니다.</div>
+  <tr><td>절충형</td><td>4 (밴드는 신호판 숫자)</td><td>0.60 → 0.44 (−27%, TS −30%)</td><td>−4%</td><td>비슷</td><td><b style="color:#8be37a">낮음</b></td></tr>
+  <tr><td>TQQQ 신호판</td><td>4 (원작자가 정함)</td><td>0.54 → 0.44 (−18%, 밴드 ±2%)</td><td>−7%</td><td>차이 있음</td><td><b style="color:#f0b429">중간</b></td></tr>
+  <tr><td>3/161</td><td>2 (원작자)</td><td>0.22 → 0.17 (−23%, 3일선 → 5일선)</td><td>−4.6%</td><td>한쪽만</td><td><b style="color:#8be37a">낮음</b></td></tr>
+  <tr><td>3/161/185</td><td>4 (원작자)</td><td>0.25 → 0.17 (−32%, 3일선 → 5일선)</td><td>−3%</td><td>한쪽만</td><td><b style="color:#f0b429">중간</b></td></tr>
+  <tr><td>김째아빠</td><td>6 (원작자)</td><td>0.55 → 0.39 (−29%, 3일선 → 5일선)</td><td>−11%</td><td>한쪽만</td><td><b style="color:#f0a030">높음</b></td></tr>
+  <tr><td>눈덩이</td><td>12 (원작자)</td><td>0.46 → 0.21 (−54%, 5일선 → 7일선)</td><td>−2%</td><td>차이 있음</td><td><b style="color:#f23645">매우높음</b></td></tr></table></div>
+  <div class="note">점수: 숫자 개수(2개 이하 0 · 3~4개 1 · 5~6개 2 · 7~8개 3 · 9개 이상 4) + 최악 하락(15% 미만 0 · 15~30% 1 · 30~45% 2 · 45% 이상 3) + 중앙값 하락(5% 미만 0 · 5~10% 1 · 10% 초과 2) + 전반·후반(비슷 0 · 차이 1 · 한쪽만 2) → 0~1 매우낮음, 2~3 낮음, 4~5 중간, 6~7 높음, 8 이상 매우높음. 표에 오른 것 중 매우낮음은 없습니다 — 절충형에서 TS를 뺀 변형(0.54 · 22.5%)만 매우낮음이었는데 신호판을 넘지 못해 넣지 않았습니다. 신호판은 밴드·TS·익절 숫자를 원작자(아기티큐)가 정한 것이라 제가 이 데이터에 끼워 맞춘 건 아니지만, 전반(0.50)·후반(0.63) 차이가 있어 점수로는 '중간'입니다. 3/161은 숫자가 2개뿐이라 점수로는 '낮음'이지만 전반 20년엔 전혀 안 통한(0.10) 규칙입니다 — 끼워 맞춘 게 아니라 그냥 약한 규칙이라는 뜻이고, 이 등급은 "좋은 규칙"이 아니라 "숫자를 바꿔도 성적이 버티는가"만 봅니다. 김째아빠·눈덩이도 원작자 숫자지만 3일선을 5일선으로, 5일선을 7일선으로만 바꿔도 크게 흔들려 '높음'·'매우높음'입니다.</div>
   <div class="note" style="margin-top:8px;margin-bottom:2px"><b style="color:var(--fg)">과최적화 점검 — 40년을 반으로 나눠 따로 본 성적</b> (연복리 · 최대낙폭 · 가성비). 두 구간 모두에서 좋아야 특정 시기에 끼워 맞춘 게 아닙니다.</div>
   <table class="t"><tr class="h"><td></td>${halves.map(h=>`<td>${h.nm}</td>`).join('')}<td>차이</td></tr>
   ${S.map((s_,k)=>{ const g=halves.map(h=>h.r[k].c/Math.abs(h.r[k].m)); return `<tr${k===NS?' style="border-top:1px solid var(--line)"':''}><td${k<NS?' class="g"':''}>${s_[0]}</td>${halves.map(h=>`<td>${f(h.r[k])} · <b>${(h.r[k].c/Math.abs(h.r[k].m)).toFixed(2)}</b></td>`).join('')}<td>${Math.abs(g[0]-g[1])<=0.08?'<span class="ok">비슷</span>':Math.abs(g[0]-g[1])<=0.2?'<span style="color:#f0b429">차이 있음</span>':'<span class="bad">한쪽만 좋음</span>'}</td></tr>`; }).join('')}</table>
-  <div class="note" style="margin-top:6px">40년 최종: ${S.map((s_,k)=>k<NS||k===NS||k===NS+2?`${s_[0].replace(' 보유','')} ${all[k].v.toFixed(0)}배`:'').filter(Boolean).join(' · ')}. 세후 가성비 = 해마다 실현 이익의 22%를 양도세로 낸다고 대략 계산(기본공제 제외) — TQQQ를 절반~70%만 쓰고 나머지를 SGOV·SPYM에 두는 종합형·복합형·고급형·확장형은 덜 깎입니다. 밴드형은 TQQQ 100%지만 매매가 적어 중간입니다. 초록 굵은 숫자가 세후 가성비 1위.<br>
-  40년 최대낙폭 구간: ${S.slice(0,NS).map((s_,k)=>`${s_[0]} ${all[k].w[0]} → ${all[k].w[1]}`).join(' · ')}. S&amp;P500 200일선을 쓰는 종합형·복합형·고급형·확장형·밴드형은 닷컴·리먼 폭락을 대부분 피했고, 최대낙폭은 2015~16년·2004~06년 같은 횡보장에서 사고팔기를 반복하며 생겼습니다. TQQQ 신호판은 S&amp;P500 ±2.5% 밴드라 매매는 훨씬 적고, 최대낙폭 −44%는 1987년 블랙먼데이입니다(신호 다음 날 체결로 늦추면 −57%). 레버리지를 쓰는 한 ${Math.round(-Math.max(...all.slice(0,NS).map(r=>r.m)))}~${Math.round(-Math.min(...all.slice(0,NS).map(r=>r.m)))}% 낙폭은 남습니다.</div>`;
+  <div class="note" style="margin-top:6px">40년 최종: ${S.map((s_,k)=>k<NS||k===NS||k===NS+2?`${s_[0].replace(' 보유','')} ${all[k].v.toFixed(0)}배`:'').filter(Boolean).join(' · ')}. 세후 가성비 = 해마다 실현 이익의 22%를 양도세로 낸다고 대략 계산(기본공제 제외) — TQQQ를 절반~70%만 쓰고 나머지를 SGOV·SPYM·QQQ에 두는 종합형·복합형·고급형·확장형·절충형은 덜 깎입니다. 밴드형은 TQQQ 100%지만 매매가 적어 중간이고, 3/161·3/161/185·김째아빠·눈덩이는 TQQQ 100%에 매매가 잦아 가장 많이 깎입니다. 초록 굵은 숫자가 세후 가성비 1위.<br>
+  40년 최대낙폭 구간: ${S.slice(0,NS).map((s_,k)=>`${s_[0]} ${all[k].w[0]} → ${all[k].w[1]}`).join(' · ')}. S&amp;P500 200일선을 쓰는 종합형·복합형·고급형·확장형·밴드형·절충형은 닷컴·리먼 폭락을 대부분 피했고, 최대낙폭은 2015~16년·2004~06년 같은 횡보장에서 사고팔기를 반복하며 생겼습니다. TQQQ 신호판은 S&amp;P500 ±2.5% 밴드라 매매는 훨씬 적고, 최대낙폭 −44%는 1987년 블랙먼데이입니다(신호 다음 날 체결로 늦추면 −57%). 나스닥 지표만 보는 3/161·3/161/185는 2000-03 → 2003-03 닷컴 붕괴에서 −95~−97%, 김째아빠·눈덩이는 −53%였습니다. 레버리지를 쓰는 한 ${Math.round(-Math.max(...all.slice(0,NO).map(r=>r.m)))}~${Math.round(-Math.min(...all.slice(0,NO).map(r=>r.m)))}% 낙폭은 남습니다.</div>`;
   if(!window.Plotly) return;
   const L0={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:10,t:10,b:28},legend:{orientation:'h',y:1.12},xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35'},hovermode:'x unified'};
-  const a=res[0].a, x=dt.slice(a), col=['#22d3ee','#ff9f1c','#ff4fd8','#5ad445','#c678dd','#e6e9ee','#8a93a3','#a78bfa','#f23645'];
-  Plotly.react('plot-g',all.map((r,k)=>({x,y:r.cv,name:S[k][0],type:'scatter',mode:'lines',line:{color:col[k],width:(k>=NS-4&&k<=NS-2)?2.4:k<NS?1.6:1.1,dash:k===NS+2?'dot':'solid'},visible:k===NS+1?'legendonly':true})),
+  const a=res[0].a, x=dt.slice(a), col=['#22d3ee','#ff9f1c','#ff4fd8','#5ad445','#c678dd','#f0b429','#e6e9ee','#64b5f6','#2962ff','#ff6b6b','#4db6ac','#8a93a3','#a78bfa','#f23645'];
+  Plotly.react('plot-g',all.map((r,k)=>({x,y:r.cv,name:S[k][0],type:'scatter',mode:'lines',line:{color:col[k],width:(k===NO-4||k===NO-2||k===NO-1)?2.4:k<NO?1.6:k<NS?1.3:1.1,dash:k===NS+2?'dot':(k>=NO&&k<NS)?'dash':'solid'},visible:k===NS+1?'legendonly':true})),
     {...L0,shapes:[{type:'rect',xref:'x',yref:'paper',x0:x[0],x1:new Date(J.start),y0:0,y1:1,fillcolor:'rgba(79,124,247,0.07)',line:{width:0},layer:'below'}]},{displayModeBar:false,responsive:true});
   const s5=at(new Date(dt[N-1]-157788e6).toISOString().slice(0,10)), x5=dt.slice(s5), cc={T:'rgba(79,124,247,.25)',M:'rgba(156,39,176,.25)',X:'rgba(79,209,197,.18)',C:'rgba(138,147,163,.12)'}, shapes=[]; let b0=s5;
   for(let k=s5+1;k<=N;k++){ if(k===N||lvK[k]!==lvK[b0]){ shapes.push({type:'rect',xref:'x',yref:'paper',x0:dt[b0],x1:dt[k-1],y0:0,y1:1,fillcolor:cc[lvK[b0]],line:{width:0},layer:'below'}); b0=k; } }
