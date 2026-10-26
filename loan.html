@@ -68,6 +68,10 @@
     <div id="plot-l" style="height:360px"></div>
     <div class="sum note">나스닥100(로그) · 회색 ▼ 위기 감지(−40%) · 초록 ▲ 대출 매수 · 빨강 ● 상환 · 초록 배경 = 대출 보유 구간. 2010-02-11 이전 QLD·TQQQ는 나스닥100 × 2·3 − 조달금리 − 운용보수 − 스왑 스프레드 환산 주가(실제보다 낮게 나오는 쪽). 환율: FRED DEXKOUS. 이자는 단리로 매년 내는 것으로 계산. 투자 자문이 아닙니다.</div>
   </div>
+  <div class="panel">
+    <h2>3/161과 함께 할 때<span class="desc">자기 돈은 3/161(QQQ 3일선 &gt; 161일선이면 TQQQ, 아니면 현금)로 운용 중일 때 · 위 대출금·금리·종목 입력값 사용</span></h2>
+    <div class="sum" id="c161">계산 중…</div>
+  </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
@@ -150,7 +154,33 @@ function prep(){
   let lastFx=null; const fx=J.krw.map(v=>{ if(v!=null) lastFx=v; return lastFx??900; });
   G={d,nd,dt,S,fx,N};
 }
-['amt','rate','asset'].forEach(id=>$('#'+id).addEventListener('change',()=>{ try{ backtest(); }catch(e){ $('#bt').innerHTML='<span class="note">오류: '+e.message+'</span>'; } }));
+
+function combo161(){
+  const amt=+$('#amt').value*1e8, rate=(+$('#rate').value||0)/100, asset=$('#asset').value, name={L:'QLD',Q:'QQQ',T:'TQQQ'}[asset];
+  const {d,nd,dt,S,fx,N}=G, m3=sma(nd,3), m161=sma(nd,161), up=nd.map((_,i)=>m3[i]!=null&&m161[i]!=null&&m3[i]>m161[i]);
+  const eq=[1]; for(let i=1;i<N;i++){ const k=(dt[i]-dt[i-1])/864e5; eq.push(eq.at(-1)*(up[i-1]? S.T[i]/S.T[i-1] : 1+J.dff[i-1]/100/360*k)); }
+  const eqk=eq.map((v,i)=>v*fx[i]), eok=v=>(v>=0?'+':'')+(v/1e8).toFixed(2)+'억', won=v=>(v/1e8).toFixed(2)+'억';
+  const res=episodes(nd,d,S[asset],fx,amt,rate);
+  // 비교: 위기(−40%) 뒤 3/161 매수 신호로 대출 매수, 3/161 매도 신호로 상환
+  const hi=hiN(nd,504), m=sma(nd,200), alt=[]; let i=504;
+  while(i<N){ if(nd[i]/hi[i]-1>TH){i++;continue;} const peak=hi[i]; let j=i; while(j<N&&!(up[j]&&!up[j-1])) j++; if(j>=N) break;
+    const sh=amt/fx[j]/S[asset][j]; let x=null, why='';
+    for(let k=j;k<N;k++){ const y=(dt[k]-dt[j])/31557600000, val=sh*S[asset][k]*fx[k]; if(val>=2*amt){x=k;why='2배';break;} if(nd[k]>=peak){x=k;why='고점';break;} if(y>=10){x=k;why='10년';break;} if(!up[k]){x=k;why='3/161 매도';break;} }
+    const k=x??N-1, y=(dt[k]-dt[j])/31557600000; alt.push({j,k,why,net:sh*S[asset][k]*fx[k]-amt-amt*rate*y});
+    if(why==='3/161 매도'){ i=k+1; continue; } let k2=k; while(k2<N&&nd[k2]/hi[k2]-1<-0.10) k2++; i=k2+1; }
+  const altLoss=alt.filter(e=>e.net<0);
+  const rows=res.ev.map(e=>{ let pk=Math.max(0,e.det-504); for(let k=pk;k<=e.det;k++) if(nd[k]>nd[pk]) pk=k; let lo=pk; for(let k=pk;k<=e.j;k++) if(eqk[k]<eqk[lo]) lo=k;
+    const base=amt/eqk[pk], own0=base*eqk[e.j], own1=base*eqk[e.k];
+    return `<tr><td>${d[e.j].slice(0,4)} 위기</td><td>${won(amt)} → ${won(base*eqk[lo])}<br><span class="note">${d[pk]} → ${d[lo]}</span></td><td>${up[e.j]?'TQQQ 보유':'현금'}</td><td>${won(own1)}</td><td>${eok(e.net)}</td><td class="g">${won(own1+e.net)}</td></tr>`; }).join('');
+  const nowUp=up[N-1];
+  $('#c161').innerHTML=`<b>결론: 대출 시점은 지금 규칙(200일선 바닥 확인) 그대로, 3/161은 자기 돈에만.</b><br>
+   · 두 번의 대출 매수일(${res.ev.map(e=>d[e.j]).join(', ')})에 3/161은 이미 ${res.ev.every(e=>up[e.j])?'TQQQ 매수 상태':'일부 현금 상태'}였습니다. 대출은 같은 방향으로 <b>노출을 더하는 것</b>이라, 가짜 회복이면 3/161 매도(3일선이 161일선 아래)가 먼저 나오고 대출 손절(200일선 −10%)이 뒤따릅니다.<br>
+   · 대출을 3/161 신호로 사고팔면: 위기 뒤 ${alt.length}번 사고팔아 그중 ${altLoss.length}번이 헛반등 손실(${eok(altLoss.reduce((s,e)=>s+e.net,0))}), 합계 ${eok(alt.reduce((s,e)=>s+e.net,0))} — 지금 규칙(${eok(res.ev.reduce((s,e)=>s+e.net,0))})보다 ${alt.reduce((s,e)=>s+e.net,0)<res.ev.reduce((s,e)=>s+e.net,0)?'나쁘고':'비슷하지만'} 중간 손실을 여러 번 견뎌야 했습니다. 하락장 반등에서 3/161은 너무 자주 "매수"를 냅니다.
+   <table class="t" style="margin-top:8px"><tr class="h"><td>위기</td><td>3/161 자기 돈 (시장 고점일 → 대출 전 최저)</td><td>대출일 3/161</td><td>상환일 자기 돈</td><td>대출 순익 (${name})</td><td>합계</td></tr>${rows}</table>
+   <div class="note" style="margin-top:6px">자기 돈 = 대출금과 같은 금액을 위기 전 나스닥100 고점일에 3/161로 시작했다고 가정 · 원화 기준. 닷컴 때 3/161은 −97%라 자기 돈은 거의 사라지고, 회복은 대출 쪽이 만듭니다. 리먼 때는 3/161이 2008년 초 일찍 현금(달러)으로 빠져 있었고 원화가 900원대→1,500원대로 약해져, 원화 기준 손실이 달러 기준보다 작았습니다.<br>
+   지금 3/161: <b>${nowUp?'TQQQ 보유':'현금'}</b> · 대출: <b>${res.state.s==='대기'?'대기 (위기 아님)':res.state.s}</b></div>`;
+}
+['amt','rate','asset'].forEach(id=>$('#'+id).addEventListener('change',()=>{ try{ backtest(); combo161(); }catch(e){ $('#bt').innerHTML='<span class="note">오류: '+e.message+'</span>'; } }));
 const PLOTLY_SRC = [
   'https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js',
   'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
@@ -164,7 +194,7 @@ const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement(
   for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
   await dataP;
   try{ if(Q) renderNow(); else throw 0; }catch(e){ $('#now').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중')+'</span>'; }
-  try{ if(J&&B&&J.krw){ prep(); backtest(); } else throw 0; }catch(e){ $('#bt').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중 (환율 데이터 갱신 대기)')+'</span>'; }
+  try{ if(J&&B&&J.krw){ prep(); backtest(); combo161(); } else throw 0; }catch(e){ $('#bt').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중 (환율 데이터 갱신 대기)')+'</span>'; }
 })();
 </script>
 </body></html>
