@@ -44,7 +44,7 @@
     <h2>공탐 매매법<span class="desc">CNN 공포·탐욕 지수로 살 종목 고르기</span></h2>
     <div class="sum" id="fg-body">불러오는 중…</div>
     <div class="sum" style="border-top:1px solid var(--line)">
-      <b>규칙</b> 지수 0~20 <b>TQQQ</b> · 20~50 <b>QLD</b> · 50~100 <b>S&amp;P 500</b>
+      <b>규칙</b> 지수 0~10 <b>SOXL</b> · 10~40 <b>TQQQ</b> · 40~70 <b>QLD</b> · 70~100 <b>S&amp;P 500</b>
     </div>
   </div>
 
@@ -57,7 +57,7 @@ async function fgPick(){
   try{
     const j=await fetch('tq.json?'+Math.floor(Date.now()/600000)).then(r=>r.json()); const fg=j.fg;
     if(!fg||fg.score==null) throw 0;
-    const s=fg.score, [tk,zone]= s<20?['TQQQ','0~20']: s<50?['QLD','20~50']:['S&P 500','50~100'];
+    const s=fg.score, [tk,zone]= s<10?['SOXL','0~10']: s<40?['TQQQ','10~40']: s<70?['QLD','40~70']:['S&P 500','70~100'];
     $('#fg-body').innerHTML=`공포·탐욕 지수 <b>${s.toFixed(0)}</b> (${zone}) · 1주 전 ${fg.prev_week!=null?fg.prev_week.toFixed(0):'—'} · 1달 전 ${fg.prev_month!=null?fg.prev_month.toFixed(0):'—'}<br>매수 종목: <b style="color:var(--accent);font-size:16px">${tk}</b>`;
   }catch(e){ $('#fg-body').innerHTML='<span class="note">CNN 데이터를 받지 못했습니다.</span>'; }
 }
