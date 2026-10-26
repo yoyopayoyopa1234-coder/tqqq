@@ -62,6 +62,11 @@ table.t tr.rec td{color:var(--accent);font-weight:600}
   </div>
 
   <div class="panel">
+    <h2>자기 돈: 신호판 vs 간단지표 공격형<span class="desc">어느 쪽을 바탕으로 대출을 얹을지 · 원화 기준 · 신호일 종가 체결 · 세금 제외</span></h2>
+    <div class="sum" id="base">계산 중…</div>
+  </div>
+
+  <div class="panel">
     <h2>위기별 검증<span class="desc">위기 전 신호판 계좌 고점에서 6년 · 원화 기준(환율 반영) · 이자 차감 · 세금 제외</span></h2>
     <div class="sum"><div class="inp">자기 돈 <input id="own" type="number" value="2" step="0.5" min="0.5">억 · 대출 <input id="amt" type="number" value="2" step="0.5" min="0.5">억 · 금리 <input id="rate" type="number" value="5" step="0.5" min="0">% · 위기 기준 <select id="th"><option value="-0.40">−40% (기본)</option><option value="-0.35">−35%</option><option value="-0.30">−30%</option></select></div></div>
     <div class="sum" id="bt" style="border-top:1px solid var(--line)">계산 중…</div>
@@ -105,6 +110,13 @@ function prep(){
   G={d,N,nd,spx,dff,dt,T,SP,fx,ma,h2,dd2,buy,ext};
   const S0=d.findIndex(x=>x>='1986-10-01'), u=sim(S0,N-1); G.S0=S0; G.E=Array(N).fill(null);
   u.forEach((v,k)=>G.E[S0+k]=v*fx[S0+k]/fx[S0]);
+  // 간단지표 공격형 (QQQ 52주 고점 −10% 이내 TQQQ · −15%까지 QLD · 아래 SGOV), 원화 계좌
+  const RL=new Map(B.adj.QLD.map(r=>[day(r[0]),r[1]])), L=[1];
+  for(let i=1;i<N;i++){ const k=(dt[i]-dt[i-1])/864e5, r=dff[i-1]/100, x=nd[i]/nd[i-1]-1;
+    L.push(L[i-1]*(i>si&&RL.has(d[i])&&RL.has(d[i-1]) ? RL.get(d[i])/RL.get(d[i-1]) : 1+2*x-r/360*k-(1.0095**(k/365)-1)-(1.01**(k/365)-1)*2)); }
+  const h52=hiN(nd,252), agg=nd.map((v,i)=>v/h52[i]-1>=-0.10?'T':v/h52[i]-1>=-0.15?'L':'C');
+  G.EA=Array(N).fill(null); let ua=1;
+  for(let i=S0;i<N;i++){ if(i>S0){ const p=agg[i-1]; ua*= p==='T'?T[i]/T[i-1] : p==='L'?L[i]/L[i-1] : 1+dff[i-1]/100/360*((dt[i]-dt[i-1])/864e5); } G.EA[i]=ua*fx[i]/fx[S0]; }
   G.crises=th=>{ const out=[]; let i=504; while(i<N){ if(dd2[i]<=th){ out.push(i); let k=i; while(k<N&&dd2[k]<-0.10) k++; i=k+1; } else i++; } return out; };
 }
 // TQQQ 신호판(SPX ±2.5% V2) — scripts/tq_bt40.py와 같은 계산 (USD 1에서 시작, 신호일 종가 체결)
@@ -126,7 +138,7 @@ function sim(a,b){
   return cur;
 }
 function runWin(det,o){ // o: {rule:'none'|'sig'|'now', mode:'board'|'hold', x2, exit, size}
-  const {d,N,dt,T,fx,E,S0,buy,ext}=G; let pk=Math.max(S0,det-504); for(let i=pk;i<=det;i++) if(E[i]>E[pk]) pk=i;
+  const {d,N,dt,T,fx,S0,buy,ext}=G, E=o.base==='agg'?G.EA:G.E; let pk=Math.max(S0,det-504); for(let i=pk;i<=det;i++) if(E[i]>E[pk]) pk=i;
   let end=pk; while(end<N-1&&(dt[end]-dt[pk])/31557600000<6) end++;
   let entry=null; if(o.rule==='sig'){ for(let i=det;i<=end;i++) if(buy[i]){ entry=i; break; } } else if(o.rule==='now') entry=det;
   const lc= entry==null? null : o.mode==='board'? sim(entry,end) : T.slice(entry,end+1).map(v=>v/T[entry]);
@@ -166,6 +178,15 @@ function backtest(){
    + `<div class="tw"><table class="t"><tr class="h"><td>${cs.length}번 위기 평균</td><td>가성비</td><td>최악 낙폭</td><td>6년 뒤 평균</td></tr>${V.map((v,k)=>`<tr class="${k===REC?'rec':''}"><td>${v[0]}</td><td${avg[k]>=best-0.005?' class="ok" style="font-weight:700"':''}>${avg[k].toFixed(2)}</td><td>${md(Math.min(...res.map(c=>c[k].r.mdd)))}</td><td>${eok(res.reduce((s,c)=>s+c[k].r.endv,0)/res.length)}</td></tr>`).join('')}</table></div>
    <div style="margin-top:8px">${th<=-0.395?`닷컴 때는 대출이 8개월 만에 2배가 되어 그 현금이 2004년 하락을 받쳐 줬고 계좌 최대낙폭도 줄었습니다. 리먼 때는 6년 뒤 자산이 커진 대신, 대출 직후 2009년 7월 조정이 이미 줄어든 계좌에 겹쳐 최대낙폭은 더 깊어졌습니다.`:`위기 기준을 낮추면 1987년 블랙먼데이(−35%)가 들어오는데, 대출 뒤 1988년 하락에 계좌가 거의 바닥까지 갔습니다. 2022년(−35%)은 대출이 크게 벌었습니다. 표본이 몇 개뿐이라 기준을 낮출수록 위험이 커집니다.`} 위기가 ${cs.length}번뿐이라 표본이 아주 작습니다. 대출이 들어갈 때 신호판 계좌는 ${lev.map(x=>x.y+' '+eok(x.own)+'(위기 전의 '+x.pct+'%)').join(' · ')}라서, <b>대출 ${eok(loan)}은 남은 계좌의 ${lev.map(x=>x.x).join('·')}배</b>를 더 얹는 셈입니다. 탈출 신호로 손절하면 손실은 자기 계좌에서 갚아야 하고, 이자는 매달 따로 낼 수 있어야 합니다.</div>`;
   G.res=res; G.cs=cs; drawPath(Math.min(G.sel||0,cs.length-1));
+  // 바탕 비교
+  const st=(EE)=>{ const {S0,N,dt}=G; let pk=EE[S0],m=0; for(let i=S0;i<N;i++){ pk=Math.max(pk,EE[i]); m=Math.min(m,EE[i]/pk-1); } const y=(dt[N-1]-dt[S0])/31557600000; return {c:((EE[N-1]/EE[S0])**(1/y)-1)*100,m:m*100}; };
+  const BV=[['신호판만',{rule:'none'},G.E],['신호판 + 위기 대출 (이 페이지 규칙)',V[REC][1],G.E],['공격형만',{rule:'none',base:'agg'},G.EA],['공격형 + 위기 대출 (같은 규칙)',{...V[REC][1],base:'agg'},G.EA]];
+  const br=BV.map(([nm,o,EE])=>{ const rr=cs.map(det=>runWin(det,{...o,own,loan,rate})); return {nm,s:st(EE),sc:rr.reduce((a,r)=>a+r.cagr/Math.abs(r.mdd),0)/rr.length,worst:Math.min(...rr.map(r=>r.mdd)),endv:rr.reduce((a,r)=>a+r.endv,0)/rr.length}; });
+  const win=br[1].sc>=br[3].sc;
+  $('#base').innerHTML=`<div class="tw"><table class="t"><tr class="h"><td>자기 돈 바탕</td><td>40년 연복리 · 최대낙폭 (자기 돈만)</td><td>위기 ${cs.length}번 평균 가성비</td><td>위기 최악 낙폭</td><td>6년 뒤 평균</td></tr>
+    ${br.map((x,k)=>`<tr class="${(win?k===1:k===3)?'rec':''}"><td>${x.nm}</td><td>${x.s.c.toFixed(1)}% · ${x.s.m.toFixed(0)}% <span class="note">(${(x.s.c/Math.abs(x.s.m)).toFixed(2)})</span></td><td>${x.sc.toFixed(2)}</td><td>${md(x.worst)}</td><td>${eok(x.endv)}</td></tr>`).join('')}</table></div>
+    <div style="margin-top:6px">${win?`<b>신호판이 더 낫습니다</b> — 공격형은 40년 연복리가 ${(br[2].s.c-br[0].s.c).toFixed(1)}%p 높지만 최대낙폭이 ${Math.abs(br[2].s.m).toFixed(0)}%로 깊고(신호판 ${Math.abs(br[0].s.m).toFixed(0)}%), 위기 구간에서는 공격형 계좌가 닷컴·리먼 하락을 더 많이 맞아 대출을 얹어도 가성비가 ${br[3].sc.toFixed(2)}에 그칩니다(신호판 ${br[1].sc.toFixed(2)}). 그래서 이 페이지는 신호판을 바탕으로 둡니다.`:`<b>지금 설정에서는 공격형 바탕이 더 낫습니다</b> (위기 평균 가성비 ${br[3].sc.toFixed(2)} vs 신호판 ${br[1].sc.toFixed(2)}).`}</div>
+    <div class="note">공격형도 신호일 종가 체결로 맞춰 비교(간단지표 페이지는 다음 날 종가 체결이라 숫자가 조금 다름). 원화 기준이라 환율 변동이 들어가 있습니다.</div>`;
 }
 function drawPath(ci){
   G.sel=ci; if(!window.Plotly||!G.res) return; const {dt}=G, c=G.res[ci], base=c[0].r, rec=c[REC].r, x=dt.slice(base.pk,base.end+1);
