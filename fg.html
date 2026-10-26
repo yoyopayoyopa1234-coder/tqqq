@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>공탐 매매법</title>
+<title>공포·탐욕 지수</title>
 <style>
   :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
   * { box-sizing:border-box; }
@@ -43,50 +43,13 @@
 <div class="wrap">
   <header>
     <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html">3/161/185</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="koru.html">KORU</a><a href="kjp.html">김째아빠</a><a href="q161.html">3/161</a><a href="snow.html">눈덩이</a><a href="fg.html" class="cur">공탐</a><a href="simple.html">간단지표</a><a href="tqvfbb.html">TQ VF·BB</a><a href="loan.html">위기대출</a><a href="quotes.html">명언</a></nav>
-    <h1>공탐 매매법</h1>
+    <h1>공포·탐욕 지수</h1>
   </header>
   <div class="panel"><h2>오늘 공포·탐욕 지수<span class="desc">CNN Fear &amp; Greed</span></h2><div class="sum" id="fg">불러오는 중…</div></div>
   <div class="panel"><h2>공포·탐욕 지수 추이<span class="desc" id="fgh-desc">2011~</span>
     <span class="tools"><button class="btn fr" data-y="1" type="button">1년</button><button class="btn fr" data-y="5" type="button">5년</button><button class="btn fr" data-y="0" type="button">전체</button></span></h2>
     <div id="plot-fg" style="height:520px"></div>
-    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 점선 = 옮기기 기준 85(QLD) · 90(TQQQ·SOXL) · 위: 초록 선 = TQQQ 종가(5년·전체는 로그) · 아래: 흰 선 = 공탐 매일 값 · 보라 MA200 (공탐 값의 200일 평균) · 범례를 누르면 선을 켜고 끌 수 있습니다</div></div>
-  <div class="panel">
-    <h2>공탐 QLD 매매법<span class="desc">나스닥 2배 · 매월 적립 + 극단적 탐욕 때 일부 QQQ로</span></h2>
-    <div class="sum fg-now" data-g="85" data-f="30" data-t="QLD">불러오는 중…</div>
-    <div class="sum" style="border-top:1px solid var(--line)">
-      <b>규칙</b> ① 매월 첫 거래일 <b>QLD</b> 적립 ② 공탐 지수 <b>85 이상</b>인 날 보유 QLD의 <b>30%를 QQQ로</b> 옮김 · 옮긴 뒤 한 달은 다시 안 옮김 ③ 옮긴 QQQ는 계속 보유
-      <table class="t"><tr class="h"><td>2014.1~2026.10 적립</td><td>최종/투입</td><td>연환산</td><td>최대낙폭</td></tr>
-      <tr><td>QQQ만 적립</td><td>3.8배</td><td>19.4%</td><td>−40%</td></tr>
-      <tr><td>QLD만 적립</td><td>8.5배</td><td>30.4%</td><td>−67%</td></tr>
-      <tr style="color:var(--accent);font-weight:600"><td>공탐 QLD 매매법</td><td>5.5배</td><td>24.3%</td><td>−50%</td></tr></table>
-      <div class="note">12년간 옮기기 7번.</div>
-    </div>
-  </div>
-  <div class="panel">
-    <h2>공탐 TQQQ 매매법<span class="desc">나스닥 3배 · 매월 적립 + 극단적 탐욕 때 일부 QQQ로</span></h2>
-    <div class="sum fg-now" data-g="90" data-f="40" data-t="TQQQ">불러오는 중…</div>
-    <div class="sum" style="border-top:1px solid var(--line)">
-      <b>규칙</b> ① 매월 첫 거래일 <b>TQQQ</b> 적립 ② 공탐 지수 <b>90 이상</b>인 날 보유 TQQQ의 <b>40%를 QQQ로</b> 옮김 · 옮긴 뒤 한 달은 다시 안 옮김 ③ 옮긴 QQQ는 계속 보유
-      <table class="t"><tr class="h"><td>2014.1~2026.10 적립</td><td>최종/투입</td><td>연환산</td><td>최대낙폭</td></tr>
-      <tr><td>QQQ만 적립</td><td>3.8배</td><td>19.4%</td><td>−40%</td></tr>
-      <tr><td>TQQQ만 적립</td><td>13.2배</td><td>36.3%</td><td>−83%</td></tr>
-      <tr style="color:var(--accent);font-weight:600"><td>공탐 TQQQ 매매법</td><td>6.7배</td><td>27.0%</td><td>−55%</td></tr></table>
-      <div class="note">12년간 옮기기 6번.</div>
-    </div>
-  </div>
-  <div class="panel">
-    <h2>공탐 SOXL 매매법<span class="desc">반도체 3배 · 매월 적립 + 극단적 탐욕 때 일부 QQQ로</span></h2>
-    <div class="sum fg-now" data-g="90" data-f="40" data-t="SOXL">불러오는 중…</div>
-    <div class="sum" style="border-top:1px solid var(--line)">
-      <b>규칙</b> ① 매월 첫 거래일 <b>SOXL</b> 적립 ② 공탐 지수 <b>90 이상</b>인 날 보유 SOXL의 <b>40%를 QQQ로</b> 옮김 · 옮긴 뒤 한 달은 다시 안 옮김 ③ 옮긴 QQQ는 계속 보유
-      <table class="t"><tr class="h"><td>2014.1~2026.10 적립</td><td>최종/투입</td><td>연환산</td><td>최대낙폭</td></tr>
-      <tr><td>QQQ만 적립</td><td>3.8배</td><td>19.4%</td><td>−40%</td></tr>
-      <tr><td>SOXL만 적립</td><td>16.4배</td><td>39.4%</td><td>−91%</td></tr>
-      <tr style="color:var(--accent);font-weight:600"><td>공탐 SOXL 매매법</td><td>8.9배</td><td>30.9%</td><td>−58%</td></tr></table>
-      <div class="note">12년간 옮기기 6번.</div>
-    </div>
-  </div>
-  <div class="status">백테스트: 배당 반영 수정종가 · 매월 같은 금액 · 연환산은 적립금 기준 내부수익률 · 세금·수수료 제외. 기준값(85/90/90)과 비율은 최대낙폭 −50~−60% 안에서 수익이 가장 높은 값으로 골랐고, 옮기기가 6~7번뿐이라 과최적화 가능성이 있습니다. 투자 자문이 아닙니다. 데이터: CNN Fear &amp; Greed(2011~), Yahoo Finance.</div>
+    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 위: 초록 선 = TQQQ 종가(5년·전체는 로그) · 아래: 흰 선 = 공탐 매일 값 · 보라 MA200 (공탐 값의 200일 평균) · 범례를 누르면 선을 켜고 끌 수 있습니다</div></div>
 </div>
 <script>
 (async()=>{
@@ -94,14 +57,11 @@
     const j=await fetch('tq.json?'+Math.floor(Date.now()/600000)).then(r=>r.json()), fg=j.fg; if(!fg||fg.score==null) throw 0;
     const s=fg.score, kr={'extreme fear':'극단적 공포','fear':'공포','neutral':'중립','greed':'탐욕','extreme greed':'극단적 탐욕'}[fg.rating]||fg.rating;
     const col=s<25?'#f23645':s<45?'#f0a030':s<55?'#c9cfd8':s<75?'#8be37a':'#5ad445';
-    const ticks=[[85,'QLD'],[90,'TQQQ·SOXL']].map(([v,n])=>`<span class="tk" style="left:${v}%">▲</span>`).join('');
     document.getElementById('fg').innerHTML=`<div class="fgrow"><span class="score" style="color:${col}">${s.toFixed(0)}</span><div><b>${kr}</b><div class="note">1주 전 ${fg.prev_week?.toFixed(0)??'—'} · 1달 전 ${fg.prev_month?.toFixed(0)??'—'}</div></div></div>
-      <div class="gauge"><span class="mark" style="left:0%"></span>${ticks}</div>
+      <div class="gauge"><span class="mark" style="left:0%"></span></div>
       <div class="cap"><span>0 극단적 공포</span><span>50</span><span>100 극단적 탐욕</span></div>
-      <div class="note">▲ 옮기기 기준 (QLD 85 · TQQQ·SOXL 90)</div>`;
+`;
     requestAnimationFrame(()=>setTimeout(()=>{document.querySelector('.gauge .mark').style.left=s+'%';},50));
-    document.querySelectorAll('.fg-now').forEach(el=>{ const g=+el.dataset.g, t=el.dataset.t;
-      el.innerHTML = s>=g ? `<b style="color:#f23645">오늘 ${g} 이상 — 보유 ${t}의 ${el.dataset.f}%를 QQQ로 옮길 날 (최근 한 달 안에 옮겼으면 건너뜀)</b>` : `이번 달 적립: <b style="color:var(--accent)">${t}</b> · 옮기기 기준 ${g}까지 ${(g-s).toFixed(0)} 남음 — 오늘은 할 일 없음`; });
   }catch(e){ document.getElementById('fg').textContent='CNN 데이터를 받지 못했습니다.'; }
 })();
 /* ── 공탐 지수 추이 (fg_hist.json) ── */
@@ -114,7 +74,7 @@ function drawFG(){
   const cnt=g=>{ let c=0,last=-99; for(let i=k0;i<n;i++) if(y[i]>=g&&i-last>21){c++;last=i;} return c; };
   document.querySelectorAll('.fr').forEach(b=>b.classList.toggle('on',+b.dataset.y===FGY));
   const mNow=k=>{ const s=y.slice(-k); return (s.reduce((a,b)=>a+b,0)/s.length).toFixed(0); };
-  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 지금 ${y[n-1].toFixed(0)} · MA200 ${mNow(200)} · 기간 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)} · 85 이상 ${cnt(85)}번 · 90 이상 ${cnt(90)}번`;
+  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 지금 ${y[n-1].toFixed(0)} · MA200 ${mNow(200)} · 기간 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)}`;
   const band=(a,b,c)=>({type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:a,y1:b,fillcolor:c,line:{width:0},layer:'below'});
   const hl=(v,c)=>({type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:v,y1:v,line:{color:c,width:1,dash:'dash'}});
   const tq=[]; if(TQP){ const tx=TQP.x, ty=TQP.y; let lo=1e9, hi=0; for(let i=0;i<tx.length;i++) if(tx[i]>=x0){ lo=Math.min(lo,ty[i]); hi=Math.max(hi,ty[i]); }
@@ -130,7 +90,7 @@ function drawFG(){
     {x:[x[n-1]],y:[last],yaxis:'y2',type:'scatter',mode:'markers+text',showlegend:false,name:'지금',marker:{size:9,color:col,line:{color:'#0f1216',width:2}},text:[last.toFixed(0)],textposition:'top left',textfont:{color:col,size:12},hoverinfo:'skip'}],
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:40,r:10,t:30,b:28},showlegend:true,legend:{orientation:'h',y:1.02,yanchor:'bottom',x:0,font:{size:10}},hovermode:'x unified',
      xaxis:{gridcolor:'#262c35',anchor:'y2',range:[x0,new Date(x[n-1].getTime()+(FGY===1?7:30)*864e5)]},yaxis:tqAxis||{domain:[0.56,1],visible:false},yaxis2:{domain:[0,0.5],range:[0,100],gridcolor:'rgba(0,0,0,0)',tickvals:[0,25,45,55,75,100],title:{text:'공탐',font:{size:10}}},
-     shapes:[band(0,25,'rgba(242,54,69,.16)'),band(25,45,'rgba(240,160,48,.12)'),band(45,55,'rgba(138,147,163,.10)'),band(55,75,'rgba(139,227,122,.10)'),band(75,100,'rgba(90,212,69,.16)'),hl(85,'#f0b429'),hl(90,'#f23645')]},
+     shapes:[band(0,25,'rgba(242,54,69,.16)'),band(25,45,'rgba(240,160,48,.12)'),band(45,55,'rgba(138,147,163,.10)'),band(55,75,'rgba(139,227,122,.10)'),band(75,100,'rgba(90,212,69,.16)')]},
     {displayModeBar:false,responsive:true});
 }
 document.querySelectorAll('.fr').forEach(b=>b.addEventListener('click',()=>{ FGY=+b.dataset.y; try{localStorage.setItem('fg-years',FGY);}catch(e){} drawFG(); }));
