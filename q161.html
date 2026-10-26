@@ -63,6 +63,12 @@
     <div id="plot-a" style="height:260px"></div>
     <div class="sum note">위: $1 성장(로그) · 아래: 최근 5년 TQQQ, 배경색 = 보유 종목(파랑 TQQQ · 회색 SGOV). 투자 자문이 아닙니다.</div>
   </div>
+  <div class="panel">
+    <h2>40년 백테스트<span class="desc">1986~ · 신호 = 나스닥100 3일선/161일선 · 매매 = TQQQ 환산 주가(2010-02-11 이전) + 실제 수정종가 · 대기 자금은 기준금리(DFF)</span></h2>
+    <div class="sum" id="bt40">계산 중…</div>
+    <div id="plot-40" style="height:340px"></div>
+    <div class="sum note">파란 배경 = 환산 구간. 환산 수식: 나스닥100 × 3 − 조달금리(DFF×2) − 운용보수 0.95% − 스왑 스프레드 1%×2 (아기티큐 공개 방식). 나스닥100 보유는 배당 제외 가격지수. 세금·수수료 제외 · 투자 자문이 아닙니다.</div>
+  </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
@@ -118,6 +124,36 @@ function render(){
   for(let k=s5+1;k<=ts.length;k++){ if(k===ts.length||pos[k]!==pos[a]){ shapes.push({type:'rect',xref:'x',yref:'paper',x0:new Date(ts[a]*1000),x1:new Date(ts[k-1]*1000),y0:0,y1:1,fillcolor:col[pos[a]],line:{width:0},layer:'below'}); a=k; } }
   Plotly.react('plot-a',[{x:x5,y:R.tc.slice(s5),name:'TQQQ',type:'scatter',mode:'lines',line:{color:'#e6e9ee',width:1.2}}],{...L,shapes},{displayModeBar:false,responsive:true});
 }
+
+/* ── 40년 백테스트 (tq40.json) ── */
+async function run40(){
+  const j=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null).catch(()=>null);
+  if(!j||!j.dff){ $('#bt40').innerHTML='<span class="note">데이터 준비 중</span>'; return; }
+  const d=j.d, n=j.ndx, N=d.length, si=d.indexOf(j.start), tq=d.map((_,i)=> i<si||j.real[i]==null ? j.syn[i] : j.real[i]);
+  const dt=d.map(x=>new Date(x+'T00:00:00Z')), pre=[0]; n.forEach(v=>pre.push(pre.at(-1)+v));
+  const sma=(k,i)=>(pre[i+1]-pre[i+1-k])/k, sig=d.map((_,i)=> i<160?null: sma(3,i)>sma(161,i));
+  function bt(a,b,mode){ let v=1,pk=1,mdd=0,sw=0,ins=0,pkd=d[a],w=['','']; const cv=[1];
+    for(let i=a+1;i<=b;i++){ const days=(dt[i]-dt[i-1])/864e5;
+      if(mode==='s'){ const p=sig[i-1]; v*= p? tq[i]/tq[i-1] : 1+j.dff[i-1]/100/360*days; if(p!==sig[i-2]) sw++; ins+=p?1:0; }
+      else v*= mode==='t'? tq[i]/tq[i-1] : n[i]/n[i-1];
+      if(v>pk){pk=v;pkd=d[i];} if(v/pk-1<mdd){mdd=v/pk-1;w=[pkd,d[i]];} cv.push(v); }
+    const y=(dt[b]-dt[a])/31557600000; return {v,cagr:(v**(1/y)-1)*100,mdd:mdd*100,sw,ins:ins/(b-a)*100,cv,w}; }
+  const at=s=>Math.max(162,d.findIndex(x=>x>=s)), end=s=>{ const k=d.findIndex(x=>x>s); return k<0?N-1:k-1; };
+  const f=(r)=>`${r.cagr.toFixed(1)}% · ${r.mdd.toFixed(0)}%`;
+  const rows=[['전체 40년',at('1986-06-01'),N-1],['닷컴 고점(2000-03)부터',at('2000-03-10'),N-1],['TQQQ 상장(2010-02)부터',at('2010-02-11'),N-1],
+    ['1986~1999',at('1986-06-01'),end('1999-12-31')],['2000~2009',at('2000-01-03'),end('2009-12-31')],['2010~2019',at('2010-01-04'),end('2019-12-31')],['2020~',at('2020-01-02'),N-1]];
+  const R=rows.map(([nm,a,b])=>({nm,a,b,s:bt(a,b,'s'),t:bt(a,b,'t'),x:bt(a,b,'n')}));
+  const all=R[0];
+  $('#bt40').innerHTML=`<table class="t"><tr class="h"><td>연복리 · 최대낙폭</td><td>3/161</td><td>TQQQ 보유</td><td>나스닥100</td></tr>
+  ${R.map((r,k)=>`<tr${k===3?' style="border-top:1px solid var(--line)"':''}><td>${r.nm}</td><td><b>${f(r.s)}</b></td><td>${f(r.t)}</td><td>${f(r.x)}</td></tr>`).join('')}</table>
+  <div class="note" style="margin-top:6px">40년 최종: 3/161 ${all.s.v.toFixed(0)}배 · TQQQ 보유 ${all.t.v.toFixed(0)}배 · 나스닥100 ${all.x.v.toFixed(0)}배 · 전환 ${all.s.sw}번(연 ${(all.s.sw/40).toFixed(1)}번) · TQQQ 보유 기간 ${all.s.ins.toFixed(0)}%<br>
+  3/161 최대낙폭 ${all.s.mdd.toFixed(1)}%는 ${all.s.w[0]} 고점 → ${all.s.w[1]} 바닥 구간입니다. 닷컴 붕괴 때 161일선 이탈이 늦었고, 2000~2002년 반등마다 다시 들어갔다가 손실을 반복했습니다.</div>`;
+  if(!window.Plotly) return;
+  const a=all.a, x=dt.slice(a);
+  Plotly.react('plot-40',[{x,y:all.s.cv,name:'3/161',line:{color:'#f0b429',width:1.8}},{x,y:all.t.cv,name:'TQQQ 보유',line:{color:'#f23645',width:1.1,dash:'dot'}},{x,y:all.x.cv,name:'나스닥100',line:{color:'#8a93a3',width:1.1}}].map(o=>({...o,type:'scatter',mode:'lines'})),
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:10,t:10,b:28},legend:{orientation:'h',y:1.1},xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35'},hovermode:'x unified',
+     shapes:[{type:'rect',xref:'x',yref:'paper',x0:x[0],x1:new Date(j.start),y0:0,y1:1,fillcolor:'rgba(79,124,247,0.07)',line:{width:0},layer:'below'}]},{displayModeBar:false,responsive:true});
+}
 const PLOTLY_SRC = [
   'https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js',
   'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
@@ -131,6 +167,7 @@ const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement(
   await dataP;
   if(!B){ $('#now').innerHTML=$('#bt').innerHTML='<span class="note">데이터 준비 중</span>'; return; }
   compute(); render();
+  run40().catch(e=>{$('#bt40').innerHTML='<span class="note">오류: '+e.message+'</span>';});
 })();
 </script>
 </body></html>

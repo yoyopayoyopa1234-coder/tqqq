@@ -33,6 +33,7 @@
   .stage { display:inline-block; padding:1px 9px; border-radius:999px; font-weight:700; font-size:12px; margin-right:6px; }
   .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
+  .btn.rg.on { border-color:var(--accent); color:var(--accent); }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
 </style>
 </head>
@@ -44,6 +45,7 @@
     <h1>TQQQ 분석</h1>
     <span class="date" id="today"></span>
     <span class="right">
+      <button class="btn rg" data-r="40" type="button">40년</button><button class="btn rg" data-r="recent" type="button">2015~</button>
       <button class="btn" id="refresh" type="button">새로고침</button>
     </span>
   </header>
@@ -89,13 +91,22 @@ $('#today').textContent = new Date().toLocaleDateString('ko-KR',{month:'long',da
 /* ── 데이터 (서버가 미리 받아둔 data.json) ── */
 let DATA=null;
 async function loadData(){ const q='?'+Math.floor(Date.now()/600000);
-  const [a,b]=await Promise.all([fetch('tqqq_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('../dashboard/data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
-  if(a){ DATA=a; DATA.m2=b&&b.m2; } }
+  const [a,b,c]=await Promise.all([fetch('tqqq_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('../dashboard/data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('tq40.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
+  if(a){ DATA=a; DATA.m2=b&&b.m2; DATA.t40=c&&c.ohlc?c:null; } }
+/* 40년 환산: 실제 데이터 첫 봉 이전은 tq40.json(1985~ 환산 + 2010~ 실제)으로 채움 */
+let RANGE='40'; try{ RANGE=localStorage.getItem('tq-range')||'40'; }catch(e){}
+const SYN_END=new Date('2010-02-11T00:00:00Z');
 function ohlc(key){
-  const k = DATA && DATA.ohlc && DATA.ohlc[key];
+  let k = DATA && DATA.ohlc && DATA.ohlc[key];
   if(!k || !k.length) throw new Error('데이터 준비 중');
+  const ext = DATA.t40 && DATA.t40.ohlc[key];
+  if(ext && ext.length){ const t0=k[0][0]-3600; k = ext.filter(a=>a[0]<t0).concat(k); }
   return k.map(a=>({t:new Date(a[0]*1000),o:a[1],h:a[2],l:a[3],c:a[4]}));
 }
+const isLong = () => RANGE==='40' && DATA && DATA.t40;
+const startIdx = x => isLong() ? 0 : Math.max(0, x.findIndex(t=>t.getFullYear()>=2015));
+const synShade = x => isLong() ? [{type:'rect',xref:'x',yref:'paper',x0:x[0],x1:SYN_END,y0:0,y1:1,fillcolor:'rgba(79,124,247,0.06)',line:{width:0},layer:'below'}] : [];
+const synNote = () => isLong() ? ' · <span class="note">2010-02-11 이전(파란 배경)은 나스닥100 × 3 환산 주가</span>' : '';
 
 /* ── 지표 (TradingView 공식) ── */
 const sma=(a,n)=>a.map((_,i)=> i<n-1?null: a.slice(i-n+1,i+1).reduce((x,y)=>x+y,0)/n);
@@ -127,10 +138,11 @@ function chartD(){
   const r = ohlc('TQQQ_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
   const ma5=sma(c,5), ma218=sma(c,218), s200=sma(c,200), env=ma218.map(v=>v==null?null:v*1.07), disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
   const st = disp[i]>=160?' <span class="hot">과열</span>':disp[i]<=50?' <span class="on">과매도</span>':'';
-  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 5일선 ${fmt(ma5[i])} · 218일선 ${fmt(ma218[i])} (${c[i]>ma218[i]?'위':'아래'}, ${pct(c[i],ma218[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
-  const L = base(620); L.yaxis=ax({domain:[0.36,1]}); L.yaxis2=ax({domain:[0,0.30]});
-  const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
-  L.shapes=[hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
+  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 5일선 ${fmt(ma5[i])} · 218일선 ${fmt(ma218[i])} (${c[i]>ma218[i]?'위':'아래'}, ${pct(c[i],ma218[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}${synNote()}`;
+  const L = base(620); L.yaxis=ax({domain:[0.36,1], type:isLong()?'log':'linear'}); L.yaxis2=ax({domain:[0,0.30]});
+  const back=startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; if(!isLong()) L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
+  if(isLong()){ const v=r.slice(back); L.yaxis.range=[Math.log10(Math.min(...v.map(d=>d.l))*0.8), Math.log10(Math.max(...v.map(d=>d.h))*1.25)]; }
+  L.shapes=[...synShade(x), hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
   L.annotations=[[160,'#f23645'],[50,'#2962ff']].map(([y,col])=>({xref:'paper',x:0,yref:'y2',y,text:String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
   const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[Math.min(40,...vis)-5, Math.max(170,...vis)+5];
   Plotly.react('plot-d', [ candle(r),
@@ -142,8 +154,9 @@ function chartD(){
 
 function chartB(){
   const r = ohlc('TQQQ_1wk'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
-  const L = base(480); L.yaxis=ax({}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
-  const back = Math.max(0, x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+30*86400000)];
+  const L = base(480); L.yaxis=ax({type:isLong()?'log':'linear'}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
+  const back = startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+30*86400000)]; L.shapes=synShade(x);
+  if(isLong()){ L.yaxis.range=[Math.log10(Math.min(...r.map(d=>d.l))*0.8), Math.log10(Math.max(...r.map(d=>d.h))*1.25)]; }
   const tr=[candle(r)];
   const M2 = DATA && DATA.m2 && DATA.m2.rows && DATA.m2.rows.length ? DATA.m2 : null;
   let m2txt = '<span class="err">Global M2 데이터 없음</span>';
@@ -156,29 +169,35 @@ function chartB(){
     m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
       + `<br><span class="note">${M2.countries.join('+')} · 각국 최신 발표값 × 일별 환율${M2.notes&&M2.notes.length?' · '+M2.notes.join(' · '):''}</span>`;
   }
-  $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 주) · ${m2txt}`;
+  $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 주) · ${m2txt}${synNote()}`;
   Plotly.react('plot-b', tr, L, cfg);
 }
 
 /* RSI는 QQQ 월봉으로 계산해 TQQQ 월봉 날짜에 맞춤 */
 function qqqRsi(rows){
-  const q=ohlc('QQQ_1mo'), r=rsi(q.map(d=>d.c)), k=t=>t.getUTCFullYear()*12+t.getUTCMonth(), m=new Map(q.map((d,j)=>[k(d.t),r[j]]));
+  const k=t=>t.getUTCFullYear()*12+t.getUTCMonth();
+  let q=ohlc('QQQ_1mo').map(d=>({t:d.t,c:d.c}));
+  const nm=DATA.t40&&DATA.t40.ohlc.NDX_1mo;
+  if(nm&&nm.length){ const nd=nm.map(a=>({t:new Date(a[0]*1000),c:a[1]})), k0=k(q[0].t), ov=nd.find(d=>k(d.t)===k0), sc=ov?q[0].c/ov.c:1/40;
+    q=nd.filter(d=>k(d.t)<k0).map(d=>({t:d.t,c:d.c*sc})).concat(q); }
+  const r=rsi(q.map(d=>d.c)), m=new Map(q.map((d,j)=>[k(d.t),r[j]]));
   return rows.map(d=>m.get(k(d.t)) ?? null);
 }
 function chartC(){
   const r = ohlc('TQQQ_1mo'), x=r.map(d=>d.t), c=r.map(d=>d.c), b=bb(c), rs=qqqRsi(r), v=vixfix(r), i=r.length-1;
   const pb=(c[i]-b.lo[i])/(b.up[i]-b.lo[i]);
-  $('#sum-c').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(b.up[i])} / ${fmt(b.mid[i])} / ${fmt(b.lo[i])} (%b ${pb.toFixed(2)}) · QQQ RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}`;
-  const s = Math.max(0, x.findIndex(t=>t.getFullYear()>=2015));
+  $('#sum-c').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(b.up[i])} / ${fmt(b.mid[i])} / ${fmt(b.lo[i])} (%b ${pb.toFixed(2)}) · QQQ RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}${synNote()}${isLong()?' · 1999년 이전 RSI는 나스닥100 월봉':''}`;
+  const s = startIdx(x);
   const visH = [...r.slice(s).map(d=>d.h), ...b.up.slice(s).filter(v=>v!=null)], visL=[...r.slice(s).map(d=>d.l), ...b.lo.slice(s).filter(v=>v!=null)];
-  const L = base(820); L.yaxis=ax({domain:[0.48,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
+  const L = base(820); L.yaxis=isLong() ? ax({domain:[0.48,1], type:'log', range:[Math.log10(Math.min(...r.map(d=>d.l))*0.7), Math.log10(Math.max(...visH)*1.3)]})
+    : ax({domain:[0.48,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
   L.yaxis2=ax({domain:[0.25,0.44], range:[0,100]}); L.yaxis3=ax({domain:[0,0.21]});
   L.xaxis.range=[x[s], new Date(x[i].getTime()+60*86400000)];
-  L.shapes=[ {type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:30,y1:70,fillcolor:'rgba(120,110,230,0.10)',line:{width:0}},
+  L.shapes=[ ...synShade(x), {type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:30,y1:70,fillcolor:'rgba(120,110,230,0.10)',line:{width:0}},
     hline(30,'y2','#5d6675'), hline(50,'y2','#5d6675'), hline(70,'y2','#5d6675') ];
   Plotly.react('plot-c', [
     line(x,b.up,'#f23645','BB 상단',{line:{color:'#f23645',width:1.2}}),
-    line(x,b.lo,'#089981','BB 하단',{line:{color:'#089981',width:1.2}, fill:'tonexty', fillcolor:'rgba(33,150,243,0.08)'}),
+    line(x,isLong()?b.lo.map(v=>v==null||v<=0?null:v):b.lo,'#089981','BB 하단',{line:{color:'#089981',width:1.2}, fill:'tonexty', fillcolor:'rgba(33,150,243,0.08)'}),
     line(x,b.mid,'#2962ff','BB 중심',{line:{color:'#2962ff',width:1.2}}),
     candle(r),
     line(x,rs,'#7c7cf0','QQQ RSI 14',{yaxis:'y2', line:{color:'#7c7cf0',width:1.8}}),
@@ -239,6 +258,10 @@ async function init(){
   }
   alerts(); safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c'); chart40().catch(e=>$('#sum-40').innerHTML='<span class="err">오류: '+e.message+'</span>');
 }
+function paintRange(){ document.querySelectorAll('.rg').forEach(b=>b.classList.toggle('on',b.dataset.r===RANGE)); }
+paintRange();
+document.querySelectorAll('.rg').forEach(b=>b.addEventListener('click',()=>{ RANGE=b.dataset.r; try{localStorage.setItem('tq-range',RANGE);}catch(e){} paintRange();
+  if(window.Plotly&&DATA){ safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c'); } }));
 $('#m2off').addEventListener('input',e=>{ $('#m2offv').textContent=e.target.value; safe(chartB,'#sum-b'); });
 $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); init(); });
 
