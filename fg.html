@@ -49,7 +49,7 @@
   <div class="panel"><h2>공포·탐욕 지수 추이<span class="desc" id="fgh-desc">2011~</span>
     <span class="tools"><button class="btn fr" data-y="1" type="button">1년</button><button class="btn fr" data-y="5" type="button">5년</button><button class="btn fr" data-y="0" type="button">전체</button></span></h2>
     <div id="plot-fg" style="height:520px"></div>
-    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 위: 초록 선 = TQQQ 종가(5년·전체는 로그) · 아래: 노랑 MA5 (공탐 값의 5일 평균) · 보라 MA200 (200일 평균) · 흐린 흰 선 = 매일 값 · 범례를 누르면 선을 켜고 끌 수 있습니다</div></div>
+    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 위: 초록 선 = TQQQ 종가(5년·전체는 로그) · 아래: 파랑 = 5일선의 20일선 (공탐 5일 평균을 다시 20일 평균) · 보라 MA200 (200일 평균) · 흐린 흰 선 = 매일 값 · 범례를 누르면 선을 켜고 끌 수 있습니다</div></div>
 </div>
 <script>
 (async()=>{
@@ -74,19 +74,19 @@ function drawFG(){
   const cnt=g=>{ let c=0,last=-99; for(let i=k0;i<n;i++) if(y[i]>=g&&i-last>21){c++;last=i;} return c; };
   document.querySelectorAll('.fr').forEach(b=>b.classList.toggle('on',+b.dataset.y===FGY));
   const mNow=k=>{ const s=y.slice(-k); return (s.reduce((a,b)=>a+b,0)/s.length).toFixed(0); };
-  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 지금 ${y[n-1].toFixed(0)} · MA5 ${mNow(5)} · MA200 ${mNow(200)} · 기간 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)}`;
+  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 지금 ${y[n-1].toFixed(0)} · 5일선의 20일선 ${(()=>{ const s=y.slice(-24); let t=0; for(let j=0;j<20;j++) t+=s.slice(j,j+5).reduce((a,b)=>a+b,0)/5; return (t/20).toFixed(0); })()} · MA200 ${mNow(200)} · 기간 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)}`;
   const band=(a,b,c)=>({type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:a,y1:b,fillcolor:c,line:{width:0},layer:'below'});
   const hl=(v,c)=>({type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:v,y1:v,line:{color:c,width:1,dash:'dash'}});
   const tq=[]; if(TQP){ const tx=TQP.x, ty=TQP.y; let lo=1e9, hi=0; for(let i=0;i<tx.length;i++) if(tx[i]>=x0){ lo=Math.min(lo,ty[i]); hi=Math.max(hi,ty[i]); }
     const lg=FGY!==1; tq.push({x:tx,y:ty,type:'scatter',mode:'lines',name:'TQQQ',yaxis:'y',line:{color:'#2bb58f',width:1.4},hovertemplate:'TQQQ <b>%{y:.2f}</b>'});
     var tqAxis={domain:[0.56,1],gridcolor:'#262c35',type:lg?'log':'linear',range:lg?[Math.log10(lo*0.85),Math.log10(hi*1.1)]:[lo*0.92,hi*1.05],title:{text:'TQQQ',font:{size:10}}}; }
   const pre=[0]; y.forEach(v=>pre.push(pre.at(-1)+v));
-  const ma=k=>y.map((_,i)=>i<k-1?null:(pre[i+1]-pre[i+1-k])/k), M=[[5,'#f0b429'],[200,'#c678dd']].map(([k,c])=>({k,c,v:ma(k)}));
+  const ma=k=>y.map((_,i)=>i<k-1?null:(pre[i+1]-pre[i+1-k])/k), m5=ma(5), m520=m5.map((_,i)=>i<23?null:m5.slice(i-19,i+1).reduce((a,b)=>a+b,0)/20), M=[{k:'5일선의 20일선',c:'#5aa9ff',v:m520},{k:'MA200',c:'#c678dd',v:ma(200)}];
   const last=y[n-1], col=last<25?'#f23645':last<45?'#f0a030':last<55?'#c9cfd8':last<75?'#8be37a':'#5ad445';
   Plotly.react('plot-fg',[
     ...tq,
     {x,y,yaxis:'y2',type:'scatter',mode:'lines',name:'공탐(일)',line:{color:'rgba(230,233,238,.28)',width:0.8},hovertemplate:'<b>%{y:.0f}</b>'},
-    ...M.map(m=>({x,y:m.v,yaxis:'y2',type:'scatter',mode:'lines',name:'MA'+m.k,line:{color:m.c,width:m.k===5?1.6:1.8},hovertemplate:'%{y:.1f}'})),
+    ...M.map(m=>({x,y:m.v,yaxis:'y2',type:'scatter',mode:'lines',name:m.k,line:{color:m.c,width:1.8},hovertemplate:'%{y:.1f}'})),
     {x:[x[n-1]],y:[last],yaxis:'y2',type:'scatter',mode:'markers+text',showlegend:false,name:'지금',marker:{size:9,color:col,line:{color:'#0f1216',width:2}},text:[last.toFixed(0)],textposition:'top left',textfont:{color:col,size:12},hoverinfo:'skip'}],
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:40,r:10,t:30,b:28},showlegend:true,legend:{orientation:'h',y:1.02,yanchor:'bottom',x:0,font:{size:10}},hovermode:'x unified',
      xaxis:{gridcolor:'#262c35',anchor:'y2',range:[x0,new Date(x[n-1].getTime()+(FGY===1?7:30)*864e5)]},yaxis:tqAxis||{domain:[0.56,1],visible:false},yaxis2:{domain:[0,0.5],range:[0,100],gridcolor:'rgba(0,0,0,0)',tickvals:[0,25,45,55,75,100],title:{text:'공탐',font:{size:10}}},
