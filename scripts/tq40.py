@@ -37,6 +37,16 @@ def ohlc_since(sym, iv, p1=1262304000):
         out.append([t, round(o, 4), round(max(h, o, c), 4), round(min(l, o, c), 4), round(c, 4)])
     return out
 
+def spx_series(days):
+    """S&P 500(^GSPC) 종가를 나스닥100 거래일에 맞춤 (TQQQ 신호판 40년 백테스트용)."""
+    try:
+        j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?period1=489024000&period2={int(time.time())}&interval=1d"))
+        r = j["chart"]["result"][0]
+        m = {day(t): c for t, c in zip(r["timestamp"], r["indicators"]["quote"][0]["close"]) if c}
+    except Exception as e:
+        print("GSPC 실패", e); return None
+    return fx_series(days, m)
+
 def fx_series(days, fx):
     """원/달러 환율(FRED DEXKOUS)을 거래일에 맞춤 — 빈 날은 직전 값, 시작 전은 None."""
     out, last, ks, k = [], None, sorted(fx), 0
@@ -49,7 +59,7 @@ def fx_series(days, fx):
 def main():
     try:
         old = json.load(open(FN))
-        if time.time() - old.get("ts", 0) < 20 * 3600 and len(old.get("ohlc", {}).get("TQQQ_1d", [])) > 9000 and old.get("krw"):
+        if time.time() - old.get("ts", 0) < 20 * 3600 and len(old.get("ohlc", {}).get("TQQQ_1d", [])) > 9000 and old.get("krw") and old.get("spx"):
             print("tq40 최신 — 건너뜀"); return
     except Exception:
         pass
@@ -114,6 +124,7 @@ def main():
            "ndx": [round(x[4], 2) for x in ndx],
            "dff": rates,
            "krw": fx_series([day(x[0]) for x in ndx], krw),
+           "spx": spx_series([day(x[0]) for x in ndx]),
            "ohlc": ohlc}
     json.dump(out, open(FN, "w"), separators=(",", ":"))
     print("tq40", len(ndx), out["d"][0], out["d"][-1], {k: len(v) for k, v in ohlc.items()})
