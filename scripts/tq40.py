@@ -37,10 +37,19 @@ def ohlc_since(sym, iv, p1=1262304000):
         out.append([t, round(o, 4), round(max(h, o, c), 4), round(min(l, o, c), 4), round(c, 4)])
     return out
 
+def fx_series(days, fx):
+    """원/달러 환율(FRED DEXKOUS)을 거래일에 맞춤 — 빈 날은 직전 값, 시작 전은 None."""
+    out, last, ks, k = [], None, sorted(fx), 0
+    for dd in days:
+        while k < len(ks) and ks[k] <= dd:
+            last = fx[ks[k]]; k += 1
+        out.append(last)
+    return out
+
 def main():
     try:
         old = json.load(open(FN))
-        if time.time() - old.get("ts", 0) < 20 * 3600 and len(old.get("ohlc", {}).get("TQQQ_1d", [])) > 9000:
+        if time.time() - old.get("ts", 0) < 20 * 3600 and len(old.get("ohlc", {}).get("TQQQ_1d", [])) > 9000 and old.get("krw"):
             print("tq40 최신 — 건너뜀"); return
     except Exception:
         pass
@@ -57,6 +66,13 @@ def main():
         try: dff[date.fromisoformat(row[0])] = float(row[1])
         except Exception: pass
     dk = sorted(dff)
+    krw = {}
+    try:
+        for row in csv.reader(io.StringIO(get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXKOUS"))):
+            try: krw[date.fromisoformat(row[0])] = float(row[1])
+            except Exception: pass
+    except Exception as e:
+        print("DEXKOUS 실패", e)
     j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/TQQQ?period1=1262304000&period2={int(time.time())}&interval=1d&events=div,split"))
     r = j["chart"]["result"][0]
     adj = {day(t): a for t, a in zip(r["timestamp"], r["indicators"]["adjclose"][0]["adjclose"]) if a}
@@ -97,6 +113,7 @@ def main():
            "real": [round(adj[day(x[0])], 4) if day(x[0]) in adj else None for x in ndx],
            "ndx": [round(x[4], 2) for x in ndx],
            "dff": rates,
+           "krw": fx_series([day(x[0]) for x in ndx], krw),
            "ohlc": ohlc}
     json.dump(out, open(FN, "w"), separators=(",", ":"))
     print("tq40", len(ndx), out["d"][0], out["d"][-1], {k: len(v) for k, v in ohlc.items()})
