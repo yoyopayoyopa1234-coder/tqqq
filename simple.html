@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>간단지표 매매법</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1100px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .panel h2 { margin:0; padding:9px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; border-bottom:1px solid var(--line); }
+  .panel h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .panel h2 .tools { margin-left:auto; display:flex; gap:4px; align-items:center; font-weight:400; font-size:12px; color:var(--muted); }
+  .sum { padding:8px 12px; font-size:13px; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--line); line-height:1.6; }
+  .sum b { font-weight:600; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:#5ad445; font-weight:600; } .hot { color:#f23645; font-weight:600; }
+  .plot { width:100%; }
+  .status { font-size:12px; color:var(--muted); padding:6px 2px; line-height:1.6; }
+  .err { color:#f23645; }
+  .note { color:var(--muted); font-size:11px; }
+  input[type=range] { width:90px; vertical-align:middle; }
+  .al { display:grid; gap:4px; }
+  .al .row { display:flex; gap:8px; align-items:baseline; }
+  .al .ok { color:#5ad445; } .al .no { color:#5d6675; } .al .wr { color:#f0a030; }
+  .al .v { color:var(--muted); font-size:12px; margin-left:auto; text-align:right; }
+  .stage { display:inline-block; padding:1px 9px; border-radius:999px; font-weight:700; font-size:12px; margin-right:6px; }
+  .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
+  .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+</style>
+<style>.big{font-size:22px;font-weight:700;color:var(--accent)} table.t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums} table.t td{padding:3px 2px;text-align:right} table.t td:first-child{text-align:left} table.t tr.h td{color:var(--muted)} .ok{color:#089981} .bad{color:#f23645}.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.pick>div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}.pick .l{font-size:11px;color:var(--muted)}.pick .v{font-size:20px;font-weight:700;color:var(--accent)} table.t td.g{color:var(--accent);font-weight:600}</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="qqq3161.html">3/161/185</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="qld.html">QLD</a><a href="koru.html">KORU</a><a href="schd.html">SCHD</a><a href="qqqi.html">QQQI</a><a href="xlk.html">XLK</a><a href="kjp.html">김째아빠</a><a href="q161.html">3/161</a><a href="snow.html">눈덩이</a><a href="fg.html">공탐</a><a href="simple.html" class="cur">간단지표</a><a href="quotes.html">명언</a></nav>
+    <h1>간단지표 매매법</h1>
+    <span class="date" id="today"></span>
+  </header>
+
+  <div class="panel">
+    <h2>오늘 신호<span class="desc">QQQ 종가 기준 · 다음 거래일 매매</span></h2>
+    <div class="sum" id="now">불러오는 중…</div>
+  </div>
+
+  <div class="panel">
+    <h2>규칙<span class="desc">지표 2개 · 52주 신고가와 200일선만 사용</span></h2>
+    <div class="sum">
+      <b>공격형 (52주 고점 3단)</b> QQQ가 52주 최고 종가 대비<br>
+      &nbsp;· −10% 이내 → <b>TQQQ</b> 전량 &nbsp;· −10% ~ −15% → <b>QLD</b> 전량 &nbsp;· −15%보다 아래 → <b>SGOV</b>(현금)<br>
+      <b>안정형 (200일선 + 52주 고점)</b> QQQ가 200일선 위 <u>그리고</u> 52주 최고 종가 대비 −15% 이내 → <b>QLD</b> 전량 · 아니면 <b>SGOV</b><br>
+      <span class="note">−10%는 흔히 "조정", −20%는 "약세장"이라 부르는 기준이고, 200일선은 가장 널리 쓰는 장기 추세선입니다. 숫자를 바꿔 끼워 맞추지 않으려고 유명한 값(5·20·60·120·200·250일선, 볼린저밴드 20/2, 52주 고점 −5~−20%)만 시험해서 40년 성적의 연복리 ÷ 최대낙폭(가성비)이 가장 좋은 두 가지를 골랐습니다. 2~5일 확인 후 매매는 오히려 낙폭을 키워서 넣지 않았습니다.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>40년 백테스트<span class="desc">1986-10~ · 신호 다음 날 종가 체결 · 대기 자금은 기준금리 · 세금·수수료 제외</span></h2>
+    <div class="sum" id="bt">계산 중…</div>
+    <div id="plot-g" style="height:340px"></div>
+    <div id="plot-a" style="height:230px"></div>
+    <div class="sum note">위: $1 성장(로그), 파란 배경 = 환산 구간 · 아래: 최근 5년 나스닥100과 52주 고점 −10%·−15% 선, 배경 = 공격형 보유 종목(파랑 TQQQ · 보라 QLD · 회색 SGOV).<br>
+    2010-02-11 이전 TQQQ·QLD는 나스닥100 × 3·2 − 조달금리 − 운용보수 0.95% − 스왑 스프레드 1% 환산 주가(아기티큐 공개 수식, 실제보다 낮게 나오는 쪽), QQQ는 나스닥100 가격지수(배당 제외). 이후는 실제 수정종가. 투자 자문이 아닙니다.</div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const day=t=>new Date(t*1000).toISOString().slice(0,10);
+let J=null,B=null,Q=null;
+function signal(dd,above){ return {A: dd>=-0.10?'TQQQ':dd>=-0.15?'QLD':'SGOV', B: (above&&dd>=-0.15)?'QLD':'SGOV'}; }
+function renderNow(){
+  const r=Q.ohlc.QQQ_1d, c=r.map(x=>x[4]), i=c.length-1, w=c.slice(-252), hi=Math.max(...w), hiD=day(r[i-251+w.indexOf(hi)][0]);
+  const ma=c.slice(-200).reduce((a,b)=>a+b,0)/200, dd=c[i]/hi-1, s=signal(dd,c[i]>ma);
+  const pw=c.slice(-253,-1), ph=Math.max(...pw), pmA=c.slice(-201,-1).reduce((a,b)=>a+b,0)/200, ps=signal(c[i-1]/ph-1,c[i-1]>pmA);
+  const tag=(ok,t)=>`<span class="${ok?'ok':'bad'}">${t}</span>`;
+  $('#now').innerHTML=`${day(r[i][0])} 종가 · QQQ <b>${c[i].toFixed(2)}</b><br>
+  52주 최고 종가 ${hi.toFixed(2)} (${hiD}) 대비 <b>${(dd*100).toFixed(1)}%</b> · −10% 선 ${(hi*0.9).toFixed(2)} · −15% 선 ${(hi*0.85).toFixed(2)}<br>
+  200일선 ${ma.toFixed(2)} → ${tag(c[i]>ma,c[i]>ma?'위 (+'+((c[i]/ma-1)*100).toFixed(1)+'%)':'아래 ('+((c[i]/ma-1)*100).toFixed(1)+'%)')}
+  <div class="pick"><div><div class="l">공격형</div><div class="v">${s.A}</div><div class="note">어제 ${ps.A}${ps.A!==s.A?' → <b class="bad">바뀜</b>':''}</div></div>
+  <div><div class="l">안정형</div><div class="v">${s.B}</div><div class="note">어제 ${ps.B}${ps.B!==s.B?' → <b class="bad">바뀜</b>':''}</div></div></div>`;
+}
+function backtest(){
+  const d=J.d, N=d.length, nd=J.ndx, dff=J.dff, si=d.indexOf(J.start), dt=d.map(x=>new Date(x+'T00:00:00Z'));
+  const real=k=>new Map(B.adj[k].map(r=>[day(r[0]),r[1]]));
+  const RQ=real('QQQ'), RL=real('QLD');
+  const T=d.map((_,i)=> i<si||J.real[i]==null? J.syn[i] : J.real[i]);
+  const ret={T:[0],L:[0],Q:[0],C:[0]};
+  for(let i=1;i<N;i++){ const k=(dt[i]-dt[i-1])/864e5, r=dff[i-1]/100, x=nd[i]/nd[i-1]-1;
+    ret.T.push(T[i]/T[i-1]-1);
+    ret.L.push(i>si&&RL.has(d[i])&&RL.has(d[i-1]) ? RL.get(d[i])/RL.get(d[i-1])-1 : 2*x-r/360*k-(1.0095**(k/365)-1)-(1.01**(k/365)-1));
+    ret.Q.push(i>si&&RQ.has(d[i])&&RQ.has(d[i-1]) ? RQ.get(d[i])/RQ.get(d[i-1])-1 : x);
+    ret.C.push(r/360*k); }
+  const pre=[0]; nd.forEach(v=>pre.push(pre.at(-1)+v));
+  const hi=[]; const dq=[]; for(let i=0;i<N;i++){ while(dq.length&&nd[dq.at(-1)]<=nd[i]) dq.pop(); dq.push(i); if(dq[0]<=i-252) dq.shift(); hi.push(nd[dq[0]]); }
+  const code={TQQQ:'T',QLD:'L',SGOV:'C'};
+  const posA=[], posB=[];
+  for(let i=0;i<N;i++){ const ma=i>=199?(pre[i+1]-pre[i-199])/200:null, s=signal(nd[i]/hi[i]-1, ma!=null&&nd[i]>ma); posA.push(code[s.A]); posB.push(ma==null?'C':code[s.B]); }
+  const fixed=a=>d.map(()=>a);
+  function run(pos,a,b){ let v=1,pk=1,mdd=0,sw=0,pkd=d[a],w=['','']; const cv=[1];
+    for(let i=a+1;i<=b;i++){ v*=1+ret[pos[i-1]][i]; if(pos[i-1]!==pos[i-2]) sw++; if(v>pk){pk=v;pkd=d[i];} if(v/pk-1<mdd){mdd=v/pk-1;w=[pkd,d[i]];} cv.push(v); }
+    const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,sw:sw/y,cv,w}; }
+  const at=s=>d.findIndex(x=>x>=s), end=s=>{const k=d.findIndex(x=>x>s); return k<0?N-1:k-1;};
+  const S=[['공격형',posA],['안정형',posB],['QQQ 보유',fixed('Q')],['QLD 보유',fixed('L')],['TQQQ 보유',fixed('T')]];
+  const per=[['40년 (1986-10~)',at('1986-10-01'),N-1],['2000~2009 닷컴·금융위기',at('2000-01-03'),end('2009-12-31')],['TQQQ 상장 후 (2010-02~)',at('2010-02-11'),N-1],['최근 10년',at(new Date(dt[N-1]-315576e6).toISOString().slice(0,10)),N-1]];
+  const res=per.map(([nm,a,b])=>({nm,a,b,r:S.map(([_,p])=>run(p,a,b))}));
+  const f=r=>`${r.c.toFixed(1)}% · ${r.m.toFixed(0)}%`;
+  const all=res[0].r;
+  $('#bt').innerHTML=`<table class="t"><tr class="h"><td>연복리 · 최대낙폭</td>${S.map(s=>`<td>${s[0]}</td>`).join('')}</tr>
+  ${res.map(p=>`<tr><td>${p.nm}</td>${p.r.map((r,k)=>`<td${k<2?' class="g"':''}>${f(r)}</td>`).join('')}</tr>`).join('')}
+  <tr><td>가성비 (40년 연복리 ÷ 최대낙폭)</td>${all.map((r,k)=>`<td${k<2?' class="g"':''}>${(r.c/Math.abs(r.m)).toFixed(2)}</td>`).join('')}</tr></table>
+  <div class="note" style="margin-top:6px">40년 최종: 공격형 ${all[0].v.toFixed(0)}배 · 안정형 ${all[1].v.toFixed(0)}배 · QQQ ${all[2].v.toFixed(0)}배 · TQQQ ${all[4].v.toFixed(0)}배. 매매 전환 연 ${all[0].sw.toFixed(1)}번(공격형) · ${all[1].sw.toFixed(1)}번(안정형) — 수익이 난 매도마다 양도세 대상이라 실제 수익은 이보다 낮습니다.<br>
+  40년 최대낙폭 구간: 공격형 ${all[0].w[0]} → ${all[0].w[1]} · 안정형 ${all[1].w[0]} → ${all[1].w[1]}. 1987년 블랙먼데이(나스닥100 하루 −15%, 3배면 약 −45%)나 1998년 LTCM 사태처럼 며칠 만에 무너지는 급락은 종가 신호로 피할 수 없어서, 레버리지를 쓰는 한 −50% 안팎의 낙폭은 남습니다.</div>`;
+  if(!window.Plotly) return;
+  const L0={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:10,t:10,b:28},legend:{orientation:'h',y:1.12},xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35'},hovermode:'x unified'};
+  const a=res[0].a, x=dt.slice(a), col=['#f0b429','#5ad445','#8a93a3','#a78bfa','#f23645'];
+  Plotly.react('plot-g',all.map((r,k)=>({x,y:r.cv,name:S[k][0],type:'scatter',mode:'lines',line:{color:col[k],width:k<2?2:1.1,dash:k===4?'dot':'solid'}})),
+    {...L0,shapes:[{type:'rect',xref:'x',yref:'paper',x0:x[0],x1:new Date(J.start),y0:0,y1:1,fillcolor:'rgba(79,124,247,0.07)',line:{width:0},layer:'below'}]},{displayModeBar:false,responsive:true});
+  const s5=at(new Date(dt[N-1]-157788e6).toISOString().slice(0,10)), x5=dt.slice(s5), cc={T:'rgba(79,124,247,.22)',L:'rgba(156,39,176,.25)',C:'rgba(138,147,163,.12)'}, shapes=[]; let b0=s5;
+  for(let k=s5+1;k<=N;k++){ if(k===N||posA[k]!==posA[b0]){ shapes.push({type:'rect',xref:'x',yref:'paper',x0:dt[b0],x1:dt[k-1],y0:0,y1:1,fillcolor:cc[posA[b0]],line:{width:0},layer:'below'}); b0=k; } }
+  Plotly.react('plot-a',[{x:x5,y:nd.slice(s5),name:'나스닥100',line:{color:'#e6e9ee',width:1.2}},{x:x5,y:hi.slice(s5).map(v=>v*0.9),name:'고점 −10%',line:{color:'#f0b429',width:1,dash:'dot'}},{x:x5,y:hi.slice(s5).map(v=>v*0.85),name:'고점 −15%',line:{color:'#f23645',width:1,dash:'dot'}}].map(o=>({...o,type:'scatter',mode:'lines'})),
+    {...L0,yaxis:{gridcolor:'#262c35'},shapes},{displayModeBar:false,responsive:true});
+}
+const PLOTLY_SRC = [
+  'https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js',
+  'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
+  'https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js',
+  'https://cdn.plot.ly/plotly-2.35.2.min.js',
+];
+const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+(async()=>{
+  const q='?'+Math.floor(Date.now()/600000), get=u=>fetch(u+q).then(r=>r.ok?r.json():null).catch(()=>null);
+  const dataP=Promise.all([get('tq40.json'),get('bt_data.json'),get('tqqq_data.json')]).then(([a,b,c])=>{J=a;B=b;Q=c;});
+  for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
+  await dataP;
+  try{ if(Q) renderNow(); else throw 0; }catch(e){ $('#now').innerHTML='<span class="note">데이터 준비 중</span>'; }
+  try{ if(J&&B) backtest(); else throw 0; }catch(e){ $('#bt').innerHTML='<span class="note">'+(e&&e.message?'오류: '+e.message:'데이터 준비 중')+'</span>'; }
+})();
+</script>
+</body></html>
