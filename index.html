@@ -75,6 +75,11 @@
   </div>
 
   <div class="panel">
+    <h2>40년 백테스트<span class="desc">위 SPX ±2.5% V2 규칙 그대로 · 1986년 10월~ · 2010년 전 TQQQ는 나스닥100 3배 환산</span></h2>
+    <div class="body" id="bt40">불러오는 중…</div>
+  </div>
+
+  <div class="panel">
     <h2>데이터 검증<span class="desc">TradingView 실시간 페이지 · 아기티큐(AgiTQ) · 이 사이트 계산 대조</span></h2>
     <div class="body" id="verify">불러오는 중…</div>
   </div>
@@ -171,6 +176,38 @@ function chart(R, key){
 }
 
 
+const pc = (v,d=1) => v==null?'—':(v<=-99.95?'≈−100%':`${v<0?'−':''}${Math.abs(v).toFixed(d)}%`);
+const cm = r => `${pc(r[0])} <span class="zone">/ ${pc(r[1])}</span>`;
+function bt40(B){
+  if(!B){ $('#bt40').innerHTML='<span class="zone">백테스트 데이터 준비 중 (다음 갱신 때 생성)</span>'; return; }
+  const r=B.rows[0], ratio=x=>(x.cagr/Math.abs(x.mdd)).toFixed(2);
+  const rows=B.rows.map(x=>`<tr><td>${x.name}<div class="zone">${x.from}~</div></td><td><b>${pc(x.cagr)}</b></td><td class="dn">${pc(x.mdd)}</td><td>${ratio(x)}</td><td>${pc(x.tax)}</td><td>${cm(x.tqqq)}</td><td>${cm(x.qqq)}</td><td>${cm(x.spx)}</td></tr>`).join('');
+  $('#bt40').innerHTML = `
+    <div class="out">
+      <div><div class="l">40년 CAGR (연평균)</div><div class="v up">${pc(r.cagr)}</div></div>
+      <div><div class="l">40년 MDD (최대 낙폭)</div><div class="v dn">${pc(r.mdd)}</div></div>
+      <div><div class="l">가성비 (CAGR÷MDD)</div><div class="v">${ratio(r)}</div></div>
+      <div><div class="l">세후 CAGR (양도세 22%)</div><div class="v">${pc(r.tax)}</div></div>
+      <div><div class="l">${r.from.slice(0,4)}~${B.asof.slice(0,4)} 자산</div><div class="v">${Math.round(r.x).toLocaleString()}배</div></div>
+      <div><div class="l">매수 신호 횟수</div><div class="v">연 ${r.cyc}회</div></div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>기간</th><th>CAGR</th><th>MDD</th><th>가성비</th><th>세후</th><th>TQQQ 보유</th><th>QQQ 보유</th><th>S&amp;P500</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="zone">보유 비교는 CAGR / MDD · 신호판 최대 낙폭 구간: ${B.dd.map(x=>`<b class="dn">${pc(x.dd)}</b> ${x.peak.slice(0,7)}→${x.low.slice(0,7)}`).join(' · ')}</div>
+    <div class="plot" id="plot-bt40" style="height:340px"></div>
+    <div class="fine">신호일 종가에 체결, 3분할은 신호일부터 3거래일. SPYM은 2010년부터 SPY 배당 포함, 그 전은 S&amp;P500 지수(배당 제외). SGOV는 미국 기준금리(연방기금금리)로 계산. 세후는 해마다 실현 이익에 22%(기본공제 무시). 신호 다음날 종가에 체결하면 40년 ${pc(B.next_day[0])} / ${pc(B.next_day[1])}입니다(1987년 블랙먼데이 하루 차이가 큼). 환산 TQQQ는 실제 상품이 아니므로 2010년 전 수치는 참고용입니다.</div>`;
+}
+function btChart(){
+  const B=TQ&&TQ.bt40; if(!window.Plotly||!B) return; const C=B.chart, x=C.d;
+  const L=(y,name,color,w)=>({x,y,name,mode:'lines',line:{color,width:w},hovertemplate:'%{y:,.1f}배'});
+  Plotly.react('plot-bt40',[L(C.v2,'신호판 V2','#5ad445',2),L(C.tqqq,'TQQQ 보유','#f0b429',1.2),L(C.qqq,'QQQ 보유','#2962ff',1.2),L(C.spx,'S&P500','#8a93a3',1.2)],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:10},height:340,margin:{l:6,r:50,t:6,b:24},
+     legend:{orientation:'h',x:0,y:1.08,font:{size:11}},hovermode:'x unified',dragmode:'pan',
+     xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35',side:'right'},
+     shapes:[{type:'rect',xref:'x',x0:x[0],x1:'2010-02',yref:'paper',y0:0,y1:1,fillcolor:'rgba(138,147,163,.07)',line:{width:0},layer:'below'}],
+     annotations:[{xref:'x',x:'1998-01',yref:'paper',y:0.02,text:'환산 구간',showarrow:false,font:{size:10,color:'#8a93a3'}}]},
+    {responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']});
+}
+
 async function load(){
   try{
     TQ = await (await fetch('tq.json?'+Math.floor(Date.now()/600000))).json();
@@ -181,7 +218,7 @@ async function load(){
   const ex=TQ.extra||{};
   $('#extra').innerHTML = ['SPYM','SGOV'].map(s=>{ const e=ex[s]||{}; return `<div class="state"><b style="min-width:52px">${s}</b>${e.px!=null?`<span class="num">$${fmt(e.px)}</span> ${sg(e.chg,2)}`:'<span class="zone">—</span>'}<span class="zone">${s==='SPYM'?'방어·스위칭 (S&P 500 1배)':'현금 대기 (초단기 국채)'}</span></div>`; }).join('')
     + `<div class="state"><b style="min-width:52px">TQQQ</b><span class="num">$${fmt(TQ.spx.tqqq)}</span><span class="zone">공격 (나스닥100 3배)</span></div>`;
-  chart(TQ.spx,'spx'); verify();
+  bt40(TQ.bt40); chart(TQ.spx,'spx'); btChart(); verify();
 }
 
 
@@ -206,7 +243,7 @@ async function verify(){
 $('#refresh').addEventListener('click',load);
 const SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://cdn.plot.ly/plotly-2.35.2.min.js'];
 const ls = s => new Promise((ok,no)=>{ const e=document.createElement('script'); e.src=s; e.onload=ok; e.onerror=no; document.head.appendChild(e); });
-(async()=>{ const p=load(); for(const s of SRC){ try{ await ls(s); if(window.Plotly) break; }catch(e){} } await p; if(TQ){ chart(TQ.spx,'spx'); } })();
+(async()=>{ const p=load(); for(const s of SRC){ try{ await ls(s); if(window.Plotly) break; }catch(e){} } await p; if(TQ){ chart(TQ.spx,'spx'); btChart(); } })();
 </script>
 </body>
 </html>

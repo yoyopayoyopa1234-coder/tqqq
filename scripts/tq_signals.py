@@ -115,6 +115,11 @@ def main():
         except Exception as e: extra[s] = {"error": str(e)[:60]}
     S = run_strategy("SPX", spx, tq, 0.025, True)
     out = {"updated": NOW.isoformat(timespec="minutes"), "spx": S, "fg": fear_greed(), "extra": extra}
+    try:
+        from tq_bt40 import run as bt40
+        out["bt40"] = bt40()
+    except Exception as e:
+        print("40년 백테스트 실패", e)
     json.dump(out, open("tq.json", "w"), ensure_ascii=False, separators=(",", ":"))
     print("SPX", S["state"], S["zone"], S["idx"], S["up"], S["lo"])
 
