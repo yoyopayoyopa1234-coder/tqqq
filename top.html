@@ -167,7 +167,7 @@ function run(){
   const x=days.map(d=>new Date(d+'T00:00:00Z')), mk=(t,c,s)=>{ const e=ev.filter(z=>z[1]===t); return {x:e.map(z=>x[z[0]]),y:e.map(z=>Q[z[0]]),mode:'markers',type:'scatter',name:t==='고점'?'고점 신호':'1차(무시)',marker:{size:s,color:c,line:{color:'#0f1216',width:1}},hovertemplate:'%{x|%Y-%m-%d}<extra>'+(t==='고점'?'고점 신호':'1차')+'</extra>'}; };
   const band=(a,b,c)=>({type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:a,y1:b,fillcolor:c,line:{width:0},layer:'below'});
   Plotly.react('plot-t',[{x,y:Q,name:'QQQ',type:'scatter',mode:'lines',line:{color:'#e6e9ee',width:1.2}},mk('1차','#8a93a3',7),mk('고점','#f23645',10),
-    {x,y:F.map((_,i)=>i<2?null:(F[i]+F[i-1]+F[i-2])/3),name:'공탐(3일 평균)',type:'scatter',mode:'lines',yaxis:'y2',line:{color:'#f0b429',width:0.9}}],
+    {x,y:F,name:'공탐',type:'scatter',mode:'lines',yaxis:'y2',line:{color:'#f0b429',width:0.8}}],
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:40,r:10,t:10,b:28},legend:{orientation:'h',y:1.08},hovermode:'closest',
      xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',domain:[0.38,1],gridcolor:'#262c35'},yaxis2:{domain:[0,0.32],range:[0,100],tickvals:[25,45,55,75],gridcolor:'rgba(0,0,0,0)'},
      shapes:[band(0,25,'rgba(242,54,69,.16)'),band(25,45,'rgba(240,160,48,.12)'),band(45,55,'rgba(138,147,163,.1)'),band(55,75,'rgba(139,227,122,.1)'),band(75,100,'rgba(90,212,69,.16)')]},{displayModeBar:false,responsive:true});

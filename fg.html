@@ -49,7 +49,7 @@
   <div class="panel"><h2>공포·탐욕 지수 추이<span class="desc" id="fgh-desc">2011~</span>
     <span class="tools"><button class="btn fr" data-y="1" type="button">1년</button><button class="btn fr" data-y="5" type="button">5년</button><button class="btn fr" data-y="0" type="button">전체</button></span></h2>
     <div id="plot-fg" style="height:300px"></div>
-    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 점선 = 옮기기 기준 85(QLD) · 90(TQQQ·SOXL) · 선 = 최근 3일 평균(하루 값의 들쭉날쭉함을 줄임) · 오른쪽 끝 점 = 최신 3일 평균</div></div>
+    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 점선 = 옮기기 기준 85(QLD) · 90(TQQQ·SOXL) · 흰 선 = 매일 값 · 주황 MA5 · 파랑 MA20 · 보라 MA60 (공탐 값의 5·20·60일 평균) · 범례를 누르면 선을 켜고 끌 수 있습니다(5년·전체 보기는 MA5 꺼진 상태로 시작)</div></div>
   <div class="panel">
     <h2>공탐 QLD 매매법<span class="desc">나스닥 2배 · 매월 적립 + 극단적 탐욕 때 일부 QQQ로</span></h2>
     <div class="sum fg-now" data-g="85" data-f="30" data-t="QLD">불러오는 중…</div>
@@ -113,15 +113,18 @@ function drawFG(){
   const k0=x.findIndex(t=>t>=x0), vis=y.slice(k0), avg=vis.reduce((a,b)=>a+b,0)/vis.length;
   const cnt=g=>{ let c=0,last=-99; for(let i=k0;i<n;i++) if(y[i]>=g&&i-last>21){c++;last=i;} return c; };
   document.querySelectorAll('.fr').forEach(b=>b.classList.toggle('on',+b.dataset.y===FGY));
-  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)} · 85 이상 ${cnt(85)}번 · 90 이상 ${cnt(90)}번`;
+  const mNow=k=>{ const s=y.slice(-k); return (s.reduce((a,b)=>a+b,0)/s.length).toFixed(0); };
+  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 지금 ${y[n-1].toFixed(0)} · MA5 ${mNow(5)} · MA20 ${mNow(20)} · MA60 ${mNow(60)} · 기간 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)} · 85 이상 ${cnt(85)}번 · 90 이상 ${cnt(90)}번`;
   const band=(a,b,c)=>({type:'rect',xref:'paper',x0:0,x1:1,yref:'y',y0:a,y1:b,fillcolor:c,line:{width:0},layer:'below'});
   const hl=(v,c)=>({type:'line',xref:'paper',x0:0,x1:1,yref:'y',y0:v,y1:v,line:{color:c,width:1,dash:'dash'}});
-  const y3=y.map((_,i)=>i<2?null:(y[i]+y[i-1]+y[i-2])/3);
-  const last=y3[n-1], col=last<25?'#f23645':last<45?'#f0a030':last<55?'#c9cfd8':last<75?'#8be37a':'#5ad445';
+  const pre=[0]; y.forEach(v=>pre.push(pre.at(-1)+v));
+  const ma=k=>y.map((_,i)=>i<k-1?null:(pre[i+1]-pre[i+1-k])/k), M=[[5,'#f7a21b'],[20,'#4f7cf7'],[60,'#c678dd']].map(([k,c])=>({k,c,v:ma(k)}));
+  const last=y[n-1], col=last<25?'#f23645':last<45?'#f0a030':last<55?'#c9cfd8':last<75?'#8be37a':'#5ad445';
   Plotly.react('plot-fg',[
-    {x,y:y3,customdata:y,type:'scatter',mode:'lines',name:'3일 평균',line:{color:'#e6e9ee',width:FGY===1?1.8:FGY===5?1.1:0.8,shape:'spline',smoothing:0.6},hovertemplate:'%{x|%Y-%m-%d} 3일 평균 <b>%{y:.0f}</b> · 당일 %{customdata:.0f}<extra></extra>'},
-    {x:[x[n-1]],y:[last],type:'scatter',mode:'markers+text',marker:{size:9,color:col,line:{color:'#0f1216',width:2}},text:[last.toFixed(0)],textposition:'top left',textfont:{color:col,size:12},hoverinfo:'skip'}],
-    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:30,r:10,t:8,b:28},showlegend:false,hovermode:'x',
+    {x,y,type:'scatter',mode:'lines',name:'공탐(일)',line:{color:FGY===1?'#e6e9ee':'rgba(230,233,238,.25)',width:FGY===1?1.4:0.7},hovertemplate:'<b>%{y:.0f}</b>'},
+    ...M.map(m=>({x,y:m.v,type:'scatter',mode:'lines',name:'MA'+m.k,visible:(m.k===5&&FGY!==1)?'legendonly':true,line:{color:m.c,width:m.k===5?1.3:1.8},hovertemplate:'%{y:.1f}'})),
+    {x:[x[n-1]],y:[last],type:'scatter',mode:'markers+text',showlegend:false,name:'지금',marker:{size:9,color:col,line:{color:'#0f1216',width:2}},text:[last.toFixed(0)],textposition:'top left',textfont:{color:col,size:12},hoverinfo:'skip'}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:30,r:10,t:30,b:28},showlegend:true,legend:{orientation:'h',y:1.02,yanchor:'bottom',x:0,font:{size:10}},hovermode:'x unified',
      xaxis:{gridcolor:'#262c35',range:[x0,new Date(x[n-1].getTime()+(FGY===1?7:30)*864e5)]},yaxis:{range:[0,100],gridcolor:'rgba(0,0,0,0)',tickvals:[0,25,45,55,75,100]},
      shapes:[band(0,25,'rgba(242,54,69,.16)'),band(25,45,'rgba(240,160,48,.12)'),band(45,55,'rgba(138,147,163,.10)'),band(55,75,'rgba(139,227,122,.10)'),band(75,100,'rgba(90,212,69,.16)'),hl(85,'#f0b429'),hl(90,'#f23645')]},
     {displayModeBar:false,responsive:true});
