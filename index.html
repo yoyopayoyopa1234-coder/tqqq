@@ -80,7 +80,6 @@
   </div>
 
   <div class="grid">
-    <div class="panel"><h2>공포와 탐욕 지수<span class="desc">CNN Fear &amp; Greed</span></h2><div class="body" id="fg">—</div></div>
     <div class="panel"><h2>스위칭 자산</h2><div class="body" id="extra">—</div></div>
   </div>
 
@@ -179,14 +178,6 @@ async function load(){
   const u=new Date(TQ.updated), hrs=(Date.now()-u)/36e5;
   $('#upd').innerHTML = u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 기준'+(hrs>26?' <span class="err">(갱신 멈춤)</span>':'');
   $('#cards').innerHTML = card(TQ.spx,'spx');
-  const fg=TQ.fg||{};
-  if(fg.score!=null){
-    const col = fg.score<25?'#f23645':fg.score<45?'#f0a030':fg.score<55?'#c9cfd8':fg.score<75?'#8be37a':'#5ad445';
-    const kr = {'extreme fear':'극단적 공포','fear':'공포','neutral':'중립','greed':'탐욕','extreme greed':'극단적 탐욕'}[fg.rating]||fg.rating;
-    $('#fg').innerHTML = `<div class="fg"><span class="score" style="color:${col}">${fg.score.toFixed(0)}</span><div><b>${kr}</b><div class="zone">1주 전 ${fg.prev_week} · 1달 전 ${fg.prev_month}</div></div></div>
-      <div class="track" style="--lo:25;--up:75;background:linear-gradient(90deg,#f23645,#f0a030,#8a93a3,#8be37a,#5ad445)"><span class="mark" style="left:${fg.score}%"></span></div>
-      <div class="cap"><span>0 극단적 공포</span><span>50</span><span>100 극단적 탐욕</span></div>`;
-  } else $('#fg').innerHTML = '<span class="zone">CNN 데이터를 받지 못했습니다. <a href="https://edition.cnn.com/markets/fear-and-greed" style="color:var(--accent)">CNN에서 보기</a></span>';
   const ex=TQ.extra||{};
   $('#extra').innerHTML = ['SPYM','SGOV'].map(s=>{ const e=ex[s]||{}; return `<div class="state"><b style="min-width:52px">${s}</b>${e.px!=null?`<span class="num">$${fmt(e.px)}</span> ${sg(e.chg,2)}`:'<span class="zone">—</span>'}<span class="zone">${s==='SPYM'?'방어·스위칭 (S&P 500 1배)':'현금 대기 (초단기 국채)'}</span></div>`; }).join('')
     + `<div class="state"><b style="min-width:52px">TQQQ</b><span class="num">$${fmt(TQ.spx.tqqq)}</span><span class="zone">공격 (나스닥100 3배)</span></div>`;

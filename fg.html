@@ -33,6 +33,11 @@
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
 </style>
 <style>table.t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;margin:8px 0 4px} table.t td{padding:3px 2px;text-align:right} table.t td:first-child{text-align:left} table.t tr.h td{color:var(--muted)} .big{font-size:20px;font-weight:700;color:var(--accent)}</style>
+<style>.gauge{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,#f23645,#f0a030,#8a93a3,#8be37a,#5ad445);margin:10px 0 4px}
+.gauge .mark{position:absolute;top:-5px;width:4px;height:22px;background:var(--fg);border-radius:2px;transform:translateX(-50%);box-shadow:0 0 6px rgba(255,255,255,.5);transition:left 1s ease}
+.gauge .tk{position:absolute;top:14px;font-size:10px;color:var(--muted);transform:translateX(-50%)}
+.fgrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.fgrow .score{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums}
+.cap{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:14px}</style>
 </head><body>
 <div class="wrap">
   <header>
@@ -83,7 +88,13 @@
   try{
     const j=await fetch('tq.json?'+Math.floor(Date.now()/600000)).then(r=>r.json()), fg=j.fg; if(!fg||fg.score==null) throw 0;
     const s=fg.score, kr={'extreme fear':'극단적 공포','fear':'공포','neutral':'중립','greed':'탐욕','extreme greed':'극단적 탐욕'}[fg.rating]||fg.rating;
-    document.getElementById('fg').innerHTML=`<span class="big">${s.toFixed(0)}</span> ${kr} · 1주 전 ${fg.prev_week?.toFixed(0)??'—'} · 1달 전 ${fg.prev_month?.toFixed(0)??'—'}`;
+    const col=s<25?'#f23645':s<45?'#f0a030':s<55?'#c9cfd8':s<75?'#8be37a':'#5ad445';
+    const ticks=[[85,'QLD'],[90,'TQQQ·SOXL']].map(([v,n])=>`<span class="tk" style="left:${v}%">▲</span>`).join('');
+    document.getElementById('fg').innerHTML=`<div class="fgrow"><span class="score" style="color:${col}">${s.toFixed(0)}</span><div><b>${kr}</b><div class="note">1주 전 ${fg.prev_week?.toFixed(0)??'—'} · 1달 전 ${fg.prev_month?.toFixed(0)??'—'}</div></div></div>
+      <div class="gauge"><span class="mark" style="left:0%"></span>${ticks}</div>
+      <div class="cap"><span>0 극단적 공포</span><span>50</span><span>100 극단적 탐욕</span></div>
+      <div class="note">▲ 옮기기 기준 (QLD 85 · TQQQ·SOXL 90)</div>`;
+    requestAnimationFrame(()=>setTimeout(()=>{document.querySelector('.gauge .mark').style.left=s+'%';},50));
     document.querySelectorAll('.fg-now').forEach(el=>{ const g=+el.dataset.g, t=el.dataset.t;
       el.innerHTML = s>=g ? `<b style="color:#f23645">오늘 ${g} 이상 — 보유 ${t}의 ${el.dataset.f}%를 QQQ로 옮길 날 (최근 한 달 안에 옮겼으면 건너뜀)</b>` : `이번 달 적립: <b style="color:var(--accent)">${t}</b> · 옮기기 기준 ${g}까지 ${(g-s).toFixed(0)} 남음 — 오늘은 할 일 없음`; });
   }catch(e){ document.getElementById('fg').textContent='CNN 데이터를 받지 못했습니다.'; }
