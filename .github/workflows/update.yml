@@ -34,6 +34,8 @@ jobs:
         continue-on-error: true
       - run: python scripts/crash_data.py
         continue-on-error: true
+      - run: python scripts/crash_risk.py
+        continue-on-error: true
       - run: pip install playwright==1.47.0 && python -m playwright install --with-deps chromium
       - run: python scripts/verify_tv.py
         continue-on-error: true

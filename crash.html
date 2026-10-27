@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>대폭락 조짐</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#ff8c42; color-scheme:dark;
+    --g0:#5ad445; --g1:#8be37a; --g2:#f0b429; --g3:#ff8c42; --g4:#f23645; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 48px; max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  h1 { font-size:20px; margin:0; } .date { color:var(--muted); font-size:12px; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .panel > h2 { margin:0; padding:10px 14px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; border-bottom:1px solid var(--line); }
+  .panel > h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .body { padding:14px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.7; }
+  .muted { color:var(--muted); } .fine { font-size:11.5px; color:var(--muted); line-height:1.6; }
+  .hero { display:grid; grid-template-columns:1.15fr 1fr; gap:14px; } @media (max-width:760px){ .hero { grid-template-columns:1fr; } }
+  .now { border:1px solid var(--gc); border-radius:12px; padding:14px 16px; background:linear-gradient(180deg,color-mix(in srgb,var(--gc) 12%,transparent),transparent); box-shadow:0 0 26px -10px var(--gc); }
+  .now .l { font-size:12px; color:var(--muted); } .now .big { font-size:34px; font-weight:800; color:var(--gc); margin:2px 0; line-height:1.2; letter-spacing:-.5px; }
+  .scale { display:grid; grid-template-columns:repeat(5,1fr); gap:3px; margin:8px 0 4px; } .scale div { height:8px; border-radius:3px; opacity:.28; } .scale div.on { opacity:1; box-shadow:0 0 10px currentColor; }
+  .scale-l { display:grid; grid-template-columns:repeat(5,1fr); font-size:10.5px; color:var(--muted); text-align:center; }
+  .sumtxt { margin-top:10px; font-size:13.5px; } .sumtxt b { color:#fff; }
+  .meant { margin-top:10px; padding:9px 11px; border-radius:8px; background:rgba(255,255,255,.04); border:1px dashed color-mix(in srgb,var(--gc) 50%,transparent); font-size:13px; }
+  .pills { display:grid; gap:10px; } .pill { border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .pill .t { display:flex; justify-content:space-between; align-items:baseline; gap:8px; } .pill .t b { font-size:14px; } .pill .t .sc { font-size:18px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .bar { position:relative; height:10px; border-radius:5px; background:linear-gradient(90deg, rgba(90,212,69,.25) 0 25%, rgba(240,180,41,.25) 25% 50%, rgba(242,54,69,.25) 50% 100%); margin:6px 0 4px; } .bar i { position:absolute; top:-4px; width:4px; height:18px; background:#fff; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 8px rgba(255,255,255,.7); }
+  .pill .w { font-size:12px; color:var(--muted); }
+  .tbl { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { padding:6px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; font-variant-numeric:tabular-nums; }
+  th { color:var(--muted); font-weight:500; white-space:nowrap; } td.r, th.r { text-align:right; white-space:nowrap; }
+  .lt { display:inline-block; min-width:38px; text-align:center; padding:1px 7px; border-radius:999px; font-size:11.5px; font-weight:700; }
+  .l0 { background:rgba(90,212,69,.16); color:#8be37a; } .l1 { background:rgba(240,180,41,.18); color:#f0b429; } .l2 { background:rgba(242,54,69,.2); color:#ff7b82; } .lna { background:rgba(138,147,163,.15); color:var(--muted); }
+  .chip { display:inline-block; padding:1px 8px; border-radius:999px; font-size:11.5px; font-weight:700; color:#0f1216; }
+  .grp { font-weight:700; padding-top:10px; } .grp span { font-weight:400; color:var(--muted); font-size:12px; margin-left:6px; }
+  details { font-size:13px; line-height:1.7; color:#c9cfd8; }
+  details summary { cursor:pointer; color:var(--accent); font-size:12.5px; list-style:none; display:inline-flex; align-items:center; gap:6px; padding:2px 9px; border:1px solid rgba(255,140,66,.35); border-radius:999px; user-select:none; }
+  details summary::-webkit-details-marker { display:none; } details summary::before { content:'＋'; font-weight:700; } details[open] summary::before { content:'－'; } details[open] summary { background:rgba(255,140,66,.1); }
+  details .in { margin-top:6px; padding:9px 11px; border-left:3px solid rgba(255,140,66,.5); background:rgba(255,255,255,.03); border-radius:0 8px 8px 0; }
+  td details summary { color:var(--fg); border-color:var(--line); font-size:12.5px; } td details[open] summary { background:rgba(255,255,255,.05); }
+  .steps { display:grid; gap:10px; } .step { border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:rgba(255,255,255,.02); }
+  .step .h { display:flex; align-items:center; gap:10px; } .step .n { width:26px; height:26px; border-radius:50%; background:var(--accent); color:#0f1216; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none; } .step .h b { font-size:14.5px; }
+  .step .one { margin:6px 0 0 36px; } .step details { margin:6px 0 0 36px; } @media (max-width:560px){ .step .one, .step details { margin-left:0; } }
+  .btns { display:flex; gap:6px; flex-wrap:wrap; } .btn { font:inherit; font-size:12px; padding:4px 10px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; } .btn.on { border-color:var(--accent); color:var(--accent); }
+  tr.cur td { background:rgba(255,255,255,.05); }
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="simple.html">간단지표</a><a href="jeolchung.html">절충형</a><a href="banban.html">반반형</a><a href="loan.html">위기대출</a><a href="spcrisis.html">S&amp;P위험</a><a href="crash.html" class="cur">대폭락</a><a href="qqq200.html">200큐큐단</a><a href="analysis.html">TQQQ 분석</a><a href="fg.html">공탐</a><a href="quotes.html">명언</a></nav>
+    <h1>대폭락 조짐</h1>
+    <span class="date" id="today"></span>
+  </header>
+
+  <div class="panel">
+    <h2>오늘의 대폭락 조짐 <span class="desc">리먼형(부실 경제) · 버블형(직전 대상승) 폭락이 올 조짐이 얼마나 쌓였나 · 매일 종가로 다시 계산</span></h2>
+    <div class="body">
+      <div class="hero">
+        <div class="now" id="now"><div class="l">불러오는 중…</div></div>
+        <div class="pills" id="pills"></div>
+      </div>
+      <div class="fine" id="stamp"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>판단 근거 — 지표 15개 <span class="desc">정상 · 주의 · 경고 · 이름을 누르면 왜 보는지</span></h2>
+    <div class="body"><div class="tbl"><table id="ind"></table></div>
+      <div class="fine">'역대 상위 X%' = 그날까지 쌓인 역사(버핏 지수 1945년~, 시장 지표 1988년~)에서 지금보다 높았던 날의 비율. 월·분기 지표는 실제 발표일 기준으로 '그날 알 수 있었던 값'만 씁니다(예: 실업률은 다음 달 초, 기업 시가총액은 분기 끝 뒤 약 10주).</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>등급은 이렇게 정합니다 <span class="desc">연료 → 균열 → 불씨 · 숫자는 관례 기준이나 '역대 상위 20%/5%'로, 과거 위기에 맞춰 고르지 않음</span></h2>
+    <div class="body">
+      <div class="steps">
+        <div class="step"><div class="h"><div class="n">1</div><b>폭락에는 두 종류가 있다</b></div>
+          <div class="one"><b>버블형</b>(1987 · 2000 · 2022): 경제는 멀쩡한데 주가가 너무 비싸고 너무 빨리 올라서, 금리 인상 같은 작은 충격에 무너짐. <b>리먼형</b>(2008, 1990 · 2001 침체): 주가는 평범한데 빚·주택·신용이 먼저 썩어 경제가 깨지면서 주가가 따라 무너짐. 둘 다 아닌 <b>충격형</b>(2020 코로나, 2018 연말)은 미리 알 수 있는 지표가 없습니다.</div>
+          <details><summary>그래서 세 기둥으로 봅니다</summary><div class="in"><b>연료</b>(버블형 조짐) — 시장이 얼마나 비싸고 많이 올랐나: 떨어질 '높이'. <b>균열</b>(리먼형 조짐) — 경제·신용이 깨지기 시작했나: 떨어지게 만드는 '원인'. <b>불씨</b>(진행 확인) — 시장 자체가 이미 꺾였나: 실제로 '시작'됐는지. 연료와 균열은 몇 달~몇 년 앞서 쌓이고, 불씨는 시작된 뒤에야 켜집니다. 그래서 대폭락 '조짐'은 연료·균열로, '임박/진행'은 불씨로 판단합니다.</div></details>
+        </div>
+        <div class="step"><div class="h"><div class="n">2</div><b>지표마다 정상 0 · 주의 1 · 경고 2점, 기둥 점수 = 받은 점수 ÷ 최대 × 100</b></div>
+          <div class="one">25 미만 <b>낮음</b> · 25~50 <b>중간</b> · 50 이상 <b>높음</b>. 연료 4개 · 균열 7개 · 불씨 4개 지표.</div>
+          <details><summary>기준선은 어떻게 정했나</summary><div class="in">연료 지표(밸류에이션 · 3년 상승 · 과열 · 쏠림)는 정해진 '적정선'이 없어서 <b>그날까지 역사의 상위 20% = 주의, 상위 5% = 경고</b>로 통일했습니다. 균열·불씨 지표는 경제학·시장에서 이미 쓰는 기준을 그대로 씁니다 — 샴 법칙 0.5, 금리차 0(역전), 금융여건지수 0(평균), 대출 기준 강화 25%, S&amp;P500 200일선, 약세장 −20%, VIX 35 등. 이 숫자들을 과거 폭락에 맞춰 조정하지 않았고, 그래서 아래 검증 결과도 '맞춘 결과'가 아니라 '그 기준을 그대로 들고 갔을 때'입니다.</div></details>
+        </div>
+        <div class="step"><div class="h"><div class="n">3</div><b>종합 등급 — 연료·균열이 쌓인 곳에 불씨가 붙을수록 높다</b></div>
+          <div class="one">
+            <div class="tbl" style="margin-top:4px"><table>
+              <tr><td><span class="chip" style="background:var(--g4)">매우높음</span></td><td>불씨 높음 + (연료나 균열이 중간 이상) — 약한 곳에 실제로 불이 붙음</td></tr>
+              <tr><td><span class="chip" style="background:var(--g3)">높음</span></td><td>균열 높음 · 또는 연료 높음 + 균열 중간 · 또는 불씨 중간 + (연료나 균열 높음)</td></tr>
+              <tr><td><span class="chip" style="background:var(--g2)">중간</span></td><td>연료 높음 · 또는 균열 중간 · 또는 불씨 중간 (하나만 쌓임)</td></tr>
+              <tr><td><span class="chip" style="background:var(--g1)">낮음</span></td><td>연료 중간 (균열·불씨는 낮음)</td></tr>
+              <tr><td><span class="chip" style="background:var(--g0)">매우낮음</span></td><td>셋 다 낮음</td></tr>
+            </table></div></div>
+          <details><summary>왜 연료만 높으면 '중간'인가</summary><div class="in">비싸고 많이 오른 것만으로는 폭락 시기를 알 수 없습니다 — 1997~1999년, 2017~2021년, 2024~2026년처럼 연료가 가득한 채로 몇 년 더 오른 때가 많았고, 아래 검증에서도 '연료만 높은' 날들(중간)의 1년 안 −20% 하락 확률은 평소보다 오히려 낮았습니다. 연료에 균열이나 불씨가 더해질 때 확률이 크게 뛰었습니다.</div></details>
+        </div>
+        <div class="step"><div class="h"><div class="n">4</div><b>한 번 오른 등급은 20거래일(약 한 달) 유지</b></div>
+          <div class="one">매일 계산하지만, 불씨 지표가 기준선 근처에서 오르내리면 등급이 하루걸러 바뀝니다(연 15번). 최근 20거래일 중 가장 높았던 등급을 표시하면 연 3번으로 줄고, 검증 결과는 거의 같습니다. '오늘 하루만 본 등급'도 함께 보여줍니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>매일 기록 <span class="desc">최근 거래일 · 등급과 켜진 지표</span></h2>
+    <div class="body"><div class="tbl"><table id="recent"></table></div>
+      <details><summary>최근 60거래일 전부</summary><div class="in tbl"><table id="recentAll"></table></div></details></div>
+  </div>
+
+  <div class="panel">
+    <h2>역사 속 위치 <span class="desc">S&amp;P500(로그)과 그때의 등급(배경) · 아래는 세 기둥 점수 · 주간</span></h2>
+    <div class="body">
+      <div class="btns" id="rng"><button class="btn" data-r="all">전체 (1991~)</button><button class="btn on" data-r="2000">2000~2010</button><button class="btn" data-r="2018">2018~</button></div>
+      <div id="plot" style="height:460px"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>과거 위기에서는 <span class="desc">고점 전 등급 · 고점 뒤 처음 '높음' 이상이 켜진 날</span></h2>
+    <div class="body"><div class="tbl"><table id="ep"></table></div>
+      <div id="epNote"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>등급별 1년 뒤 <span class="desc">1991~2025년 매일의 등급과, 그날부터 1년 안에 S&amp;P500이 가장 많이 떨어진 폭</span></h2>
+    <div class="body"><div class="tbl"><table id="stats"></table></div>
+      <div id="statsNote"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>솔직한 한계 <span class="desc">이 페이지가 할 수 없는 것</span></h2>
+    <div class="body">
+      <div>① <b>폭락 시점은 못 맞힙니다.</b> 지난 35년의 큰 폭락은 4~5번뿐이고, 조짐 지표는 '얼마나 위험한 땅인가'를 말할 뿐 '언제'를 말하지 않습니다. 2000·2008년에도 '높음'이 켜진 건 고점 직후였습니다(그래도 그 뒤 하락의 절반 이상이 남아 있었음).<br>
+      ② <b>충격형은 못 잡습니다.</b> 2020년 코로나, 2018년 연말 급락은 '낮음'에서 왔습니다. 그래서 '낮음'의 1년 안 −20% 확률(약 13%)은 평소와 비슷합니다 — 낮음은 '안전'이 아니라 '쌓인 조짐이 적음'입니다.<br>
+      ③ <b>틀린 경고도 있습니다.</b> 2022~23년엔 금리차 역전 · 대출 기준 강화 · 급격한 금리 인상이 모두 켜졌지만 침체도 추가 폭락도 오지 않았습니다. 1997~99년, 2021년엔 연료가 가득했지만 1~3년 더 올랐습니다.<br>
+      ④ <b>밸류에이션의 '정상'은 변합니다.</b> 버핏 지수는 1990년대 이후 꾸준히 높아졌고(해외 매출, 무형자산, 낮은 금리), 지금의 '역대 최고'에는 그런 구조 변화도 섞여 있습니다.<br>
+      ⑤ <b>자료의 한계.</b> 실업률·건축허가 등은 나중에 수정된 값이라 당시 알던 값과 조금 다를 수 있습니다(샴 지표는 실시간 값). 하이일드 스프레드는 무료로 3년치만 공개돼 Baa 회사채 스프레드로 대신했습니다. 1991년 전은 일부 지표가 없어 검증에서 뺐습니다.</div>
+      <div class="fine">원자료: FRED(세인트루이스 연은) — T10Y3M · BAA10Y · NFCI · VIXCLS/VXOCLS · DFF · SAHMREALTIME · ICSA · PERMIT · DRTSCILM · DRSFRMACBS · NCBEILQ027S · GDP, S&amp;P500·나스닥100 종가. 경제 지표는 12시간마다, 시장 지표는 15분마다 새로 받아 계산합니다. 투자 자문이 아닙니다.</div>
+    </div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const G=['매우낮음','낮음','중간','높음','매우높음'], GC=['var(--g0)','var(--g1)','var(--g2)','var(--g3)','var(--g4)'], GHEX=['#5ad445','#8be37a','#f0b429','#ff8c42','#f23645'];
+const LV=['정상','주의','경고'], PB=['낮음','중간','높음'];
+const band=s=>s==null?null:s<25?0:s<50?1:2;
+const pc=(v,dg=0)=>v==null?'—':(v>0?'+':v<0?'−':'')+Math.abs(v*100).toFixed(dg)+'%';
+const pp=(v,dg=2)=>v==null?'—':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(dg)+'%p';
+const topPct=x=>x==null?'':x>=99.95?'역대 최고':'역대 상위 '+Math.max(0.1,100-x).toFixed(100-x<1?1:0)+'%';
+// 지표 설명 (crash_risk.py 의 순서와 같음)
+const IND=[
+ {k:'buf',p:'F',n:'밸류에이션 (버핏 지수)',w:'역대 상위 20%',a:'역대 상위 5%',src:'NCBEILQ027S',
+  f:(x,t)=>`${x.v.toFixed(2)}배 <span class="muted">(주식 시가총액 ÷ GDP)</span><br>${topPct(x.x)}`,
+  why:'미국 비금융기업 주식 전체의 시가총액이 1년 경제 규모(GDP)의 몇 배인가. 비쌀수록 같은 충격에 떨어질 \'높이\'가 큽니다. 2000년 1.63배(당시 역대 최고) → −49%, 2021년 말 2.19배 → 2022년 −25%. 단, 타이밍 지표가 아니라 비싼 채로 몇 년 더 오르기도 합니다. 분기 자료(약 10주 뒤 발표)를 그 뒤 S&P500 변화로 매일 늘려 씁니다.'},
+ {k:'s3',p:'F',n:'3년 상승률 (S&P500)',w:'역대 상위 20%',a:'역대 상위 5%',src:'mkt',
+  f:x=>`${pc(x.v)} <span class="muted">(3년)</span><br>${topPct(x.x)}`,
+  why:'\'직전 대상승\'의 크기. 1987년(+82%) · 2000년(+94%) · 2022년(+89%) 고점은 모두 3년 상승률 상위 10% 안에서 나왔습니다. 많이 오를수록 되돌림의 거리도 깁니다.'},
+ {k:'dev',p:'F',n:'단기 과열 (나스닥100 200일선 이격)',w:'역대 상위 20%',a:'역대 상위 5%',src:'mkt',
+  f:x=>`${pc(x.v,1)}<br>${topPct(x.x)}`,
+  why:'나스닥100이 200일 평균보다 얼마나 위에 있나 — 광기의 온도. 2000년 3월 +56%(역대 최고), 2020년 2월 +20%. 간단지표 과열형의 \'QQQ 200일선 +15% = 과열\'과 같은 지표입니다.'},
+ {k:'rel',p:'F',n:'기술주 쏠림 (나스닥 ÷ S&P500, 3년)',w:'역대 상위 20%',a:'역대 상위 5%',src:'mkt',
+  f:x=>`${pc(x.v)} <span class="muted">(나스닥이 더 오른 폭)</span><br>${topPct(x.x)}`,
+  why:'2000년 버블은 나스닥 3년 +481% vs S&P500 +94%의 극단적 쏠림이었습니다. 다만 지금처럼 대형 기술주가 S&P500 안에서도 커지면 이 지표는 쏠림을 덜 잡습니다.'},
+ {k:'curve',p:'C',n:'장단기 금리차 (10년−3개월, 월평균)',w:'역전 해소 후 24개월 이내',a:'지금 역전',src:'T10Y3M',
+  f:(x,t)=>`직전 달 평균 ${pp(x.v)}<br><span class="muted">어제 ${pp(t.ctx.T10Y3M)} · 마지막 역전 달 ${x.x||'없음'}</span>`,
+  why:'10년 국채 금리가 3개월 금리보다 낮아지면(역전) 시장이 앞으로 금리 인하 = 경기 둔화를 예상한다는 뜻. 1990 · 2001 · 2008 · 2020 침체 전 모두 역전됐고, 역전 뒤 침체까지 6~24개월이 걸려 \'역전이 풀린 뒤 2년\'을 주의로 봅니다. 2022~24년의 긴 역전 뒤에는 침체가 오지 않았습니다(이 지표의 대표적 실패).'},
+ {k:'baa6',p:'C',n:'회사채 스프레드 6개월 변화 (Baa − 10년)',w:'+0.30%p',a:'+0.75%p',src:'BAA10Y',
+  f:x=>`${pp(x.v)} <span class="muted">(6개월)</span><br><span class="muted">지금 수준 ${x.x==null?'—':x.x.toFixed(2)+'%p'}</span>`,
+  why:'기업이 돈을 빌리는 금리가 국채보다 얼마나 비싸지는 중인가 = 신용이 마르는 속도. 기준선은 역대 6개월 변화의 상위 20%(+0.30)·5%(+0.75). 2007년 하반기부터 벌어지기 시작해 2008년에 폭발했습니다. 수준 자체가 낮으면(1.5%p 안팎) 신용시장이 아주 편안하다는 뜻입니다.'},
+ {k:'nfci',p:'C',n:'금융여건 (시카고 연은 NFCI)',w:'−0.25',a:'0 (평균보다 빡빡)',src:'NFCI',
+  f:x=>`${x.v==null?'—':(x.v>0?'+':x.v<0?'−':'')+Math.abs(x.v).toFixed(2)}`,
+  why:'105개 금융시장 지표(금리·스프레드·변동성·대출)를 하나로 묶은 주간 지수. 0 = 1971년 이후 평균, 양수 = 평균보다 돈줄이 빡빡. 2007년 8월 처음 양수로 돌아섰습니다(리먼 파산 1년 전).'},
+ {k:'jobs',p:'C',n:'고용 (샴 지표 · 실업수당 청구)',w:'샴 0.3 · 청구 +15%',a:'샴 0.5 · 청구 +30%',src:'SAHMREALTIME',
+  f:(x,t)=>`샴 ${x.v==null?'—':x.v.toFixed(2)} · 청구 ${pc(x.x)}<br><span class="muted">실업률 ${t.ctx.UNRATE??'—'}% · 주간 청구 ${t.ctx.ICSA?Math.round(t.ctx.ICSA/1000)+'천':'—'}</span>`,
+  why:'샴 지표 = 실업률 3개월 평균이 지난 1년 최저보다 몇 %p 올랐나. 0.5 이상이면 침체가 이미 시작된 것으로 보며(1970년 이후 거의 틀린 적 없음, 실시간 값 사용). 신규 실업수당 청구는 매주 나와 더 빠릅니다 — 4주 평균이 1년 최저보다 15~30% 오르면 해고가 늘기 시작한 것.'},
+ {k:'house',p:'C',n:'주택·가계 (건축허가 · 주담대 연체율)',w:'허가 −15% · 연체 +0.3%p',a:'허가 −25% · 연체 +0.6%p',src:'PERMIT',
+  f:(x,t)=>`허가 ${pc(x.v)} · 연체 ${pp(x.x)} <span class="muted">(1년)</span><br><span class="muted">연체율 ${t.ctx.DRSFRMACBS??'—'}%</span>`,
+  why:'2006~07년 주택 건축허가가 1년 새 25% 넘게 줄고 주택담보대출 연체가 늘어난 것이 리먼 위기의 출발점이었습니다. 집은 가계 빚의 대부분이라, 여기가 먼저 썩으면 은행으로 번집니다.'},
+ {k:'sloos',p:'C',n:'은행 대출 기준 (연준 설문)',w:'10%',a:'25%',src:'DRTSCILM',
+  f:x=>`${x.v==null?'—':(x.v>0?'+':'')+x.v.toFixed(1)+'%'} <span class="muted">(기준 강화 − 완화)</span>`,
+  why:'연준이 분기마다 묻는 \'기업 대출 기준을 강화했나\'에서 강화했다는 은행 비율 − 완화했다는 비율. 25%를 넘은 때는 1990 · 2001 · 2008 · 2020 침체, 2022~23년 긴축기였습니다. 발표는 분기 첫 달 설문 약 5주 뒤.'},
+ {k:'fed',p:'C',n:'통화 긴축 (기준금리 1년 변화)',w:'+1.0%p',a:'+2.0%p',src:'DFF',
+  f:(x,t)=>`${pp(x.v)} <span class="muted">(1년)</span><br><span class="muted">지금 ${x.x==null?'—':x.x.toFixed(2)+'%'}</span>`,
+  why:'"연준은 뭔가 깨질 때까지 올린다." 1987 · 2000 · 2006 · 2022년 급락 전 모두 1년 새 1%p 넘게 올렸습니다. 내리는 중이면 0점이지만, 2001 · 2007년처럼 경기가 나빠져서 급히 내리는 경우도 있으니 균열의 다른 지표와 함께 봐야 합니다.'},
+ {k:'trend',p:'T',n:'큰 추세 (S&P500 200일선)',w:'200일선 아래',a:'200일선 −2.5% 아래',src:'mkt',
+  f:x=>`200일선 대비 ${pc(x.v,1)}`,
+  why:'S&P500이 200일 평균 아래로 내려가면 큰 추세가 꺾인 것. −2.5% 아래는 TQQQ 신호판의 탈출선과 같은 기준입니다. 2000·2008년 대폭락의 대부분은 이 선 아래에서 일어났습니다.'},
+ {k:'dd',p:'T',n:'고점 대비 낙폭 (S&P500)',w:'−10% (조정)',a:'−20% (약세장)',src:'mkt',
+  f:(x,t)=>`${pc(x.v,1)}<br><span class="muted">사상 최고 ${t.ath.toLocaleString(undefined,{maximumFractionDigits:0})}</span>`,
+  why:'이미 얼마나 떨어졌나. −10%는 조정, −20%는 약세장의 관례적 정의입니다.'},
+ {k:'vix',p:'T',n:'공포지수 (VIX)',w:'25',a:'35',src:'VIXCLS',
+  f:x=>`${x.v==null?'—':x.v.toFixed(1)}`,
+  why:'S&P500 옵션에 담긴 앞으로 30일 예상 변동성(연율). 20 안팎이 평소, 25 이상 불안, 35 이상 공황. 1990년 전은 VXO로 대신합니다.'},
+ {k:'baa3',p:'T',n:'신용 경색 진행 (스프레드 3개월 변화)',w:'+0.30%p',a:'+0.60%p',src:'BAA10Y',
+  f:x=>`${pp(x.v)} <span class="muted">(3개월)</span>`,
+  why:'회사채 스프레드가 지금 빠르게 벌어지는 중인가 — 균열이 실제 신용 경색으로 번지는 중인지 확인합니다.'},
+];
+const PILL={F:['연료','버블형 조짐 — 비싸고 많이 올랐나'],C:['균열','리먼형 조짐 — 경제·신용이 깨지나'],T:['불씨','진행 확인 — 시장이 이미 꺾였나']};
+const lt=l=>l==null?'<span class="lt lna">—</span>':`<span class="lt l${l}">${LV[l]}</span>`;
+const chip=g=>g==null?'—':`<span class="chip" style="background:${GHEX[g]}">${G[g]}</span>`;
+let C=null;
+function render(){
+  const t=C.today, g=t.g, st=C.stats.find(s=>s.g===g), base=C.base;
+  document.documentElement.style.setProperty('--gc',GHEX[g]);
+  // 요약 문장
+  const lit=p=>t.ind.map((x,k)=>({...x,m:IND[k]})).filter(x=>x.p===p&&x.lv>0);
+  const say=p=>{ const L=lit(p); return L.length?L.map(x=>`${x.m.n.replace(/ \(.*\)/,'')} <span class="lt l${x.lv}">${LV[x.lv]}</span>`).join(' · '):'켜진 지표 없음'; };
+  const sF=band(t.F), sC=band(t.C), sT=band(t.T);
+  $('#now').innerHTML=`<div class="l">${t.date} 종가 기준 · 이 등급이 이어진 지 ${t.since} 부터</div>
+    <div class="big">${G[g]}</div>
+    <div class="scale">${GHEX.map((c,k)=>`<div class="${k===g?'on':''}" style="background:${c};color:${c}"></div>`).join('')}</div><div class="scale-l">${G.map(x=>`<span>${x}</span>`).join('')}</div>
+    <div class="sumtxt"><b>버블형 연료 ${PB[sF]}</b> — ${say('F')}<br><b>리먼형 균열 ${PB[sC]}</b> — ${say('C')}<br><b>불씨 ${PB[sT]}</b> — ${say('T')}${sT===0?` <span class="muted">(S&amp;P500 200일선 대비 ${pc(t.ind[11].v,1)} · 고점 대비 ${pc(t.ind[12].v,1)} · VIX ${t.ind[13].v?.toFixed(0)})</span>`:''}</div>
+    <div class="meant">과거(1991~2025년)에 이 등급이었던 날 다음 1년 안에 S&amp;P500이 <b>−20% 이상</b> 떨어진 확률 <b>${st&&st.p20!=null?st.p20.toFixed(0):'—'}%</b>, <b>−30% 이상</b> <b>${st&&st.p30!=null?st.p30.toFixed(0):'—'}%</b> <span class="muted">(아무 날이나 고르면 ${base.p20.toFixed(0)}% · ${base.p30.toFixed(0)}%)</span>${t.g_raw!==g?`<br><span class="muted">오늘 하루만 보면 ${G[t.g_raw]} — 최근 20거래일 안에 ${G[g]}였던 날이 있어 그대로 표시</span>`:''}</div>`;
+  $('#pills').innerHTML=['F','C','T'].map(p=>{ const s=t[p], b=band(s), L=t.ind.filter(x=>x.p===p), n=L.filter(x=>x.lv!=null).length;
+    return `<div class="pill"><div class="t"><b>${PILL[p][0]} <span class="muted" style="font-weight:400;font-size:12px">${PILL[p][1]}</span></b><span class="sc" style="color:${['#8be37a','#f0b429','#ff7b82'][b]}">${Math.round(s)}</span></div>
+      <div class="bar"><i style="left:${Math.max(1,Math.min(99,s))}%"></i></div>
+      <div class="w">${PB[b]} · 지표 ${n}개 중 경고 ${L.filter(x=>x.lv===2).length} · 주의 ${L.filter(x=>x.lv===1).length}</div></div>`; }).join('')+
+    `<div class="fine">점수 = 켜진 단계 합 ÷ 최대 × 100 · 25 미만 낮음 · 25~50 중간 · 50 이상 높음</div>`;
+  const age=Math.round((Date.now()/1000-C.ts)/60), rawAge=C.raw_ts?Math.round((Date.now()/1000-C.raw_ts)/3600):null;
+  $('#stamp').innerHTML=`계산 ${new Date(C.ts*1000).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} (${age}분 전) · 경제 지표 수신 ${rawAge==null?'—':rawAge+'시간 전'} · 시장 지표는 ${t.date} 종가`;
+  // 지표 표
+  const obsOf=(m)=>m.src==='mkt'?t.date:(t.obs[m.src]||'—');
+  let h='<tr><th>지표</th><th>지금</th><th>주의</th><th>경고</th><th class="r">상태</th><th class="r">자료</th></tr>';
+  for(const p of ['F','C','T']){
+    h+=`<tr><td colspan="6" class="grp">${PILL[p][0]} <span>${PILL[p][1]} · 점수 ${Math.round(t[p])} (${PB[band(t[p])]})</span></td></tr>`;
+    t.ind.forEach((x,k)=>{ if(x.p!==p) return; const m=IND[k];
+      h+=`<tr><td><details><summary>${m.n}</summary><div class="in">${m.why}</div></details></td><td>${x.v==null&&m.k!=='jobs'?'—':m.f(x,t)}</td><td class="muted">${m.w}</td><td class="muted">${m.a}</td><td class="r">${lt(x.lv)}</td><td class="r muted">${obsOf(m)}</td></tr>`; });
+  }
+  $('#ind').innerHTML=h;
+  // 매일 기록
+  const R=C.recent.slice().reverse();
+  const row=(r,k)=>{ const prev=R[k+1]; const names=r[6].map((l,j)=>l>0?`<span class="lt l${l}" title="${IND[j].n}">${IND[j].n.replace(/ \(.*\)/,'')}</span>`:'').filter(Boolean).join(' ');
+    const ch=prev&&(prev[4]!==r[4]||prev[5]!==r[5]||prev[6].join()!==r[6].join());
+    return `<tr${k===0?' class="cur"':''}><td>${r[0]}${ch?' <span class="lt l1">변화</span>':''}</td><td class="r">${Math.round(r[1])}</td><td class="r">${Math.round(r[2])}</td><td class="r">${Math.round(r[3])}</td><td>${chip(r[5])}</td><td>${chip(r[4])}</td><td>${names||'<span class="muted">없음</span>'}</td></tr>`; };
+  const head='<tr><th>날짜</th><th class="r">연료</th><th class="r">균열</th><th class="r">불씨</th><th>그날</th><th>표시 등급</th><th>켜진 지표</th></tr>';
+  $('#recent').innerHTML=head+R.slice(0,10).map(row).join('');
+  $('#recentAll').innerHTML=head+R.map(row).join('');
+  // 과거 위기
+  const M=['24','12','6','3','0'];
+  $('#ep').innerHTML='<tr><th>위기</th><th>고점 → 바닥</th>'+M.map(m=>`<th>${m==='0'?'고점':m+'개월 전'}</th>`).join('')+'<th>처음 \'높음\' 이상</th></tr>'+
+    C.episodes.map(e=>`<tr><td><b>${e.name}</b></td><td>${e.peak} → ${e.trough}<br><span class="muted">${pc(e.depth)}</span></td>${M.map(m=>`<td>${chip(e.at[m]?.[4])}</td>`).join('')}<td>${e.first_high?`${e.first_high[0]}<br><span class="muted">S&amp;P ${Math.round(e.first_high[1]).toLocaleString()} · 그 뒤 ${pc(e.first_high[2])}</span>`:'—'}</td></tr>`).join('');
+  $('#epNote').innerHTML=`<div><b>읽는 법</b> — 대폭락 두 번(2000 · 2008)은 고점 직후 '높음' 이상이 켜졌고, 그때도 하락의 대부분(−48% · −53%)이 남아 있었습니다. 고점 전에는 2000년이 '연료'로 '중간~높음', 2008년이 '균열'로 '중간'이었습니다 — 조짐은 보였지만 '확실한 경고'는 시작된 뒤였습니다. 2020년 코로나와 2018년 연말은 '낮음'에서 왔고, 켜진 뒤 남은 하락은 −25% · −11%였습니다. 2020년 줄의 '12개월 전 매우높음'(2019년 2월)은 2018년 연말 급락의 여파가 남아 있던 것이고, 2022년 줄의 '12개월 전 높음'(2021년 1월)은 연료가 가득 찬 데다 코로나 실업·은행 대출 기준 강화의 여파가 균열에 남아 있던 것입니다 — 다음 하락을 내다본 신호로 보면 안 됩니다.</div>`;
+  // 등급별 통계
+  $('#stats').innerHTML='<tr><th>등급</th><th class="r">기간 중 비율</th><th class="r">1년 안 −20% 이상</th><th class="r">1년 안 −30% 이상</th><th class="r">1년 안 평균 최대낙폭</th></tr>'+
+    C.stats.slice().reverse().map(s=>`<tr${s.g===g?' class="cur"':''}><td>${chip(s.g)}${s.g===g?' <span class="muted">← 지금</span>':''}</td><td class="r">${s.share.toFixed(0)}%</td><td class="r"><b>${s.p20==null?'—':s.p20.toFixed(0)+'%'}</b></td><td class="r">${s.p30==null?'—':s.p30.toFixed(0)+'%'}</td><td class="r">${s.avg==null?'—':s.avg.toFixed(0)+'%'}</td></tr>`).join('')+
+    `<tr><td class="muted">아무 날이나 (평소)</td><td class="r muted">100%</td><td class="r muted">${base.p20.toFixed(0)}%</td><td class="r muted">${base.p30.toFixed(0)}%</td><td class="r muted">${base.avg.toFixed(0)}%</td></tr>`;
+  const S=k=>C.stats.find(s=>s.g===k);
+  $('#statsNote').innerHTML=`<div><b>읽는 법</b> — '매우높음'인 날은 1년 안 −20% 하락 확률이 ${S(4).p20.toFixed(0)}%로 평소(${base.p20.toFixed(0)}%)의 약 ${(S(4).p20/base.p20).toFixed(1)}배, '매우낮음'은 0%였습니다. '높음'은 ${S(3).p20.toFixed(0)}%로 평소보다 조금 높고, '중간'(연료만 쌓인 때가 대부분)은 ${S(2).p20.toFixed(0)}%로 오히려 낮았습니다 — 비싼 시장은 비싼 채로 더 오르는 일이 많았기 때문입니다. '낮음'이 ${S(1).p20.toFixed(0)}%로 평소와 비슷한 건 2018년 연말과 2020년 코로나 같은 충격이 '낮음'에서 왔기 때문입니다. 같은 하락이 여러 날에 걸쳐 세어지므로(겹치는 1년 창) 독립된 표본 수는 훨씬 적습니다 — 큰 폭락은 실제로 4~5번입니다.</div>`;
+  drawChart('2000');
+}
+function drawChart(r){
+  if(!window.Plotly) return;
+  document.querySelectorAll('#rng .btn').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
+  const W=C.weekly, x=W.map(w=>w[0]);
+  const shapes=[]; let s=0;
+  for(let k=1;k<=W.length;k++){ if(k===W.length||W[k][5]!==W[s][5]){ if(W[s][5]!=null) shapes.push({type:'rect',xref:'x',yref:'paper',x0:W[s][0],x1:W[k-1][0],y0:0.42,y1:1,fillcolor:GHEX[W[s][5]],opacity:0.2,line:{width:0},layer:'below'}); s=k; } }
+  for(const y of [25,50]) shapes.push({type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:y,y1:y,line:{color:'#3a4150',width:1,dash:'dot'}});
+  const rng=r==='all'?[x[0],x.at(-1)]:r==='2000'?['1998-01-01','2010-12-31']:['2018-01-01',x.at(-1)];
+  Plotly.react('plot',[
+    {x,y:W.map(w=>w[1]),name:'S&P500',line:{color:'#e6e9ee',width:1.3},yaxis:'y',hovertemplate:'S&P %{y:,.0f}<extra></extra>'},
+    {x,y:W.map(w=>w[2]),name:'연료',line:{color:'#f0b429',width:1.4},yaxis:'y2'},
+    {x,y:W.map(w=>w[3]),name:'균열',line:{color:'#ff7b82',width:1.4},yaxis:'y2'},
+    {x,y:W.map(w=>w[4]),name:'불씨',line:{color:'#9ad0f5',width:1.2},yaxis:'y2'},
+    {x,y:W.map(w=>w[5]==null?null:1),name:'등급',mode:'markers',marker:{size:0.1,color:'rgba(0,0,0,0)'},yaxis:'y2',customdata:W.map(w=>w[5]==null?'—':G[w[5]]),hovertemplate:'등급 %{customdata}<extra></extra>',showlegend:false},
+  ].map(t=>({type:'scatter',mode:t.mode||'lines',...t})),
+  {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:46,r:10,t:10,b:28},legend:{orientation:'h',y:1.06},hovermode:'x unified',shapes,
+   xaxis:{gridcolor:'#262c35',range:rng},yaxis:{domain:[0.42,1],type:'log',gridcolor:'#262c35',tickvals:[250,500,1000,2000,4000,8000],ticktext:['250','500','1,000','2,000','4,000','8,000']},yaxis2:{domain:[0,0.36],range:[0,100],gridcolor:'#262c35',title:{text:'점수',font:{size:10}}}},
+  {displayModeBar:false,responsive:true});
+}
+document.querySelectorAll('#rng .btn').forEach(b=>b.addEventListener('click',()=>drawChart(b.dataset.r)));
+const PLOTLY_SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js'];
+const loadScript=src=>new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+(async()=>{
+  const dataP=fetch('crash.json?'+Math.floor(Date.now()/300000)).then(r=>r.ok?r.json():null).catch(()=>null);
+  for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
+  C=await dataP;
+  try{ if(C) render(); else throw new Error('데이터 준비 중'); }catch(e){ $('#now').innerHTML='<div class="l">오류: '+(e&&e.message||e)+'</div>'; console.error(e); }
+})();
+</script>
+</body></html>
