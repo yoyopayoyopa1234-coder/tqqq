@@ -27,12 +27,13 @@ MRE = re.compile(r"\b(january|february|march|april|june|july|august|september|oc
 
 
 def kind_near(t, pos):
+    """달 이름 바로 뒤(20자 안)에 나오는 말: 'december hike', '12월 금리 인상', 'december rate cut'"""
     best = None
     for k, ws in KW.items():
         for w in ws:
             for m in re.finditer(re.escape(w), t):
-                dd = abs(m.start() - pos)
-                if best is None or dd < best[0]: best = (dd, k)
+                dd = m.start() - pos
+                if 0 < dd <= 20 and (best is None or dd < best[0]): best = (dd, k)
     return best[1] if best else None
 
 
