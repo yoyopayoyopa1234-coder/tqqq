@@ -71,7 +71,8 @@
       <div class="fwc" id="fwCards"><div class="muted">불러오는 중…</div></div>
       <div class="tbl"><table id="fwQ"></table></div>
       <div id="fwHistWrap" style="display:none"><div class="fine">최근 30일 추이 (15분마다 쌓임)</div><div id="fwHist" style="height:200px"></div></div>
-      <div><b>기사에 떠도는 수치</b> <span class="muted">제목에 '확률·odds·FedWatch·페드워치'와 함께 나온 퍼센트 · 최근 7일</span><div class="news" id="fwFigs" style="margin-top:4px"></div></div>
+      <div><b>기사·커뮤니티에 떠도는 수치</b> <span class="muted">뉴스 제목과 디시 글(제목·본문 미리보기)에 '확률·odds·FedWatch·페드워치'와 함께 나온 퍼센트 · 최근 7일</span><div class="news" id="fwFigs" style="margin-top:4px"></div></div>
+      <details open><summary>커뮤니티 반응 — 디시 'FedWatch·페드워치' 글</summary><div class="in"><div class="news" id="fwComm"></div><div class="fine" style="margin-top:6px">디시인사이드 통합검색(최신순)에서 제목·본문에 FedWatch·페드워치·페드와치가 들어간 글. 같은 글을 여러 갤러리에 올린 건 하나로 셉니다. 에펨코리아는 자동 수집을 막고 있어(접속 거부) 넣지 못했습니다.</div></div></details>
       <details open><summary>반응 뉴스 — 최근 기사</summary><div class="in"><div class="news" id="fwNews"></div></div></details>
       <div class="fine">읽는 법: 기사 수가 평소(7일 하루 평균)의 2배를 넘으면 시장이 금리에 예민해졌다는 뜻입니다 — 다만 FOMC 주간에는 원래 늘어납니다. 같은 기사가 여러 매체에 실리면 한 번만 셉니다. 수치는 기사 제목에서 자동으로 뽑아서 어느 회의 얘기인지 섞일 수 있고, 제목에 숫자가 없는 날이 많습니다.</div>
       <div class="fine" id="fwTs"></div>
@@ -102,7 +103,7 @@ function renderFW(){
      <div class="why">
        <div>${dot(R.A)}<span><b>시장이 금리 인하를 서두르나</b> <span class="muted">(×2)</span> — ${R.emerg?`'긴급 인하' 기사 ${R.emerg}건`:R.big?`빅컷(0.5%p+) 인하 기사 ${R.big}건`:'긴급·빅컷 인하 얘기 없음'} · 24시간 제목 <span class="cut">인하 ${R.words.cut}</span> / <span class="hold">동결 ${R.words.hold}</span> / <span class="hike">인상 ${R.words.hike}</span>${R.cutmed!=null?` · 기사 속 인하 확률 ${R.cutmed}%`:''}</span></div>
        <div>${dot(R.B)}<span><b>불안한 말이 늘었나</b> — 침체·폭락·패닉 같은 말이 든 제목 24시간 ${R.stress24}건(${R.s24!=null?(R.s24*100).toFixed(0)+'%':'—'}) · 7일 평균 ${(R.s7*100).toFixed(0)}%</span></div>
-       <div>${dot(R.C)}<span><b>FedWatch 언급이 몰리나</b> — 평소의 ${R.r!=null?R.r.toFixed(1)+'배':'—'}${R.fomc_week?` <span class="muted">(FOMC 주간이라 절반으로 봄 → ${R.radj.toFixed(1)}배)</span>`:''}</span></div>
+       <div>${dot(R.C)}<span><b>FedWatch 언급이 몰리나</b> — 뉴스 평소의 ${R.r!=null?R.r.toFixed(1)+'배':'—'} · 커뮤니티 ${R.cr!=null?R.cr.toFixed(1)+'배':`${R.c24??0}건(3건 미만이면 안 봄)`}${R.fomc_week?` <span class="muted">(FOMC 주간이라 절반으로 봄)</span>`:''}</span></div>
        <div class="fine" style="display:block">점수 = 인하 서두름×2 + 불안한 말 + 언급 몰림 (0~8) → 0 매우낮음 · 1~2 낮음 · 3~4 중간 · 5~6 높음 · 7~8 매우높음. 인하 쪽에 무게를 둔 이유: 주가가 고점 근처인데 시장이 인하를 서두를 때 1년 안 S&amp;P500 −20% 확률이 평소의 약 2배였습니다(1991년~, 2년 국채로 확인). 뉴스 신호 자체는 과거 기록이 없어 <b>검증 안 된 참고 등급</b>입니다.</div>
      </div>`;
   }
@@ -114,11 +115,10 @@ function renderFW(){
     <div><div class="k">'FedWatch·페드워치' 언급 (24시간)</div><div class="v">${cnt.fw24??'—'}건</div><div class="s">평소의 <b style="color:${hc(hFw)}">${hFw?hFw.toFixed(1)+'배':'—'}</b> · 7일 ${cnt.fw7d??'—'}건</div></div>
     <div><div class="k">금리 기대 기사 전체 (24시간)</div><div class="v">${cnt.n24??'—'}건</div><div class="s">평소의 <b style="color:${hc(hAll)}">${hAll?hAll.toFixed(1)+'배':'—'}</b> · 7일 ${cnt.n7d??'—'}건</div></div>
     <div><div class="k">기사 속 확률 (최근 3일 가운데값)</div><div class="v ${top||''}">${top?KN[top]+' '+NP[top]+'%':'—'}</div><div class="s">${['cut','hold','hike'].filter(k=>NP[k]!=null).map(k=>`<span class="${k}">${KN[k]} ${NP[k]}%</span>`).join(' · ')||'최근 3일 제목에 숫자 없음'}${NP.n?` <span class="muted">(${NP.n}개)</span>`:''}</div></div>
-    <div><div class="k">가장 많이 나온 말 (24시간)</div><div class="v" id="fwWord">—</div><div class="s" id="fwWordS"></div></div>`;
+    <div><div class="k">커뮤니티 'FedWatch·페드워치' 글 (24시간)</div><div class="v">${FW.ccount?FW.ccount.h24+'건':'—'}</div><div class="s">${FW.ccount&&FW.ccount.d7?`평소의 <b style="color:${hc(heat(FW.ccount.h24,FW.ccount.d7))}">${heat(FW.ccount.h24,FW.ccount.d7).toFixed(1)}배</b> · 7일 ${FW.ccount.d7}건 · 디시 통합검색`:'디시 통합검색'}</div></div>`;
   // 24시간 제목에서 인하/동결/인상 단어 수
-  const now=Date.now(), N24=(FW.news||[]).filter(n=>now-Date.parse(n.ts)<=864e5), W={cut:/\bcuts?\b|easing|인하/i,hold:/\bhold|pause|unchanged|steady|동결/i,hike:/\bhikes?\b|raise|tighten|인상/i};
-  const wc=Object.fromEntries(Object.entries(W).map(([k,r])=>[k,N24.filter(n=>r.test(n.title)).length])), wt=Object.keys(wc).sort((a,b)=>wc[b]-wc[a])[0];
-  $('#fwWord').innerHTML=wc[wt]?`<span class="${wt}">${KN[wt]}</span>`:'—'; $('#fwWordS').innerHTML=Object.keys(wc).map(k=>`<span class="${k}">${KN[k]} ${wc[k]}</span>`).join(' · ')+' <span class="muted">(제목 수)</span>';
+  const CM=FW.comm||[];
+  $('#fwComm').innerHTML=CM.length?CM.slice(0,12).map(c=>`<div class="row"><div class="tm">${kst(c.ts)}</div><div><a href="${esc(c.link)}" target="_blank" rel="noopener">${esc(c.title)}</a> <span class="src">${esc(c.site)}</span>${(c.probs||[]).map(p=>`<span class="tag ${p[0]}">${KN[p[0]]} ${p[1]}%</span>`).join('')}${c.snip?`<div class="src" style="margin-top:2px">${esc(c.snip.slice(0,140))}…</div>`:''}</div></div>`).join(''):'<span class="muted">최근 7일 글 없음</span>';
   const QN={'FedWatch':'FedWatch (영문)','페드워치':'페드워치 (한글)','"rate cut" odds Fed':'rate cut odds','fed funds futures':'fed funds futures','금리 인하 확률 연준':'금리 인하 확률 연준'};
   $('#fwQ').innerHTML='<tr><th>검색어</th><th class="r">24시간</th><th class="r">7일</th><th class="r">평소 대비</th></tr>'+Object.entries(BQ).map(([q,v])=>{ const r=heat(v.h24,v.d7); return `<tr><td>${esc(QN[q]||q)}</td><td class="r">${v.h24}</td><td class="r">${v.d7}</td><td class="r" style="color:${r>=2?'#ff9f68':'inherit'}">${r?r.toFixed(1)+'배':'—'}</td></tr>`; }).join('');
   const FG=FW.figs||[];

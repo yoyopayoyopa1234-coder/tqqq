@@ -119,26 +119,6 @@ def strip(x):
 
 def dc(now):
     out = []
-    for kw in CKW:
-        enc = quote(kw).replace("%", ".")
-        for gid, kind in (("stockus", "mgallery"), ("neostock", "mgallery")):
-            url = f"https://gall.dcinside.com/{kind}/board/lists/?id={gid}&s_type=search_subject_memo&s_keyword={enc}"
-            try:
-                st, t = html(url, "https://gall.dcinside.com/")
-            except Exception as e:
-                note("디시 실패", gid, kw, type(e).__name__, str(e)[:80]); continue
-            rows = re.findall(r'<tr class="ub-content[^"]*"[^>]*>(.*?)</tr>', t, re.S); n = 0
-            for r in rows:
-                a = re.search(r'<td class="gall_tit[^"]*">\s*<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', r, re.S)
-                dt = re.search(r'<td class="gall_date"[^>]*title="([0-9: -]+)"', r)
-                if not a or not dt: continue
-                title = strip(a.group(2)); link = "https://gall.dcinside.com" + a.group(1).replace("&amp;", "&")
-                try: ts = datetime.strptime(dt.group(1).strip(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
-                except Exception: continue
-                out.append(dict(site="디시 " + gid, title=title, link=link, ts=ts.isoformat(timespec="minutes"))); n += 1
-            note("디시", gid, kw, st, len(t), "행", len(rows), "글", n, "| gall_tit", t.count("gall_tit"), "ub-content", t.count("ub-content"), "| 결과없음" if ("검색 결과가 없" in t or "등록된 게시물이 없" in t) else "")
-            if n == 0 and kw == CKW[0] and gid == "stockus":
-                k = t.find("gall_tit"); DIAG.append("디시 HTML: " + re.sub(r"\s+", " ", t[k - 300:k + 700]) if k >= 0 else "디시 HTML 앞: " + re.sub(r"\s+", " ", t[:400]))
     # 디시 통합검색 (모든 갤러리, 최신순)
     for kw in CKW[:3]:
         enc = quote(kw).replace("%", ".")
@@ -152,13 +132,15 @@ def dc(now):
             a = re.search(r'<a href="([^"]+)"[^>]*class="tit_txt"[^>]*>(.*?)</a>', it, re.S)
             d = re.search(r'<span class="date_time">\s*([0-9.: ]+)</span>', it)
             g = re.search(r'<a [^>]*class="sub_txt"[^>]*>(.*?)</a>', it, re.S)
+            sn = re.search(r'<p class="link_dsc_txt[^"]*"[^>]*>(.*?)</p>', it, re.S)
             if not a or not d: continue
             try: ts = datetime.strptime(d.group(1).strip()[:16], "%Y.%m.%d %H:%M").replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
             except Exception: continue
-            out.append(dict(site="디시 " + (strip(g.group(1)) if g else ""), title=strip(a.group(2)), link=a.group(1).replace("&amp;", "&"), ts=ts.isoformat(timespec="minutes"))); n += 1
+            out.append(dict(site="디시 " + (strip(g.group(1)) if g else ""), title=strip(a.group(2)), snip=strip(sn.group(1))[:220] if sn else "",
+                            link=a.group(1).replace("&amp;", "&"), ts=ts.isoformat(timespec="minutes"))); n += 1
         note("디시검색", kw, st, len(t), "글", n, "| tit_txt", t.count("tit_txt"), "date_time", t.count("date_time"))
-        if n == 0 and kw == CKW[0]:
-            k = t.find("tit_txt"); DIAG.append("디시검색 HTML: " + re.sub(r"\s+", " ", t[max(0, k - 400):k + 600] if k >= 0 else t[:400]))
+        if kw == CKW[0]:
+            k = t.find("tit_txt"); DIAG.append("디시검색 HTML: " + re.sub(r"\s+", " ", t[max(0, k - 200):k + 900] if k >= 0 else t[:400]))
     return out
 
 
@@ -190,15 +172,15 @@ def fmk(now):
 
 
 def community(now):
-    seen = {}; 
+    seen = {}
     for x in dc(now) + fmk(now):
-        k = x["link"].split("&page")[0]
+        k = (x["title"], x["ts"][:15])   # 같은 글을 여러 갤러리에 올린 것은 하나로
         if k not in seen: seen[k] = x
     out = sorted(seen.values(), key=lambda x: x["ts"], reverse=True)
     out = [x for x in out if now - datetime.fromisoformat(x["ts"]) <= timedelta(days=8)]
     for x in out:
-        t = x["title"].lower(); probs = []
-        for m in PCT.finditer(x["title"]):
+        raw = x["title"] + " " + x.get("snip", ""); t = raw.lower(); probs = []
+        for m in PCT.finditer(raw):
             val = float(m.group(1))
             if val > 100: continue
             win = t[max(0, m.start() - 30): m.end() + 30]; kind = None; best = 999
@@ -221,7 +203,7 @@ BIGW = re.compile(r"emergency|intermeeting|\b(50|75)\s?(bp|bps|basis)|half[- ]po
 STRESSW = re.compile(r"recession|crash|sell-?off|plunge|plummet|panic|turmoil|crisis|meltdown|\brout\b|default|bank run|contagion|경기\s?침체|폭락|급락|위기|패닉|공포|발작", re.I)
 
 
-def crash_rating(nw, figs, now, fw24, fw7):
+def crash_rating(nw, figs, now, fw24, fw7, cm=()):
     age = lambda x: now - datetime.fromisoformat(x["ts"])
     h24 = [x["title"] for x in nw if age(x) <= timedelta(hours=24)]
     h72 = [x["title"] for x in nw if age(x) <= timedelta(hours=72)]
@@ -243,12 +225,18 @@ def crash_rating(nw, figs, now, fw24, fw7):
     fomc_week = any(-1 <= (datetime.fromisoformat(x).date() - today).days <= 3 for x in FOMC)
     r = fw24 / (fw7 / 7) if fw7 else None
     radj = None if r is None else r / 2 if fomc_week else r
-    C = 0 if radj is None else 2 if radj >= 3 else 1 if radj >= 2 else 0
+    # 커뮤니티(디시) 언급도 같은 방식으로 — 글이 적으면 한두 개로 배수가 크게 흔들려서 24시간 3건 이상일 때만
+    c24 = sum(1 for x in cm if now - datetime.fromisoformat(x["ts"]) <= timedelta(hours=24)); c7 = len(cm)
+    cr = c24 / (c7 / 7) if c7 >= 7 and c24 >= 3 else None
+    cradj = None if cr is None else cr / 2 if fomc_week else cr
+    best = max([x for x in (radj, cradj) if x is not None], default=None)
+    C = 0 if best is None else 2 if best >= 3 else 1 if best >= 2 else 0
     score = 2 * A + B + C
     g = 0 if score == 0 else 1 if score <= 2 else 2 if score <= 4 else 3 if score <= 6 else 4
     return dict(g=g, grade=GRADES[g], score=score, A=A, B=B, C=C, words=words, big=big, emerg=emerg, cutmed=cutmed,
                 s24=None if s24 is None else round(s24, 3), s7=round(s7, 3), stress24=c(STRESSW, h24), n24=len(h24),
                 r=None if r is None else round(r, 2), radj=None if radj is None else round(radj, 2), fomc_week=fomc_week,
+                c24=c24, c7=c7, cr=None if cr is None else round(cr, 2), cradj=None if cradj is None else round(cradj, 2),
                 next_fomc=next((x for x in FOMC if datetime.fromisoformat(x).date() >= today), None))
 
 
@@ -275,7 +263,7 @@ def main():
     def med(k):
         v = sorted(f["v"] for f in figs if f["kind"] == k and now - datetime.fromisoformat(f["ts"]) <= timedelta(hours=72))
         return None if not v else v[len(v) // 2]
-    rt = crash_rating(nw, figs, now, fw24, fw7)
+    rt = crash_rating(nw, figs, now, fw24, fw7, cm)
     snap = dict(t=now.isoformat(timespec="minutes"), n24=n24, fw24=fw24, q={q: v["h24"] for q, v in byq.items()},
                 cut=med("cut"), hold=med("hold"), hike=med("hike"), g=rt["g"], sc=rt["score"], c24=c24)
     hist = [h for h in old.get("hist", []) if datetime.fromisoformat(h["t"]) >= now - timedelta(days=30)] + [snap]
