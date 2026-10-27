@@ -37,19 +37,46 @@ def kind_near(t, pos):
     return best[1] if best else None
 
 
-def month_of(t, pos, kind):
-    """퍼센트 숫자(pos) 근처(40자 안) 달 이름 — 그 달 옆의 말(인하/동결/인상)이 숫자의 종류와 같을 때만 붙임"""
+def month_of(t, pos, kind=None):
+    """숫자 앞(40자 안)에 가장 가까이 나온 달: '10월 회의: 동결 약 90%', 'odds of a december rate cut rise to 65%'"""
     best = None
     for m in MRE.finditer(t):
+        if m.start() >= pos: break
         mo = MON[m.group(1)[:3]] if m.group(1) else int(m.group(2))
-        if not 1 <= mo <= 12 or kind_near(t, m.start()) != kind: continue
-        dist = abs(m.start() - pos)
-        if dist <= 40 and (best is None or dist < best[0]): best = (dist, mo)
-    return best[1] if best else None
+        if 1 <= mo <= 12 and pos - m.start() <= 40: best = mo
+    return best
 
 
 PCT = re.compile(r"(\d{1,3}(?:\.\d+)?)\s?%")
 KW = {"cut": ["cut", "cuts", "easing", "lower rates", "reduction", "인하"], "hold": ["hold", "pause", "unchanged", "steady", "동결"], "hike": ["hike", "raise", "increase", "tighten", "인상"]}
+
+
+EXW = ["cpi", "pce", "gdp", "물가", "실업", "yield", "수익률", "inflation", "인플레", "성장률", "지지율"]
+CUE = ("fedwatch", "페드워치", "페드와치", "odds", "probability", "chance", "확률", "가능성", "price in", "priced", "bets", "futures", "traders", "선물", "kalshi", "polymarket")
+
+
+def classify(raw):
+    """'동결 약 86% / 25bp 인상 약 14%' · 'Price 90% Odds of a Hold' → [[종류, 값, 달]]. %p(포인트)·CPI 같은 숫자는 뺌"""
+    t = raw.lower(); out = []
+    if not any(c in t for c in CUE): return out
+    for m in PCT.finditer(raw):
+        if raw[m.end():m.end() + 1] in ("p", "P"): continue
+        val = float(m.group(1))
+        if val > 100: continue
+        cands = []
+        for k, ws in list(KW.items()) + [("ex", EXW)]:
+            for w in ws:
+                for mm in re.finditer(re.escape(w), t):
+                    if mm.end() <= m.start(): dist = m.start() - mm.end(); side = "b"
+                    elif mm.start() >= m.end(): dist = mm.start() - m.end(); side = "a"
+                    else: continue
+                    if dist <= 25: cands.append((dist, side, k))
+        if not cands: continue
+        before = sorted(c for c in cands if c[1] == "b")
+        pick = before[0] if before and before[0][0] <= 12 else min(cands)
+        if pick[2] == "ex": continue
+        out.append([pick[2], val, month_of(t, m.start(), pick[2])])
+    return out
 
 
 def news():
@@ -74,18 +101,7 @@ def news():
         print(f"뉴스 '{q}': {n}건")
     out = []
     for v in items.values():
-        t = v["title"].lower(); probs = []
-        for m in PCT.finditer(v["title"]):
-            val = float(m.group(1))
-            if val > 100: continue
-            win = t[max(0, m.start() - 60): m.end() + 60]
-            kind = None; best = 999
-            for k, ws in KW.items():
-                for w in ws:
-                    j = win.find(w)
-                    if j >= 0 and abs(j - 60) < best: best = abs(j - 60); kind = k
-            if kind and any(w in t for w in ("fedwatch", "페드워치", "odds", "probability", "chance", "확률", "가능성", "price in", "priced", "bets", "futures", "traders")):
-                probs.append([kind, val, month_of(t, m.start(), kind)])
+        t = v["title"].lower(); probs = classify(v["title"])
         out.append(dict(title=v["title"], link=v["link"], ts=v["ts"].isoformat(timespec="minutes"), src=v["src"], lang=v["lang"],
                         fw="fedwatch" in t or "페드워치" in t, q=sorted(v["q"]), probs=probs))
     out.sort(key=lambda x: x["ts"], reverse=True)
@@ -179,16 +195,7 @@ def community(now):
     out = sorted(seen.values(), key=lambda x: x["ts"], reverse=True)
     out = [x for x in out if now - datetime.fromisoformat(x["ts"]) <= timedelta(days=8)]
     for x in out:
-        raw = x["title"] + " " + x.get("snip", ""); t = raw.lower(); probs = []
-        for m in PCT.finditer(raw):
-            val = float(m.group(1))
-            if val > 100: continue
-            win = t[max(0, m.start() - 30): m.end() + 30]; kind = None; best = 999
-            for k, ws in KW.items():
-                for w in ws:
-                    j = win.find(w)
-                    if j >= 0 and abs(j - 30) < best: best = abs(j - 30); kind = k
-            if kind: probs.append([kind, val, month_of(t, m.start(), kind)])
+        probs = classify(x["title"] + " " + x.get("snip", ""))
         x["probs"] = probs
     return out
 
