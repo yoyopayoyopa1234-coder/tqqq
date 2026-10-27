@@ -38,8 +38,6 @@ jobs:
         continue-on-error: true
       - run: python scripts/fedwatch.py
         continue-on-error: true
-      - run: python scripts/tqw.py
-        continue-on-error: true
       - run: pip install playwright==1.47.0 && python -m playwright install --with-deps chromium
       - run: python scripts/verify_tv.py
         continue-on-error: true
@@ -47,6 +45,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
-          git add tq.json tq_state.json verify_summary.json $(ls fg_hist.json tq40.json bt_data.json tqqq_data.json soxl_data.json koru_data.json simple_check.json crash_raw.json crash.json fedwatch.json tqw.json 2>/dev/null)
+          git add tq.json tq_state.json verify_summary.json $(ls fg_hist.json tq40.json bt_data.json tqqq_data.json soxl_data.json koru_data.json simple_check.json crash_raw.json crash.json fedwatch.json 2>/dev/null)
           git diff --cached --quiet || git commit -m "data: $(date -u +%F' '%H:%M)"
           for i in 1 2 3 4; do git push && break; git pull --rebase -X theirs || { git rebase --abort; git pull --no-rebase -X ours; }; sleep 3; done
