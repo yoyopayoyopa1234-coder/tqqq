@@ -92,6 +92,47 @@ def news():
     return out
 
 
+# ── 폭락 가능성 (FedWatch 주변 신호만으로, 5단계) ──
+FOMC = ["2026-10-28", "2026-12-09", "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-16", "2027-07-28", "2027-09-22", "2027-10-27", "2027-12-08"]
+GRADES = ["매우낮음", "낮음", "중간", "높음", "매우높음"]
+CUTW = re.compile(r"\bcuts?\b|\bcutting\b|easing|lower rates|인하", re.I)
+HOLDW = re.compile(r"\bholds?\b|\bholding\b|pause|unchanged|steady|동결", re.I)
+HIKEW = re.compile(r"\bhikes?\b|\bhiking\b|raise|tighten|인상", re.I)
+BIGW = re.compile(r"emergency|intermeeting|\b(50|75)\s?(bp|bps|basis)|half[- ]point|jumbo|긴급|빅컷|0\.5\s?%?p", re.I)
+STRESSW = re.compile(r"recession|crash|sell-?off|plunge|plummet|panic|turmoil|crisis|meltdown|\brout\b|default|bank run|contagion|경기\s?침체|폭락|급락|위기|패닉|공포|발작", re.I)
+
+
+def crash_rating(nw, figs, now, fw24, fw7):
+    age = lambda x: now - datetime.fromisoformat(x["ts"])
+    h24 = [x["title"] for x in nw if age(x) <= timedelta(hours=24)]
+    h72 = [x["title"] for x in nw if age(x) <= timedelta(hours=72)]
+    h7 = [x["title"] for x in nw]
+    c = lambda rx, hs: sum(1 for t in hs if rx.search(t))
+    words = dict(cut=c(CUTW, h24), hold=c(HOLDW, h24), hike=c(HIKEW, h24))
+    # A. 인하를 서두르나 (가중치 2배): 긴급·빅컷 인하 기사 / 인하 쪽 기사가 동결+인상보다 많음 / 기사 속 인하 확률이 큼
+    big = sum(1 for t in h72 if BIGW.search(t) and CUTW.search(t))
+    emerg = sum(1 for t in h72 if re.search(r"emergency|intermeeting|긴급", t, re.I) and CUTW.search(t))
+    cutf = sorted(f["v"] for f in figs if f["kind"] == "cut" and now - datetime.fromisoformat(f["ts"]) <= timedelta(hours=72))
+    cutmed = cutf[len(cutf) // 2] if cutf else None
+    A = 2 if (emerg >= 1 or big >= 3) else 1 if ((words["cut"] >= 5 and words["cut"] > words["hold"] + words["hike"]) or (cutmed is not None and cutmed >= 60) or big >= 1) else 0
+    # B. 불안한 말 (침체·폭락·패닉…)이 평소보다 많은가
+    s24 = c(STRESSW, h24) / len(h24) if len(h24) >= 10 else None
+    s7 = c(STRESSW, h7) / len(h7) if h7 else 0
+    B = 0 if s24 is None else 2 if (s24 >= 0.20 and s24 >= 2 * s7) else 1 if ((s24 >= 0.10 and s24 >= 1.5 * s7) or s24 >= 0.25) else 0
+    # C. FedWatch 언급이 평소보다 몰리나 — FOMC 주간엔 원래 늘어나니 절반으로 깎아서 봄
+    today = now.date()
+    fomc_week = any(-1 <= (datetime.fromisoformat(x).date() - today).days <= 3 for x in FOMC)
+    r = fw24 / (fw7 / 7) if fw7 else None
+    radj = None if r is None else r / 2 if fomc_week else r
+    C = 0 if radj is None else 2 if radj >= 3 else 1 if radj >= 2 else 0
+    score = 2 * A + B + C
+    g = 0 if score == 0 else 1 if score <= 2 else 2 if score <= 4 else 3 if score <= 6 else 4
+    return dict(g=g, grade=GRADES[g], score=score, A=A, B=B, C=C, words=words, big=big, emerg=emerg, cutmed=cutmed,
+                s24=None if s24 is None else round(s24, 3), s7=round(s7, 3), stress24=c(STRESSW, h24), n24=len(h24),
+                r=None if r is None else round(r, 2), radj=None if radj is None else round(radj, 2), fomc_week=fomc_week,
+                next_fomc=next((x for x in FOMC if datetime.fromisoformat(x).date() >= today), None))
+
+
 def main():
     now = datetime.now(timezone.utc)
     try: old = json.load(open(OUT))
@@ -110,14 +151,15 @@ def main():
     def med(k):
         v = sorted(f["v"] for f in figs if f["kind"] == k and now - datetime.fromisoformat(f["ts"]) <= timedelta(hours=72))
         return None if not v else v[len(v) // 2]
+    rt = crash_rating(nw, figs, now, fw24, fw7)
     snap = dict(t=now.isoformat(timespec="minutes"), n24=n24, fw24=fw24, q={q: v["h24"] for q, v in byq.items()},
-                cut=med("cut"), hold=med("hold"), hike=med("hike"))
+                cut=med("cut"), hold=med("hold"), hike=med("hike"), g=rt["g"], sc=rt["score"])
     hist = [h for h in old.get("hist", []) if datetime.fromisoformat(h["t"]) >= now - timedelta(days=30)] + [snap]
-    json.dump(dict(ts=int(now.timestamp()), news=nw[:60], figs=figs[:30], diag=DIAG,
+    json.dump(dict(ts=int(now.timestamp()), rating=rt, news=nw[:60], figs=figs[:30], diag=DIAG,
                    counts=dict(n24=n24, fw24=fw24, n7d=len(nw), fw7d=fw7, byq=byq),
                    news_probs=dict(cut=med("cut"), hold=med("hold"), hike=med("hike"), n=sum(1 for f in figs if now - datetime.fromisoformat(f["ts"]) <= timedelta(hours=72))), hist=hist[-3000:]),
               open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))
-    print("fedwatch 주변: 24시간 기사", n24, "· FedWatch 언급", fw24, "· 제목 속 수치", len(figs))
+    print("FedWatch 주변 폭락 가능성:", rt["grade"], rt, "| 24시간 기사", n24, "· FedWatch 언급", fw24, "· 제목 속 수치", len(figs))
 
 
 if __name__ == "__main__":

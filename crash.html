@@ -44,6 +44,10 @@
   .step .one { margin:6px 0 0 36px; } .step details { margin:6px 0 0 36px; } @media (max-width:560px){ .step .one, .step details { margin-left:0; } }
   .btns { display:flex; gap:6px; flex-wrap:wrap; } .btn { font:inherit; font-size:12px; padding:4px 10px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; } .btn.on { border-color:var(--accent); color:var(--accent); }
   tr.cur td { background:rgba(255,255,255,.05); }
+  .fwr { border:1px solid var(--gc,#262c35); border-radius:12px; padding:12px 14px; background:linear-gradient(180deg,color-mix(in srgb,var(--gc,#262c35) 10%,transparent),transparent); display:grid; grid-template-columns:minmax(180px,.8fr) 1.4fr; gap:10px 18px; } @media (max-width:640px){ .fwr { grid-template-columns:1fr; } }
+  .fwr .l { font-size:12px; color:var(--muted); } .fwr .big { font-size:30px; font-weight:800; color:var(--gc); line-height:1.25; margin:2px 0; }
+  .fwr .why { display:grid; gap:6px; font-size:13px; } .fwr .why div { display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:baseline; }
+  .dots { letter-spacing:2px; font-size:12px; white-space:nowrap; }
   .fwc { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; } @media (max-width:820px){ .fwc { grid-template-columns:1fr 1fr; } } @media (max-width:420px){ .fwc { grid-template-columns:1fr; } }
   .fwc > div { border:1px solid var(--line); border-radius:10px; padding:10px 12px; min-width:0; }
   .fwc .k { font-size:11.5px; color:var(--muted); } .fwc .v { font-size:21px; font-weight:800; line-height:1.3; margin:2px 0; font-variant-numeric:tabular-nums; } .fwc .s { font-size:12px; color:var(--muted); line-height:1.5; }
@@ -84,8 +88,9 @@
   </div>
 
   <div class="panel" id="fwPanel">
-    <h2>FedWatch 주변 반응 <span class="desc">CME FedWatch는 접속이 안 돼서 그 주변을 셈 — 언급 수 · 반응 뉴스 · 기사에 떠도는 확률 · 15분마다 · 참고용(등급에 안 넣음)</span></h2>
+    <h2>FedWatch 주변 반응 · 폭락 가능성 <span class="desc">CME FedWatch는 접속이 안 돼서 그 주변을 셈 — 언급 수 · 반응 뉴스 · 기사에 떠도는 확률 → 5단계 · 15분마다 · 참고용(위 대폭락 등급에 안 넣음)</span></h2>
     <div class="body">
+      <div class="fwr" id="fwRate"></div>
       <div class="fwc" id="fwCards"><div class="muted">불러오는 중…</div></div>
       <div class="tbl"><table id="fwQ"></table></div>
       <div id="fwHistWrap" style="display:none"><div class="fine">최근 30일 추이 (15분마다 쌓임)</div><div id="fwHist" style="height:200px"></div></div>
@@ -335,6 +340,22 @@ const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const KN={cut:'인하',hold:'동결',hike:'인상'};
 function renderFW(){
   if(!FW){ $('#fwCards').innerHTML='<div class="muted">자료 준비 중 — 15분 안에 첫 수집이 끝납니다.</div>'; return; }
+  // 폭락 가능성 (FedWatch 주변 신호만으로)
+  const R=FW.rating;
+  if(R){
+    const gc=GC[R.g], dot=n=>'<span class="dots">'+[0,1].map(i=>`<span style="color:${i<n?gc:'#3a414d'}">●</span>`).join('')+'</span>';
+    const H30=(FW.hist||[]).filter(h=>h.g!=null), mx=H30.length?Math.max(...H30.map(h=>h.g)):null;
+    $('#fwRate').style.setProperty('--gc',gc);
+    $('#fwRate').innerHTML=`<div><div class="l">FedWatch 주변으로 본 폭락 가능성</div><div class="big">${R.grade}</div>
+       <div class="scale">${G.map((x,i)=>`<div class="${i===R.g?'on':''}" style="background:${GC[i]};color:${GC[i]}"></div>`).join('')}</div><div class="scale-l">${G.map(x=>`<span>${x}</span>`).join('')}</div>
+       <div class="l" style="margin-top:6px">점수 ${R.score}/8${mx!=null&&H30.length>=4?` · 최근 30일 가장 높았던 등급 ${G[mx]}`:''}</div></div>
+     <div class="why">
+       <div>${dot(R.A)}<span><b>시장이 금리 인하를 서두르나</b> <span class="muted">(×2)</span> — ${R.emerg?`'긴급 인하' 기사 ${R.emerg}건`:R.big?`빅컷(0.5%p+) 인하 기사 ${R.big}건`:'긴급·빅컷 인하 얘기 없음'} · 24시간 제목 <span class="cut">인하 ${R.words.cut}</span> / <span class="hold">동결 ${R.words.hold}</span> / <span class="hike">인상 ${R.words.hike}</span>${R.cutmed!=null?` · 기사 속 인하 확률 ${R.cutmed}%`:''}</span></div>
+       <div>${dot(R.B)}<span><b>불안한 말이 늘었나</b> — 침체·폭락·패닉 같은 말이 든 제목 24시간 ${R.stress24}건(${R.s24!=null?(R.s24*100).toFixed(0)+'%':'—'}) · 7일 평균 ${(R.s7*100).toFixed(0)}%</span></div>
+       <div>${dot(R.C)}<span><b>FedWatch 언급이 몰리나</b> — 평소의 ${R.r!=null?R.r.toFixed(1)+'배':'—'}${R.fomc_week?` <span class="muted">(FOMC 주간이라 절반으로 봄 → ${R.radj.toFixed(1)}배)</span>`:''}</span></div>
+       <div class="fine" style="display:block">점수 = 인하 서두름×2 + 불안한 말 + 언급 몰림 (0~8) → 0 매우낮음 · 1~2 낮음 · 3~4 중간 · 5~6 높음 · 7~8 매우높음. 인하 쪽에 무게를 둔 이유: 주가가 고점 근처인데 시장이 인하를 서두를 때 1년 안 S&amp;P500 −20% 확률이 평소의 약 2배였습니다(1991년~, 2년 국채로 확인). 뉴스 신호 자체는 과거 기록이 없어 <b>검증 안 된 참고 등급</b>이고, 위 대폭락 등급에는 넣지 않습니다.</div>
+     </div>`;
+  }
   const cnt=FW.counts||{}, BQ=cnt.byq||{}, NP=FW.news_probs||{};
   const heat=(h,d7)=>d7?h/(d7/7):null, hc=r=>r>=2?'#ff9f68':'#c9cfd8';
   const hAll=heat(cnt.n24,cnt.n7d), hFw=heat(cnt.fw24,cnt.fw7d);
@@ -363,8 +384,9 @@ function drawFW(){
   if(H.length<12) return;
   $('#fwHistWrap').style.display='';
   Plotly.react('fwHist',[{type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.n24),name:'금리 기대 기사 (24시간)',line:{color:'#c9cfd8',width:1.4},hovertemplate:'%{y}건<extra>전체</extra>'},
-    {type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.fw24),name:'FedWatch 언급',line:{color:'#ff9f68',width:1.6},hovertemplate:'%{y}건<extra>FedWatch</extra>'}],
-    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:36,r:10,t:10,b:30},showlegend:true,legend:{orientation:'h',y:1.15},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',rangemode:'tozero'}},{displayModeBar:false,responsive:true});
+    {type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.fw24),name:'FedWatch 언급',line:{color:'#ff9f68',width:1.6},hovertemplate:'%{y}건<extra>FedWatch</extra>'},
+    {type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.g),name:'폭락 가능성',yaxis:'y2',line:{color:'#f23645',width:1.4,shape:'hv'},customdata:H.map(h=>h.g==null?'—':G[h.g]),hovertemplate:'%{customdata}<extra>폭락 가능성</extra>'}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:36,r:56,t:10,b:30},showlegend:true,legend:{orientation:'h',y:1.15},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',rangemode:'tozero'},yaxis2:{overlaying:'y',side:'right',range:[-0.3,4.3],tickvals:[0,1,2,3,4],ticktext:G,showgrid:false,tickfont:{size:9}}},{displayModeBar:false,responsive:true});
 }
 const loadFW=()=>fetch('fedwatch.json?'+Math.floor(Date.now()/60000)).then(r=>r.ok?r.json():null).catch(()=>null);
 const PLOTLY_SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js'];
