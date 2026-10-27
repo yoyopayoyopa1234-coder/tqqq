@@ -196,6 +196,9 @@ def rel_ts(s, now):
 def windows(src, kind, page, url, now, cue, default_age):
     """검색 결과 페이지에서 단서 단어 둘레 문장을 잘라 숫자 뽑기 (구조가 자주 바뀌는 사이트용)"""
     text = strip(page); n = 0; seen = set()
+    # 네이버·다음 화면 문구 정리
+    text = re.sub(r"새 창 열림|Keep에 (저장|바로가기)|언론사 선정|언론사가 선정한 주요기사 혹은 심층기획 기사입니다\.?|네이버 메인에서 보고 싶은 언론사 를 구독하세요\.?|구독하세요|관련뉴스 \d+건 전체보기|Naver|네이버뉴스", " ", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
     for m in re.finditer(cue, text, re.I):
         w = text[max(0, m.start() - 220): m.end() + 260].replace("\n", " ")
         key = re.sub(r"\W", "", w[150:330])
