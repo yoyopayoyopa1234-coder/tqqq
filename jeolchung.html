@@ -87,7 +87,7 @@
 </head><body>
 <div class="wrap">
   <header>
-    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="simple.html">간단지표</a><a href="jeolchung.html" class="cur">절충형</a><a href="qqq200.html">200큐큐단</a><a href="analysis.html">TQQQ 분석</a><a href="fg.html">공탐</a><a href="loan.html">위기대출</a><a href="quotes.html">명언</a></nav>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="simple.html">간단지표</a><a href="jeolchung.html" class="cur">절충형</a><a href="banban.html">반반형</a><a href="qqq200.html">200큐큐단</a><a href="analysis.html">TQQQ 분석</a><a href="fg.html">공탐</a><a href="loan.html">위기대출</a><a href="quotes.html">명언</a></nav>
     <h1>절충형 매매법 <span class="tag">주력</span></h1>
     <span class="date" id="today"></span>
   </header>
@@ -349,7 +349,7 @@ function render(){
 }
 async function verify2(){
   const el=$('#check'); let C; try{ C=await (await fetch('simple_check.json?'+Math.floor(Date.now()/300000))).json(); }catch(e){ el.innerHTML='<span class="muted">검증 파일 준비 중</span>'; return; }
-  const sg=C.signals&&C.signals['절충형'], bt=C.bt&&C.bt['절충형'], mine=TODAY['절충형'], ok1=sg&&sg.text===mine, ok2=bt&&BT['절충형']&&Math.abs(bt.c-BT['절충형'].c)<=0.06&&Math.abs(bt.m-BT['절충형'].m)<=0.06&&bt.n===BT['절충형'].n;
+  const sg=C.signals&&C.signals['절충형'], bt=C.bt&&C.bt['절충형'], mine=TODAY['절충형'], nz=x=>String(x||'').replace(/ 100%/g,''), ok1=sg&&nz(sg.text)===nz(mine), ok2=bt&&BT['절충형']&&Math.abs(bt.c-BT['절충형'].c)<=0.06&&Math.abs(bt.m-BT['절충형'].m)<=0.06&&bt.n===BT['절충형'].n;
   const bad=(C.checks||[]).filter(c=>!c.ok&&c.name!=='경계 근처 지표'), at=C.at?new Date(C.at):null, age=at?Math.round((Date.now()-at)/60000):null;
   el.innerHTML=`${ok1&&ok2?'<b class="ok">✓ 일치</b>':'<b class="bad">⚠ 불일치</b>'} — 오늘 신호: 이 페이지 <b>${mine}</b> / 파이썬 <b>${sg?sg.text:'—'}</b> ${ok1?'<span class="ok">같음</span>':'<span class="bad">다름</span>'} · 40년: ${BT['절충형']?BT['절충형'].c.toFixed(2)+'% · '+BT['절충형'].m.toFixed(2)+'%':'—'} / ${bt?bt.c.toFixed(2)+'% · '+bt.m.toFixed(2)+'%':'—'} ${ok2?'<span class="ok">같음</span>':'<span class="bad">다름</span>'}<br>
     <span class="muted" style="font-size:12px">${C.at_kst||''} KST 검증${age!=null?` (${age}분 전)`:''}${age!=null&&age>90?' <b class="bad">— 검증이 멈춤</b>':''} · 데이터 점검 ${(C.checks||[]).length}개 중 ${bad.length?'<b class="wr">주의 '+bad.map(c=>c.name).join(' · ')+'</b>':'<span class="ok">전부 OK</span>'}${(C.near||[]).filter(x=>x.includes('절충형')).length?'<br><b class="wr">경계 근처</b> — '+C.near.filter(x=>x.includes('절충형')).join(' / '):''}</span>`;
