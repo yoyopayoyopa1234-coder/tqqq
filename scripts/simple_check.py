@@ -71,7 +71,7 @@ def engine(D, lv, W, a, b, ts=0.25):
     """비중 혼합 엔진 (simple.html engineH 와 같은 규칙): 단계 바뀔 때 비중 설정, 월초 재조정, TQQQ 몫 TS."""
     d, T, ret, dt = D["d"], D["T"], D["ret"], D["dt"]
     cur = lv[a]; h = dict(W[cur]); v = 1.0; pk = 1.0; mdd = 0.0; pkd = d[a]; w = ["", ""]; tpk = T[a]; cut = False
-    vs = 1.0 if cur != "C" else 0.0; tr = []; sw = 0
+    vs = 1.0 if cur != "C" else 0.0; tr = []; sw = 0; cv = [1.0]
     def setw(tw):
         nonlocal h
         h = {k: v * x for k, x in tw.items() if x > 1e-12}
@@ -93,9 +93,10 @@ def engine(D, lv, W, a, b, ts=0.25):
             if not cut and d[i][5:7] != d[i - 1][5:7]: setw(W[cur])
         if v > pk: pk = v; pkd = d[i]
         if v / pk - 1 < mdd: mdd = v / pk - 1; w = [pkd, d[i]]
+        cv.append(v)
     if vs: tr.append(v / vs - 1)
     y = (dt[b] - dt[a]).days / 365.25
-    return dict(c=(v ** (1 / y) - 1) * 100, m=mdd * 100, v=v, w=w, cur=cur, cut=cut, tpk=tpk, tr=tr, sw=sw / y)
+    return dict(c=(v ** (1 / y) - 1) * 100, m=mdd * 100, v=v, w=w, cur=cur, cut=cut, tpk=tpk, tr=tr, sw=sw / y, cv=cv)
 
 INF = float("inf")
 STRATS = {
@@ -157,6 +158,29 @@ def main():
         signals[nm] = dict(text=text, level=st, cut=bool(cutnow), ts_line=round(e["tpk"] * (1 - ts), 2) if (ts and isinstance(L, list) and not cutnow) else None)
         trs = e["tr"]; win = sum(1 for x in trs if x > 0) / len(trs) * 100 if trs else 0
         bt[nm] = dict(c=round(e["c"], 2), m=round(e["m"], 2), n=len(trs), win=round(win, 1), mdd_from=e["w"][0], mdd_to=e["w"][1])
+    # 분산형: 세 구좌(구간 −8/−10/−12% · TS −20/−25/−30%) 독립 운용 후 합산
+    WD = {"T": {"T": 0.9, "S": 0.1}, "M": {"T": 0.7, "S": 0.3}, "X": {"Q": 1}, "C": {"C": 1}}; subs = []
+    for top, ts in ((0.08, 0.20), (0.10, 0.25), (0.12, 0.30)):
+        lv = mk_levels(D, dict(eIn=INF, eOut=INF, tIn=top, tOut=top, oh=INF, confirm=1, bIn=0.03, bOut=0.03)); subs.append((lv, engine(D, lv, WD, a0, N - 1, ts)))
+    wT = wS = wC = 0.0
+    for lv, e in subs:
+        st = lv[-1]; zone = st == "T"; inm = st != "C"; cut = inm and e["cut"] and e["cur"] == st
+        t = 0 if not inm or cut else (0.9 if zone else 0.7); spw = (0.1 if zone else 0.3) if inm else 0; wT += t / 3; wS += spw / 3; wC += (1 - t - spw) / 3
+    pw = lambda x: int(round(x * 100))
+    signals["분산형"] = dict(text=(f"TQQQ {pw(wT)}% + SPYM {pw(wS)}% + SGOV {pw(wC)}%" if wC > 0.005 else f"TQQQ {pw(wT)}% + SPYM {pw(wS)}%"), level="/".join(lv[-1] + ("c" if (e["cut"] and e["cur"] == lv[-1]) else "") for lv, e in subs), cut=None, ts_line=None)
+    # 분산형 40년: 세 곡선 평균 → 연복리·최대낙폭, 왕복 거래는 공통 밴드(②) 기준
+    n = len(subs[0][1]["cv"]); cv = [(subs[0][1]["cv"][i] + subs[1][1]["cv"][i] + subs[2][1]["cv"][i]) / 3 for i in range(n)]
+    pk = 1.0; mdd = 0.0; pkd = d[a0]; w = ["", ""]
+    for i in range(1, n):
+        if cv[i] > pk: pk = cv[i]; pkd = d[a0 + i]
+        if cv[i] / pk - 1 < mdd: mdd = cv[i] / pk - 1; w = [pkd, d[a0 + i]]
+    lvc = subs[1][0]; tr = []; vs = 1.0 if lvc[a0] != "C" else 0.0
+    for i in range(a0 + 1, N):
+        if lvc[i - 1] == "C" and lvc[i] != "C": vs = cv[i - a0]
+        elif lvc[i - 1] != "C" and lvc[i] == "C" and vs: tr.append(cv[i - a0] / vs - 1); vs = 0.0
+    if vs: tr.append(cv[-1] / vs - 1)
+    y = (D["dt"][N - 1] - D["dt"][a0]).days / 365.25
+    bt["분산형"] = dict(c=round((cv[-1] ** (1 / y) - 1) * 100, 2), m=round(mdd * 100, 2), n=len(tr), win=round(sum(1 for x in tr if x > 0) / len(tr) * 100, 1) if tr else 0, mdd_from=w[0], mdd_to=w[1])
     S = TQ["spx"]; signals["TQQQ 신호판"] = dict(text="TQQQ" if S["state"] == "IN" else "SGOV", level=S["state"], ts_line=(S.get("cycle") or {}).get("ts_line"))
 
     # ── 경계 근처 (오늘 밤 작은 움직임으로 신호가 바뀔 수 있는 것) ──
