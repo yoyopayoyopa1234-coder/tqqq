@@ -1,4 +1,5 @@
-"""TQQQ 40년 환산 주가 → tq40.json (하루 한 번).
+"""TQQQ 40년 환산 주가 → tq40.json (15분마다 — 야후는 매번, FRED 금리·환율은 20시간 캐시).
+마지막 봉이 장중(미국 정규장 마감 전)에 받은 실시간가면 bar_final=false 로 표시한다 (종가 확정 전에는 신호가 바뀔 수 있음).
 나스닥100(^NDX) 일봉 × 3 − 조달금리(DFF×2) − 운용보수(ER 0.95%) − 스왑 스프레드(SS 1%×2).
 아기티큐 공개 수식과 같은 방식.
 
@@ -35,6 +36,8 @@ def ohlc_since(sym, iv, p1=1262304000):
         if c is None: continue
         o, h, l = q["open"][i] or c, q["high"][i] or c, q["low"][i] or c
         out.append([t, round(o, 4), round(max(h, o, c), 4), round(min(l, o, c), 4), round(c, 4)])
+    while len(out) >= 2 and day(out[-1][0]) == day(out[-2][0]):   # 진행 중인 봉 중복 → 합침
+        a, b = out[-2], out[-1]; out[-2:] = [[a[0], a[1], max(a[2], b[2]), min(a[3], b[3]), b[4]]]
     return out
 
 def spx_series(days):
@@ -56,13 +59,17 @@ def fx_series(days, fx):
         out.append(last)
     return out
 
+def us_close_utc(dt):
+    """해당 날짜 미국 정규장 마감(16:00 ET)을 UTC datetime으로. 서머타임: 3월 둘째 일요일 ~ 11월 첫째 일요일."""
+    y = dt.year
+    mar = next(date(y, 3, k) for k in range(8, 15) if date(y, 3, k).weekday() == 6)
+    nov = next(date(y, 11, k) for k in range(1, 8) if date(y, 11, k).weekday() == 6)
+    return datetime(y, dt.month, dt.day, 20 if mar <= dt < nov else 21, 0, tzinfo=timezone.utc)
+
 def main():
-    try:
-        old = json.load(open(FN))
-        if time.time() - old.get("ts", 0) < 20 * 3600 and len(old.get("ohlc", {}).get("TQQQ_1d", [])) > 9000 and old.get("krw") and old.get("spx"):
-            print("tq40 최신 — 건너뜀"); return
-    except Exception:
-        pass
+    now = time.time()
+    try: old = json.load(open(FN))
+    except Exception: old = None
     j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=489024000&period2={int(time.time())}&interval=1d"))
     r = j["chart"]["result"][0]; q = r["indicators"]["quote"][0]
     ndx = []
@@ -71,18 +78,30 @@ def main():
         if not c: continue
         o, h, l = q["open"][i] or c, q["high"][i] or c, q["low"][i] or c
         ndx.append((t, o, max(h, o, c), min(l, o, c), c))
-    dff = {}
-    for row in csv.reader(io.StringIO(get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF"))):
-        try: dff[date.fromisoformat(row[0])] = float(row[1])
-        except Exception: pass
-    dk = sorted(dff)
-    krw = {}
-    try:
-        for row in csv.reader(io.StringIO(get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXKOUS"))):
-            try: krw[date.fromisoformat(row[0])] = float(row[1])
+    # 야후가 진행 중인 봉을 한 번 더 붙여 보내면 직전 봉에 합침
+    while len(ndx) >= 2 and day(ndx[-1][0]) == day(ndx[-2][0]):
+        a, b = ndx[-2], ndx[-1]; ndx[-2:] = [(a[0], a[1], max(a[2], b[2]), min(a[3], b[3]), b[4])]
+    if len(ndx) < 9000: raise SystemExit(f"NDX 데이터 부족 {len(ndx)}")
+    # FRED 금리·환율: 20시간 안에 받은 게 있으면 이전 파일의 값을 그대로 씀 (새 날짜는 마지막 값 유지)
+    fred_ts = old.get("fred_ts", 0) if old else 0
+    if old and now - fred_ts < 20 * 3600 and old.get("dff") and old.get("krw") and len(old["dff"]) == len(old["d"]):
+        dff = {date.fromisoformat(x): v for x, v in zip(old["d"], old["dff"])}
+        krw = {date.fromisoformat(x): v for x, v in zip(old["d"], old["krw"]) if v is not None}
+        print("FRED 캐시 사용", datetime.fromtimestamp(fred_ts, timezone.utc).strftime("%m-%d %H:%M"))
+    else:
+        dff = {}
+        for row in csv.reader(io.StringIO(get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF"))):
+            try: dff[date.fromisoformat(row[0])] = float(row[1])
             except Exception: pass
-    except Exception as e:
-        print("DEXKOUS 실패", e)
+        krw = {}
+        try:
+            for row in csv.reader(io.StringIO(get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXKOUS"))):
+                try: krw[date.fromisoformat(row[0])] = float(row[1])
+                except Exception: pass
+        except Exception as e:
+            print("DEXKOUS 실패", e)
+        fred_ts = now
+    dk = sorted(dff)
     j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/TQQQ?period1=1262304000&period2={int(time.time())}&interval=1d&events=div,split"))
     r = j["chart"]["result"][0]
     adj = {day(t): a for t, a in zip(r["timestamp"], r["indicators"]["adjclose"][0]["adjclose"]) if a}
@@ -117,7 +136,8 @@ def main():
         "TQQQ_1mo": [b for kk, b in aggregate(sb, mo) if kk < first_m] + real["1mo"],
         "NDX_1mo": [[b[0], round(b[4], 2)] for kk, b in aggregate([list(x) for x in ndx], mo)],
     }
-    out = {"ts": int(time.time()), "start": start.isoformat(), "er": ER, "ss": SS,
+    last_day = day(ndx[-1][0]); bar_final = datetime.fromtimestamp(now, timezone.utc) >= us_close_utc(last_day)
+    out = {"ts": int(now), "fred_ts": int(fred_ts), "bar_date": last_day.isoformat(), "bar_final": bar_final, "start": start.isoformat(), "er": ER, "ss": SS,
            "d": [day(x[0]).isoformat() for x in ndx],
            "syn": [round(v * s_adj, 6) for v in syn],
            "real": [round(adj[day(x[0])], 4) if day(x[0]) in adj else None for x in ndx],
@@ -127,7 +147,7 @@ def main():
            "spx": spx_series([day(x[0]) for x in ndx]),
            "ohlc": ohlc}
     json.dump(out, open(FN, "w"), separators=(",", ":"))
-    print("tq40", len(ndx), out["d"][0], out["d"][-1], {k: len(v) for k, v in ohlc.items()})
+    print("tq40", len(ndx), out["d"][0], out["d"][-1], "확정" if bar_final else "장중(미확정)", {k: len(v) for k, v in ohlc.items()})
 
 if __name__ == "__main__":
     main()
