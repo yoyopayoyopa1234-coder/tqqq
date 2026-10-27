@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TQQQ 비중매매법</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#ff8c42; color-scheme:dark;
+    --good:#5ad445; --warn:#f0b429; --bad:#f23645; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 48px; max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  h1 { font-size:20px; margin:0; } .date { color:var(--muted); font-size:12px; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .panel > h2 { margin:0; padding:10px 14px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; border-bottom:1px solid var(--line); }
+  .panel > h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .body { padding:14px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.7; }
+  .muted { color:var(--muted); } .fine { font-size:11.5px; color:var(--muted); line-height:1.6; }
+  .hero { display:grid; grid-template-columns:1.2fr 1fr; gap:14px; } @media (max-width:760px){ .hero { grid-template-columns:1fr; } }
+  .lad { display:grid; gap:4px; }
+  .lad .r { display:grid; grid-template-columns:62px 1fr auto; gap:8px; align-items:center; padding:8px 10px; border-radius:8px; border-left:4px solid var(--c); background:color-mix(in srgb,var(--c) 9%,transparent); font-size:13px; }
+  .lad .r .z { font-weight:700; font-variant-numeric:tabular-nums; } .lad .r .w { font-weight:600; } .lad .r .p { font-size:11.5px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
+  .lad .r.on { background:color-mix(in srgb,var(--c) 26%,transparent); box-shadow:0 0 0 1px var(--c), 0 0 18px -6px var(--c); }
+  .lad .r.on .w::after { content:'  ◀ 지금'; color:var(--c); font-weight:800; }
+  .now { border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .now .l { font-size:12px; color:var(--muted); } .now .big { font-size:28px; font-weight:800; margin:2px 0 6px; line-height:1.25; }
+  .kv { display:grid; grid-template-columns:auto 1fr; gap:3px 12px; font-size:13px; } .kv span:nth-child(odd) { color:var(--muted); } .kv b { font-variant-numeric:tabular-nums; }
+  .verdict { border:1px solid rgba(242,54,69,.45); background:linear-gradient(180deg,rgba(242,54,69,.09),transparent); border-radius:12px; padding:12px 14px; font-size:13.5px; line-height:1.75; }
+  .verdict ul { margin:6px 0 0; padding-left:18px; } .verdict li { margin:3px 0; } .verdict b { color:#fff; }
+  .tbl { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { padding:6px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; font-variant-numeric:tabular-nums; }
+  th { color:var(--muted); font-weight:500; white-space:nowrap; } td.r, th.r { text-align:right; white-space:nowrap; }
+  tr.me td { background:rgba(255,140,66,.07); } tr.me td:first-child { color:#ffb37f; font-weight:700; }
+  .pos { color:#8be37a; } .neg { color:#ff7b82; } .mid { color:#f0b429; }
+  details { font-size:13px; line-height:1.75; color:#c9cfd8; }
+  details summary { cursor:pointer; color:var(--accent); font-size:12.5px; list-style:none; display:inline-flex; align-items:center; gap:6px; padding:2px 9px; border:1px solid rgba(255,140,66,.35); border-radius:999px; user-select:none; }
+  details summary::-webkit-details-marker { display:none; } details summary::before { content:'＋'; font-weight:700; } details[open] summary::before { content:'－'; } details[open] summary { background:rgba(255,140,66,.1); }
+  details .in { margin-top:6px; padding:9px 11px; border-left:3px solid rgba(255,140,66,.5); background:rgba(255,255,255,.03); border-radius:0 8px 8px 0; }
+  .btns { display:flex; gap:6px; flex-wrap:wrap; } .btn { font:inherit; font-size:12px; padding:4px 10px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; } .btn.on { border-color:var(--accent); color:var(--accent); }
+  .steps { display:grid; gap:10px; } .step { border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:rgba(255,255,255,.02); }
+  .step .h { display:flex; align-items:center; gap:10px; } .step .n { width:26px; height:26px; border-radius:50%; background:var(--accent); color:#0f1216; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none; } .step .h b { font-size:14.5px; }
+  .step .one { margin:6px 0 0 36px; } .step details { margin:6px 0 0 36px; } @media (max-width:560px){ .step .one, .step details { margin-left:0; } }
+  #plot { height:460px; } @media (max-width:560px){ #plot { height:380px; } }
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="simple.html">간단지표</a><a href="jeolchung.html">절충형</a><a href="banban.html">반반형</a><a href="tqw.html" class="cur">비중매매</a><a href="loan.html">위기대출</a><a href="spcrisis.html">S&amp;P위험</a><a href="crash.html">대폭락</a><a href="qqq200.html">200큐큐단</a><a href="analysis.html">TQQQ 분석</a><a href="fg.html">공탐</a><a href="quotes.html">명언</a></nav>
+    <h1>TQQQ 비중매매법</h1>
+    <span class="date" id="today"></span>
+  </header>
+
+  <div class="panel">
+    <h2>오늘의 비중 <span class="desc">나스닥100이 52주 최고 종가보다 몇 % 아래인가 → 그 구간의 비중 · 하락·회복 같은 기준 · 종가로 계산</span></h2>
+    <div class="body">
+      <div class="hero">
+        <div class="lad" id="lad"></div>
+        <div class="now" id="now"><div class="l">불러오는 중…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict">분석 불러오는 중…</div>
+
+  <div class="panel">
+    <h2>성적표 <span class="desc">같은 날 종가 매매 · 100만 원으로 시작 · 2010년 전 QLD·TQQQ는 나스닥100으로 만든 환산값</span></h2>
+    <div class="body">
+      <div class="btns" id="perBtn"><button class="btn on" data-p="full">40년 (1986.10~)</button><button class="btn" data-p="post">2010년~ (TQQQ 상장 뒤)</button></div>
+      <div class="tbl"><table id="score"></table></div>
+      <div class="fine" id="scoreNote"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>위기마다 <span class="desc">기간 동안 수익 · 그 안의 최대 낙폭</span></h2>
+    <div class="body"><div class="tbl"><table id="crisis"></table></div>
+      <div class="fine">2020년처럼 한 번에 빠지고 바로 돌아오는 하락에선 사다리가 가장 잘 버는 방법입니다. 1~3년 이어진 하락(2000·2008)에선 반대로 가장 크게 잃습니다.</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>40년 곡선 <span class="desc">로그 눈금 · 아래는 원안이 실제로 쓴 레버리지(1배~3배)</span></h2>
+    <div class="body">
+      <div class="btns" id="rng"><button class="btn on" data-r="all">전체</button><button class="btn" data-r="2000">1999~2004</button><button class="btn" data-r="2010">2010~</button></div>
+      <div id="plot"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>2000년에 무슨 일이 <span class="desc">원안이 −99.8%가 된 과정</span></h2>
+    <div class="body" id="walk"></div>
+  </div>
+
+  <div class="panel">
+    <h2>왜 이런 결과가 나오나 <span class="desc">사다리의 논리와 약점</span></h2>
+    <div class="body">
+      <div class="steps">
+        <div class="step"><div class="h"><span class="n">1</span><b>사다리는 '떨어지면 다시 오른다'에 거는 방법</b></div>
+          <div class="one">많이 떨어질수록 레버리지를 늘려 반등을 크게 먹습니다. 2010년 이후의 하락은 모두 몇 달~2년 안에 돌아왔고(QQQ 최대 −35%), 그래서 이 기간엔 연 <span id="t_post"></span>로 QQQ보다 좋았습니다.</div></div>
+        <div class="step"><div class="h"><span class="n">2</span><b>−30%가 바닥이라는 보장이 없음</b></div>
+          <div class="one">나스닥100의 고점 대비 하락은 2000~2002년 −83%, 2008년 −54%. −30%에서 TQQQ 100%가 되면 지수가 그 뒤 33%만 더 빠져도 계좌는 0에 가까워집니다(3배 × 33% ≈ 100%). 한 번 0이 되면 반등이 와도 돌아오지 못합니다.</div>
+          <details><summary>3배 상품이 긴 하락에서 더 약한 이유</summary><div class="in">매일 3배로 맞추기 때문에 오르내림이 반복되면 같은 자리로 돌아와도 값이 깎입니다(변동성 끌림). 예: 지수가 −10% → +11.1%로 제자리면 3배 상품은 −30% → +33.3%로 −6.7%. 2000~2002년처럼 2년 넘게 출렁이며 내려가면 이 손실이 쌓여 지수 하락(−83%)보다 훨씬 깊게(−99.9%) 빠집니다.</div></details></div>
+        <div class="step"><div class="h"><span class="n">3</span><b>52주 고점은 1년이 지나면 내려옴</b></div>
+          <div class="one">하락이 1년을 넘기면 기준 고점이 같이 내려와서, 이미 반토막 난 지수에서도 '새 −30%'가 계속 생깁니다. 2000년 11월 6일 TQQQ 100%가 된 뒤 16개월 동안 한 번도 내려오지 않았습니다. 사상 최고가 기준으로 바꿔도 결과는 같습니다(40년 −99.9%).</div></div>
+        <div class="step"><div class="h"><span class="n">4</span><b>오를 때는 레버리지를 거의 안 씀</b></div>
+          <div class="one">40년 중 <span id="t_share"></span>가 QQQ 100% 구간입니다. 상승장 대부분을 1배로 보내고, 레버리지는 떨어지는 동안에만 씁니다. 반대로 반반형·절충형은 '오르는 추세일 때' 레버리지를 쓰고 추세가 깨지면 현금으로 갑니다 — 40년 결과가 갈리는 이유입니다.</div></div>
+        <div class="step"><div class="h"><span class="n">5</span><b>경계에서 자주 사고팖</b></div>
+          <div class="one">하락·회복을 같은 선으로 쓰다 보니 −5%·−10% 근처를 오가면 매번 비중을 바꿉니다. 원안은 연 평균 <span id="t_sw"></span>회 비중을 바꿨습니다(위 성적은 수수료·세금 없이 계산).</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>고친다면 — 개선안 <span class="desc">새 숫자를 만들지 않고, 반반형·절충형이 이미 쓰는 기준 하나만 더함</span></h2>
+    <div class="body">
+      <div><b>사다리는 그대로 + S&amp;P500이 200일선보다 2.5% 넘게 아래로 가면 전부 SGOV(현금), 200일선 +2.5% 위로 돌아오면 다시 사다리.</b><br>
+        <span class="muted">논리: 사다리가 망가지는 건 '추세가 꺾인 긴 하락'뿐이니, 추세가 꺾였다는 신호에서만 사다리를 멈춥니다. 2.5%는 반반형·절충형과 같은 값이라 이 페이지를 위해 고른 숫자가 아닙니다.</span></div>
+      <div class="tbl"><table id="impr"></table></div>
+      <div id="imprNote"></div>
+      <details><summary>과최적화 점검 — 숫자를 조금씩 바꿔 보면</summary><div class="in">
+        <div id="nbNote" style="margin-bottom:8px"></div>
+        <div class="tbl"><table id="nb1"></table></div>
+        <div class="tbl" style="margin-top:10px"><table id="nb0"></table></div>
+      </div></details>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>그래서 어떻게 쓰나</h2>
+    <div class="body" id="howto"></div>
+  </div>
+
+  <div class="panel">
+    <h2>계산 방법과 한계</h2>
+    <div class="body">
+      <details><summary>계산 방법</summary><div class="in">
+        · 기준: 나스닥100 종가 ÷ 최근 252거래일(오늘 포함) 최고 종가 − 1. 0%~−5% 미만 QQQ 100%, −5% 이하부터 5%p마다 한 칸, −30% 이하 TQQQ 100%.<br>
+        · 매매: 종가로 구간이 바뀐 날 그 종가에 목표 비중으로 맞춤. 구간이 그대로면 비중이 흘러가도 손대지 않음.<br>
+        · 자료: 2010년 2월 TQQQ 상장 뒤는 실제 수정종가(QQQ·QLD·TQQQ). 그 전은 나스닥100 일간 수익의 2배·3배에서 기준금리 차입비용과 보수를 뺀 환산값(QQQ는 1999년 전 지수 가격 — 배당 빠져 약간 불리). SGOV는 기준금리 이자.<br>
+        · 반반형·절충형은 간단지표 페이지와 같은 엔진·같은 자료로 계산.
+      </div></details>
+      <details><summary>한계</summary><div class="in">
+        · 수수료·세금·환율 미반영. 원안은 연 28회 안팎 비중을 바꿔 실제로는 조금 더 낮습니다.<br>
+        · 2010년 전 레버리지 성적은 환산값입니다. 실제 상품이 있었다면 운용 방식 차이로 몇 %p 달랐을 수 있습니다.<br>
+        · 40년 안에 '긴 하락장'은 사실상 두 번(2000·2008)뿐입니다. 표본이 적다는 건 양쪽 다 해당 — 원안이 2010년 이후 좋았던 것도, 2000년에 무너진 것도 몇 번의 사건이 정한 결과입니다.
+      </div></details>
+      <div class="fine" id="ts"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const ZC=['#5ad445','#5ad445','#f0b429','#ff9f40','#ff8c42','#f2545b','#c8102e'];
+const ZN=['평상시','−5%','−10%','−15%','−20%','−25%','−30%'];
+const f0=x=>Math.round(x).toLocaleString('ko-KR');
+const pc=(v,dg=1)=>v==null?'—':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(dg)+'%';
+const cls=v=>v>=0?'pos':'neg';
+const money=x=>{ const v=x*100; return v>=10000?(v/10000).toFixed(v>=100000?0:1)+'억':f0(v)+'만'; };
+let W=null;
+function render(){
+  const t=W.today, F=W.full, P=W.post, by=(arr,n)=>arr.find(r=>r.n===n);
+  // 사다리
+  $('#lad').innerHTML=W.lad.map((l,k)=>`<div class="r${k===t.band?' on':''}" style="--c:${ZC[k]}"><span class="z">${ZN[k]}</span><span class="w">${l}</span><span class="p">${k?'나스닥100 '+f0(t.lines[k-1])+' 이하':'−5% 위'}<br>${W.lev[k].toFixed(1)}배</span></div>`).join('');
+  const nxtDn=t.band<6?t.lines[t.band]:null, nxtUp=t.band>0?(t.band===1?t.hi*0.95:t.lines[t.band-2]):null;
+  $('#now').innerHTML=`<div class="l">${t.d} 종가 기준 · 원안</div><div class="big" style="color:${ZC[t.band]}">${t.lab}</div>
+   <div class="kv"><span>나스닥100</span><b>${f0(t.ndx)}</b><span>52주 최고 종가</span><b>${f0(t.hi)} <span class="muted">(${t.hi_d})</span></b>
+   <span>고점 대비</span><b style="color:${ZC[t.band]}">${pc(t.dd,2)}</b><span>실효 레버리지</span><b>${t.lev.toFixed(1)}배</b>
+   ${nxtDn?`<span>한 칸 내려가면</span><b>${f0(nxtDn)} 이하 → ${W.lad[t.band+1]}</b>`:''}
+   ${nxtUp?`<span>한 칸 올라가면</span><b>${f0(nxtUp)} 위 → ${W.lad[t.band-1]}</b>`:''}</div>
+   <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:13px">개선안: S&amp;P500 ${f0(t.sp)} · 200일선 ${pc(t.spm)} → <b style="color:${t.filt_in?'#8be37a':'#ff7b82'}">${t.filt_in?'사다리 그대로 ('+W.lad[t.band1]+')':'SGOV(현금)'}</b><br><span class="muted">${t.filt_in?`S&P500 ${f0(t.sp_out)} 아래로 마감하면 현금`:`S&P500 ${f0(t.sp_in)} 위로 마감하면 사다리 복귀`}</span></div>`;
+  // 결론
+  const o=by(F,'원안'), i=by(F,'개선안'), q=by(F,'QQQ 보유'), bb=by(F,'반반형'), po=by(P,'원안'), pq=by(P,'QQQ 보유'), pb=by(P,'반반형'), pi=by(P,'개선안');
+  $('#verdict').innerHTML=`<b>결론 — 원안 그대로는 추천하지 않습니다.</b><ul>
+    <li><b>2010년 이후만 보면 좋아 보입니다</b>: 연 ${po.c.toFixed(1)}% · 최대 ${pc(po.m)} (QQQ 연 ${pq.c.toFixed(1)}% · ${pc(pq.m)}).</li>
+    <li><b>40년으로 넓히면 2000~2002년에 계좌가 사실상 0</b>: 최대 ${pc(o.m)}, 40년 연 ${o.c.toFixed(1)}%로 QQQ 그냥 보유(연 ${q.c.toFixed(1)}%)보다 낮고, 2000년 9월 고점을 ${o.uww&&o.uww[1]?o.uww[1]+'에야':'아직도'} 회복${o.uww&&o.uww[1]?'':' 못 함'}. 단계 폭·기준을 바꾼 12가지 변형 모두 −99% — 숫자 문제가 아니라 구조 문제입니다.</li>
+    <li><b>개선안</b>(S&amp;P500 200일선 −2.5% 밑이면 현금)은 40년 연 ${i.c.toFixed(1)}% · 최대 ${pc(i.m)}로 살아남지만, 같은 기준을 쓰는 <b>반반형</b>(연 ${bb.c.toFixed(1)}% · ${pc(bb.m)})보다 40년·2010년 이후(${pi.c.toFixed(1)}% vs ${pb.c.toFixed(1)}%) 모두 낮습니다.</li></ul>`;
+  $('#t_post').textContent=po.c.toFixed(1)+'%'; $('#t_share').textContent=W.share[0]+'%'; $('#t_sw').textContent=W.sw[0];
+  drawScore('full');
+  // 위기
+  const CN=['원안','개선안','QQQ 보유','TQQQ 보유','반반형','절충형'];
+  $('#crisis').innerHTML='<tr><th>기간</th>'+CN.map(n=>`<th class="r">${n.replace(' 보유','')}</th>`).join('')+'</tr>'+W.crises.map(c=>`<tr><td>${c.n}<br><span class="muted">${c.a.slice(2).replace(/-/g,'.')}~${c.b.slice(2).replace(/-/g,'.')}</span></td>`+CN.map(n=>{ const r=c.r[n]; return `<td class="r"><span class="${cls(r[0])}">${r[0]>=1000?'+'+f0(r[0])+'%':pc(r[0],Math.abs(r[0])<1?1:0)}</span><br><span class="muted">${pc(r[1],0)}</span></td>`; }).join('')+'</tr>').join('');
+  // 2000년
+  const wk=W.walk, firstT=wk.find(r=>r[3]===6), lastT=[...wk].reverse().find(r=>r[3]===6&&r[0]<'2001'), we=W.walk_end;
+  const nT=wk.filter(r=>r[3]===6&&r[0]<'2001').length;
+  $('#walk').innerHTML=`<div>2000년 3월 10일 나스닥100 고점(4,704) 뒤 원안이 실제로 한 일:</div>
+   <div class="steps">
+    <div class="step"><div class="h"><span class="n">1</span><b>${firstT[0]} — 처음 −30%, TQQQ 100%</b></div><div class="one">나스닥100 ${f0(firstT[1])} (${pc(firstT[2])}). 이 뒤 반등과 재하락을 오가며 2000년에만 ${nT}번 TQQQ 100%에 들어갔다 나왔고, 8월 말엔 계좌가 ${wk.find(r=>r[0]==='2000-08-31')?.[4]??'—'}(시작 100)까지 오히려 늘었습니다 — 여기까진 사다리가 잘 버팁니다.</div></div>
+    <div class="step"><div class="h"><span class="n">2</span><b>${lastT[0]} — 마지막 TQQQ 100% 진입</b></div><div class="one">나스닥100 ${f0(lastT[1])} (52주 고점 대비 ${pc(lastT[2])}), 계좌 ${lastT[4]} (2000.3.10 = 100). 그 뒤 <b>16개월 동안 TQQQ 100% 그대로</b> — 지수가 계속 떨어지는 동안 52주 고점도 함께 내려와 하락률이 늘 −30% 근처에 머물렀기 때문입니다.</div></div>
+    <div class="step"><div class="h"><span class="n">3</span><b>${we[0]} — 나스닥100 바닥 ${f0(we[1])}</b></div><div class="one">지수는 고점 대비 −83%. 계좌는 <b style="color:#ff7b82">${we[2]}</b> (100에서 시작) — −99.8%. QQQ(배당 포함)는 2015년에 2000년 고점을 회복했지만, 0.2에서 시작한 계좌는 2026년 지금도 2000년 9월 수준을 회복하지 못했습니다.</div></div>
+   </div>
+   <details><summary>구간이 바뀐 날 전부 (2000.3 ~ 2002.4)</summary><div class="in"><div class="tbl"><table><tr><th>날짜</th><th class="r">나스닥100</th><th class="r">52주 고점 대비</th><th>비중</th><th class="r">계좌</th></tr>${wk.map(r=>`<tr><td>${r[0]}</td><td class="r">${f0(r[1])}</td><td class="r">${pc(r[2])}</td><td style="color:${ZC[r[3]]}">${W.lad[r[3]]}</td><td class="r">${r[4]}</td></tr>`).join('')}</table></div></div></details>`;
+  // 개선안 표
+  const IR=['원안','개선안','반반형','절충형','QQQ 보유'];
+  $('#impr').innerHTML='<tr><th>방법</th><th class="r">40년 연평균</th><th class="r">40년 최대낙폭</th><th class="r">2010~ 연평균</th><th class="r">2010~ 최대낙폭</th><th class="r">최장 회복(40년)</th></tr>'+IR.map(n=>{ const a=by(F,n), b=by(P,n); return `<tr class="${n==='개선안'?'me':''}"><td>${n}</td><td class="r">${a.c.toFixed(1)}%</td><td class="r neg">${pc(a.m)}</td><td class="r">${b.c.toFixed(1)}%</td><td class="r neg">${pc(b.m)}</td><td class="r">${a.uww&&a.uww[1]?a.uw.toFixed(1)+'년':a.uw.toFixed(0)+'년+ (미회복)'}</td></tr>`; }).join('');
+  $('#imprNote').innerHTML=`<b>좋아진 점</b>: 2000년 −99.8% → ${pc(W.crises[0].r['개선안'][1],0)}, 2008년 ${pc(W.crises[1].r['원안'][1],0)} → ${pc(W.crises[1].r['개선안'][1],0)}. 40년 내내 살아남고, 회복도 최장 ${i.uw}년.<br>
+   <b>남는 약점</b>: ① 2000년 4~5월엔 나스닥만 −30% 넘게 무너지고 S&amp;P500은 200일선 바로 밑(−0.3~−1.9%, 띠 안)이라 TQQQ 100%가 그대로 켜졌습니다(그래서 ${pc(i.m,0)}). ② 2010년 이후엔 깊은 하락의 바닥이 대개 200일선 아래라, 원안이 TQQQ로 가장 크게 먹던 반등(2020·2022 바닥)을 현금으로 놓쳐 연 ${pi.c.toFixed(1)}%로 원안(${po.c.toFixed(1)}%)보다 낮아집니다. 사다리의 장점(바닥 매수)과 필터(바닥 근처에서 빠짐)가 서로 부딪힙니다.<br>
+   <b>그래서</b>: 개선안은 'QQQ보다 덜 빠지는 QQQ'(40년 연 ${i.c.toFixed(1)}% vs ${q.c.toFixed(1)}%, 낙폭 ${pc(i.m,0)} vs ${pc(q.m,0)}) 정도이고, 같은 200일선 기준으로 오를 때 레버리지를 쓰는 반반형이 더 낫습니다.`;
+  // 과최적화
+  const med=a=>{ const s=[...a].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; };
+  const n1=W.nb1.filter(r=>r[2]==='52'), n1a=W.nb1.filter(r=>r[2]==='ath');
+  $('#nbNote').innerHTML=`<b>원안</b>: 단계 폭(4·5·6%) × 기준(52주·사상 최고가) × 맨 아래 칸(TQQQ 100% / QLD·TQQQ 반반까지만) 12가지 — 최대낙폭이 전부 −99% 이상. 어떤 숫자를 골라도 2000년을 못 넘깁니다.<br>
+   <b>개선안</b>: 단계 폭(4·5·6%) × 200일선 띠(2·2.5·3%) 9가지 — 40년 연 ${Math.min(...n1.map(r=>r[3])).toFixed(1)}~${Math.max(...n1.map(r=>r[3])).toFixed(1)}%(가운데 ${med(n1.map(r=>r[3])).toFixed(1)}%), 최대낙폭 ${Math.min(...n1.map(r=>r[4])).toFixed(0)}~${Math.max(...n1.map(r=>r[4])).toFixed(0)}%. 고른 값(5%·2.5%)이 유난히 좋은 자리가 아니라 이웃과 비슷 → 과최적화 아님. 다만 이웃 모두 반반형(연 ${bb.c.toFixed(1)}%)에 못 미칩니다.<br>
+   <span class="muted">사상 최고가 기준으로 바꾸면 40년 연 ${med(n1a.map(r=>r[3])).toFixed(1)}%(가운데)로 오르는데, 이건 2003~2015년 내내 나스닥이 2000년 고점보다 30% 넘게 아래라 'S&amp;P 상승장 = TQQQ 100%'가 된 덕분입니다. 사다리가 아니라 다른 전략이 된 것이라 채택하지 않았습니다.</span>`;
+  $('#nb1').innerHTML='<tr><th>개선안: 단계 폭</th><th>200일선 띠</th><th>기준</th><th class="r">40년 연평균</th><th class="r">40년 낙폭</th><th class="r">2010~ 연평균</th><th class="r">2010~ 낙폭</th></tr>'+W.nb1.map(r=>`<tr class="${r[0]===0.05&&r[1]===0.025&&r[2]==='52'?'me':''}"><td>${r[0]*100}%</td><td>±${r[1]*100}%</td><td>${r[2]==='52'?'52주':'사상 최고'}</td><td class="r">${r[3].toFixed(1)}%</td><td class="r neg">${pc(r[4],0)}</td><td class="r">${r[5].toFixed(1)}%</td><td class="r neg">${pc(r[6],0)}</td></tr>`).join('');
+  $('#nb0').innerHTML='<tr><th>원안: 단계 폭</th><th>기준</th><th>맨 아래 칸</th><th class="r">40년 연평균</th><th class="r">40년 낙폭</th></tr>'+W.nb0.map(r=>`<tr class="${r[0]===0.05&&r[1]==='52'&&r[2]===6?'me':''}"><td>${r[0]*100}%</td><td>${r[1]==='52'?'52주':'사상 최고'}</td><td>${r[2]===6?'TQQQ 100%':'QLD·TQQQ 반반'}</td><td class="r">${r[3].toFixed(1)}%</td><td class="r neg">${pc(r[4])}</td></tr>`).join('');
+  // 어떻게 쓰나
+  $('#howto').innerHTML=`<div class="steps">
+   <div class="step"><div class="h"><span class="n">1</span><b>원안 그대로 큰돈을 넣지 않기</b></div><div class="one">2000·2008년 같은 긴 하락이 한 번 오면 회복이 불가능한 구조입니다. 2010년 이후 성적은 그런 하락이 없었던 16년의 결과입니다.</div></div>
+   <div class="step"><div class="h"><span class="n">2</span><b>사다리를 쓴다면 개선안 + 'QQQ 계좌'로</b></div><div class="one">S&amp;P500이 200일선 −2.5% 밑으로 마감하면 현금. 위험이 QQQ 보유보다 작아지는 정도의 방법이라, 주력보다는 QQQ를 장기로 모으는 계좌의 '떨어질 때 조금 더 싣는 규칙'으로 쓰는 게 맞습니다.</div></div>
+   <div class="step"><div class="h"><span class="n">3</span><b>레버리지 수익이 목적이면 반반형·절충형</b></div><div class="one">같은 200일선 기준으로 40년 연 ${bb.c.toFixed(1)}~${by(F,'절충형').c.toFixed(1)}% · 최대 ${pc(bb.m,0)}~${pc(by(F,'절충형').m,0)}. '오를 때 싣고 꺾이면 내린다'가 '떨어질 때 싣는다'보다 40년 동안 일관되게 나았습니다.</div></div>
+   <div class="step"><div class="h"><span class="n">4</span><b>지금(${t.d})은 어느 쪽이든 큰 차이 없음</b></div><div class="one">원안·개선안 모두 ${t.lab} (실효 ${t.lev.toFixed(1)}배). 차이가 벌어지는 건 S&amp;P500이 ${f0(t.sp_out)} 밑으로 내려가면서 나스닥이 −20% 넘게 빠질 때입니다.</div></div></div>`;
+  $('#ts').textContent='자료 '+t.d+' 종가 · 15분마다 다시 계산 · 마지막 계산 '+new Date(W.ts*1000).toLocaleString('ko-KR');
+  drawChart('all');
+}
+function drawScore(p){
+  const A=W[p], ORDER=['원안','개선안','원안 · 사상 최고가 기준','원안 · 2배 상한(TQQQ 대신 QLD)','QQQ 보유','QLD 보유','TQQQ 보유','반반형','절충형'];
+  $('#score').innerHTML='<tr><th>방법</th><th class="r">연평균</th><th class="r">최대낙폭</th><th class="r">최장 회복</th><th class="r">100만 원 →</th></tr>'+ORDER.map(n=>{ const r=A.find(x=>x.n===n); if(!r) return '';
+    const rec=r.uww&&r.uww[1]?`${r.uw.toFixed(1)}년`:`${r.uw.toFixed(0)}년+ <span class="muted">미회복</span>`;
+    return `<tr class="${n==='원안'||n==='개선안'?'me':''}"><td>${n}</td><td class="r ${r.c<10?'neg':r.c>=20?'pos':''}">${r.c.toFixed(1)}%</td><td class="r ${r.m<=-60?'neg':r.m<=-40?'mid':''}">${pc(r.m)}</td><td class="r">${rec}</td><td class="r">${money(r.x)}원</td></tr>`; }).join('');
+  $('#scoreNote').innerHTML=p==='full'?`최장 회복 = 고점에서 그 고점을 다시 넘기까지 걸린 가장 긴 기간. 원안의 최대낙폭 구간: ${W.full[0].mw[0]} → ${W.full[0].mw[1]}.`:'2010년 2월 11일(TQQQ 상장일)부터 — 모든 상품이 실제 가격. 이 기간엔 긴 하락장이 없었습니다.';
+}
+$('#perBtn').addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(!b) return; document.querySelectorAll('#perBtn .btn').forEach(x=>x.classList.toggle('on',x===b)); drawScore(b.dataset.p); });
+function drawChart(r){
+  document.querySelectorAll('#rng .btn').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
+  if(!window.Plotly){ $('#plot').innerHTML='<div class="muted" style="padding:20px">차트 라이브러리를 불러오지 못했습니다.</div>'; return; }
+  let Wk=W.weekly; if(r==='2000') Wk=Wk.filter(w=>w[0]>='1999-01-01'&&w[0]<='2004-12-31'); if(r==='2010') Wk=Wk.filter(w=>w[0]>='2010-02-11');
+  const x=Wk.map(w=>w[0]), base=Wk[0], C=[['원안',4,'#ff8c42',2],['개선안',5,'#9ad0f5',1.6],['QQQ 보유',6,'#c9cfd8',1.2],['반반형',7,'#8be37a',1.4]];
+  const tr=C.map(([n,k,c,wd])=>({type:'scatter',mode:'lines',x,y:Wk.map(w=>w[k]/base[k]*100),name:n,line:{color:c,width:wd},hovertemplate:n+' %{y:,.1f}<extra></extra>'}));
+  tr.push({type:'scatter',mode:'lines',x,y:Wk.map(w=>W.lev[w[2]]),name:'원안 레버리지',yaxis:'y2',line:{color:'#ff8c42',width:1,shape:'hv'},fill:'tozeroy',fillcolor:'rgba(255,140,66,.12)',hovertemplate:'%{y:.1f}배<extra>원안 레버리지</extra>'});
+  Plotly.react('plot',tr,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:50,r:10,t:10,b:28},legend:{orientation:'h',y:1.07},hovermode:'x unified',
+    xaxis:{gridcolor:'#262c35'},yaxis:{domain:[0.3,1],type:'log',gridcolor:'#262c35',tickvals:[0.1,1,10,100,1e3,1e4,1e5,1e6,1e7],ticktext:['0.1','1','10','100','1천','1만','10만','100만','1천만'],title:{text:'시작=100',font:{size:10}}},yaxis2:{domain:[0,0.22],range:[0,3.2],gridcolor:'#262c35',tickvals:[1,2,3],ticksuffix:'배'}},{displayModeBar:false,responsive:true});
+}
+document.querySelectorAll('#rng .btn').forEach(b=>b.addEventListener('click',()=>drawChart(b.dataset.r)));
+const PLOTLY_SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js'];
+const loadScript=src=>new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+(async()=>{
+  const dataP=fetch('tqw.json?'+Math.floor(Date.now()/300000)).then(r=>r.ok?r.json():null).catch(()=>null);
+  for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
+  W=await dataP;
+  try{ if(W) render(); else throw new Error('데이터 준비 중'); }catch(e){ $('#now').innerHTML='<div class="l">오류: '+(e&&e.message||e)+'</div>'; console.error(e); }
+})();
+</script>
+</body></html>
