@@ -159,7 +159,7 @@ function renderNow(){
   $('#now').innerHTML=`${day(r[i][0])} 종가 · QQQ <b>${c[i].toFixed(2)}</b><br>
   52주 최고 종가 ${hi.toFixed(2)} (${hiD}) 대비 <b>${(dd*100).toFixed(1)}%</b> · −5% 선 ${(hi*0.95).toFixed(2)} · −10% 선 ${(hi*0.9).toFixed(2)} · −15% 선 ${(hi*0.85).toFixed(2)} · −20% 선 ${(hi*0.8).toFixed(2)}<br>
   S&amp;P500 ${SP?SP.idx.toLocaleString():'—'} · 200일선 ${SP?SP.ma200.toLocaleString():'—'} → ${SP?tag(spUp,spUp?'위':'아래'):'—'} · QQQ 200일선 ${ma.toFixed(2)} 대비 ${((c[i]/ma-1)*100).toFixed(1)}% ${tag(c[i]/ma<=1.15,c[i]/ma>1.15?'(과열 +15% 넘음)':'(과열 아님)')}
-  <div class="pick">${Object.keys(NAMES).map(k=>`<div><div class="l">${NAMES[k]}</div><div class="v">${s[k]}</div><div class="note">${s[k]==='TQQQ 50%'?'나머지 50% SGOV · ':''}어제 ${ps[k]}${ps[k]!==s[k]?' → <b class="bad">바뀜</b>':''}</div></div>`).join('')}<div id="pickJ"><div class="l">복합형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickK"><div class="l">고급형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickZ"><div class="l">절충형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickH"><div class="l">반반형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickO"><div class="l">과열형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickSS"><div class="l">상시형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickT"><div class="l">삼단형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickS"><div class="l">TQQQ 신호판</div><div class="v" style="font-size:15px">—</div></div></div>`;
+  <div class="pick">${Object.keys(NAMES).map(k=>`<div id="pick_${k}"><div class="l">${NAMES[k]}</div><div class="v">${s[k]}</div><div class="note">${s[k]==='TQQQ 50%'?'나머지 50% SGOV · ':''}어제 ${ps[k]}${ps[k]!==s[k]?' → <b class="bad">바뀜</b>':''}</div></div>`).join('')}<div id="pickJ"><div class="l">복합형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickK"><div class="l">고급형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickZ"><div class="l">절충형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickH"><div class="l">반반형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickO"><div class="l">과열형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickSS"><div class="l">상시형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickT"><div class="l">삼단형</div><div class="v" style="font-size:15px">계산 중</div></div><div id="pickS"><div class="l">TQQQ 신호판</div><div class="v" style="font-size:15px">—</div></div></div>`;
 }
 function backtest(){
   const d=J.d, N=d.length, nd=J.ndx, dff=J.dff, si=d.indexOf(J.start), dt=d.map(x=>new Date(x+'T00:00:00Z'));
@@ -199,7 +199,7 @@ function backtest(){
   const engineJ=(a,b,tax)=>engineH(lvJ,WJ,a,b,tax), engineK=(a,b,tax)=>engineH(lvK,WK,a,b,tax), engineZ=(a,b,tax)=>engineH(lvZ,WZ,a,b,tax);
   const engineHf=(a,b,tax)=>engineH(lvZ,WH,a,b,tax), engineO=(a,b,tax)=>engineH(lvO,WO,a,b,tax,null), engineSS=(a,b,tax)=>engineH(lvS,WS,a,b,tax), engineT=(a,b,tax)=>engineH(lvT,WTT,a,b,tax);
   // ts: TQQQ 몫의 TS 폭(0.25 = 구간 최고가 대비 −25%), null이면 TS 없음
-  function engineH(lvJ,WJ,a,b,tax,ts=0.25){ let cur=lvJ[a], h={}, bs={}, v=1, pk=1, mdd=0, sw=0, pkd=d[a], w=['',''], yr=d[a].slice(0,4), yg=0, tpk=T[a], cut=false, vs=cur!=='C'?1:0; const cv=[1], tr=[];
+  function engineH(lvJ,WJ,a,b,tax,ts=0.25){ let cur=lvJ[a], h={}, bs={}, v=1, pk=1, mdd=0, sw=0, pkd=d[a], w=['',''], yr=d[a].slice(0,4), yg=0, tpk=T[a], cut=false, vs=cur!=='C'?1:0; const cv=[1], tr=[], ev=[];   // ev: [날짜 인덱스, 이전 단계, 새 단계, 이전 TS 발동, 새 TS 발동]
     const setW=tw=>{ const nh={}; for(const k in tw) nh[k]=v*tw[k];
       for(const k of new Set([...Object.keys(h),...Object.keys(nh)])){ const o=h[k]||0, n=nh[k]||0;
         if(n<o-1e-12&&o>0){ const x=o-n; if(k!=='C') yg+=x*(1-(bs[k]||0)/o); bs[k]=(bs[k]||0)*(1-x/o); } else if(n>o) bs[k]=(bs[k]||0)+(n-o); }   // SGOV 이자는 다른 엔진과 같이 과세 제외
@@ -208,25 +208,52 @@ function backtest(){
     for(let i=a+1;i<=b;i++){ v=0; for(const k in h){ h[k]*=1+ret[k][i]; v+=h[k]; }
       if(tax&&d[i].slice(0,4)!==yr){ if(yg>0){ const f=1-yg*0.22/v; for(const k in h){ h[k]*=f; bs[k]*=f; } v*=f; } yr=d[i].slice(0,4); yg=0; }
       const t=lvJ[i];
-      if(t!==cur){ sw++; if(cur==='C'&&t!=='C') vs=v; else if(cur!=='C'&&t==='C'&&vs){ tr.push(v/vs-1); vs=0; } cur=t; cut=false; tpk=T[i]; setW(WJ[t]); }
+      if(t!==cur){ sw++; ev.push([i,cur,t,cut,false]); if(cur==='C'&&t!=='C') vs=v; else if(cur!=='C'&&t==='C'&&vs){ tr.push(v/vs-1); vs=0; } cur=t; cut=false; tpk=T[i]; setW(WJ[t]); }
       else if(WJ[cur].T){
-        if(!cut&&ts!=null){ tpk=Math.max(tpk,T[i]); if(T[i]<=tpk*(1-ts)){ cut=true; sw++; setW({S:(h.S||0)/v,L:(h.L||0)/v,Q:(h.Q||0)/v,C:((h.T||0)+(h.C||0))/v}); } }
+        if(!cut&&ts!=null){ tpk=Math.max(tpk,T[i]); if(T[i]<=tpk*(1-ts)){ cut=true; sw++; ev.push([i,cur,cur,false,true]); setW({S:(h.S||0)/v,L:(h.L||0)/v,Q:(h.Q||0)/v,C:((h.T||0)+(h.C||0))/v}); } }
         if(!cut&&d[i].slice(5,7)!==d[i-1].slice(5,7)) setW(WJ[cur]); }
       if(v>pk){pk=v;pkd=d[i];} if(v/pk-1<mdd){mdd=v/pk-1;w=[pkd,d[i]];} cv.push(v); }
     if(tax){ for(const k in h) if(k!=='C') yg+=h[k]-(bs[k]||0); if(yg>0) v-=yg*0.22; }
     if(vs) tr.push(v/vs-1);
-    const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,sw:sw/y,cv,w,cur,cut,tpk,tr}; }
+    const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,sw:sw/y,cv,w,cur,cut,tpk,tr,ev}; }
   // 오늘(마지막 거래일) 신호 카드. lab[단계] = 문자열 또는 [보통, TS 발동 뒤]
   const LJ={T:['TQQQ 50% + SPYM 50%','SPYM 50% + SGOV 50%'],M:'QLD',X:'QQQ',C:'SGOV'}, LK={T:['TQQQ 70% + SPYM 30%','SPYM 30% + SGOV 70%'],M:'QLD',X:'QQQ',C:'SGOV'};
-  const PK=[['pickJ','복합형',engineJ,lvJ,LJ],['pickK','고급형',engineK,lvK,LK],
-    ['pickZ','절충형',engineZ,lvZ,{T:['TQQQ 60% + SPYM 40%','SPYM 40% + SGOV 60%'],M:'QQQ',C:'SGOV'}],['pickH','반반형',engineHf,lvZ,{T:['TQQQ 50% + SPYM 50%','SPYM 50% + SGOV 50%'],M:'QQQ',C:'SGOV'}],
-    ['pickO','과열형',engineO,lvO,{T:'TQQQ 80% + SPYM 20%',M:'QQQ',X:'QQQ (과열)',C:'SGOV'}],['pickSS','상시형',engineSS,lvS,{T:['TQQQ 80% + SPYM 20%','SPYM 20% + SGOV 80%'],M:['TQQQ 50% + SPYM 50%','SPYM 50% + SGOV 50%'],C:'SGOV'}],
-    ['pickT','삼단형',engineT,lvT,{T:['TQQQ','SGOV (TS)'],M1:'QLD',M2:'QQQ',C:'SGOV'}]];
-  for(const [id,nm,eng,lv,lab] of PK){
+  const PK=[['pickJ','복합형',engineJ,lvJ,LJ,CJ],['pickK','고급형',engineK,lvK,LK,CK],
+    ['pickZ','절충형',engineZ,lvZ,{T:['TQQQ 60% + SPYM 40%','SPYM 40% + SGOV 60%'],M:'QQQ',C:'SGOV'},CZ],['pickH','반반형',engineHf,lvZ,{T:['TQQQ 50% + SPYM 50%','SPYM 50% + SGOV 50%'],M:'QQQ',C:'SGOV'},CZ],
+    ['pickO','과열형',engineO,lvO,{T:'TQQQ 80% + SPYM 20%',M:'QQQ',X:'QQQ (과열)',C:'SGOV'},CO],['pickSS','상시형',engineSS,lvS,{T:['TQQQ 80% + SPYM 20%','SPYM 20% + SGOV 80%'],M:['TQQQ 50% + SPYM 50%','SPYM 50% + SGOV 50%'],C:'SGOV'},CS],
+    ['pickT','삼단형',engineT,lvT,{T:['TQQQ','SGOV (TS)'],M1:'QLD',M2:'QQQ',C:'SGOV'},CT]];
+  // 단계가 바뀐 이유(규칙 기준) 설명
+  const pct=x=>{ const v=Math.round(x*1000)/10; return Number.isInteger(v)?String(v):v.toFixed(1); };
+  const why=(cfg,i,from,to,cutEvt)=>{ const m=sp200[i];
+    if(cutEvt) return 'TS −25% 발동 (TQQQ가 구간 최고가 대비 −25%)';
+    if(to==='C') return sp[i]<m*(1-(cfg.bOut||0)) ? (cfg.bOut?`S&P500이 밴드 아래로 (200일선 −${pct(cfg.bOut)}%)`:'S&P500이 200일선 아래로') : `QQQ가 52주 고점 −${pct(cfg.eOut)}% 아래로`;
+    if(from==='C') return (cfg.bIn?`S&P500이 밴드 위로 (200일선 +${pct(cfg.bIn)}%)`:`S&P500 200일선 위 + QQQ 52주 고점 −${pct(cfg.eIn)}% 이내`)+(cfg.confirm>1?` ${cfg.confirm}일 연속`:'')+' → 투자 시작';
+    if(to==='X') return `과열 (QQQ가 200일선 +${pct(cfg.oh-1)}% 넘음)`;
+    if(from==='X') return `과열 해소 (200일선 +${pct(cfg.oh-1)}% 아래로)`;
+    if(to==='T') return `QQQ가 52주 고점 −${pct(cfg.tIn)}% 이내로`;
+    if(from==='T') return `QQQ가 52주 고점 −${pct(cfg.tOut)}% 아래로`;
+    if(to==='M1') return `QQQ가 52주 고점 −${pct(cfg.split)}% 이내로 (QLD 구간)`;
+    if(to==='M2') return `QQQ가 52주 고점 −${pct(cfg.split)}% 아래로`;
+    return '단계 변경'; };
+  const label=(lab,lv,cut)=>{ const L=lab[lv]||'SGOV'; return Array.isArray(L)?(cut?L[1]:L[0]):L; };
+  const chg_s=t=>`<div class="note" style="color:#f23645;margin-top:3px">최근 변화 ${t}</div>`;
+  const agoTxt=n=>n===0?'오늘':n===1?'어제':`${n}거래일 전`;
+  const chg=(i,fromTxt,toTxt,reason)=>`<div class="note" style="color:#f23645;margin-top:3px">최근 변화 ${d[i]} (${agoTxt(N-1-i)}): ${fromTxt} → <b>${toTxt}</b> — ${reason}</div>`;
+  for(const [id,nm,eng,lv,lab,cfg] of PK){
     const e=eng(Math.max(1,d.findIndex(x=>x>='1986-10-01')),N-1,false), st=lv[N-1], dv=nd[N-1]/hi[N-1]-1, L=lab[st]||'SGOV', hasT=Array.isArray(L), cutNow=hasT&&e.cut&&e.cur===st;
     const txt= hasT ? (cutNow?L[1]:L[0]) : L; TODAY[nm]=txt;
-    const el=document.getElementById(id); if(el) el.innerHTML=`<div class="l">${nm}</div><div class="v" style="font-size:${txt.length>6?15:20}px">${txt}</div><div class="note">${d[N-1]} 나스닥100 종가 기준 · 52주 고점 대비 ${(dv*100).toFixed(1)}%${hasT&&e.cur===st?(cutNow?' · TS 발동됨 — 구간이 바뀌거나 탈출 뒤 다시 들어올 때까지 TQQQ 없음':` · TS선 TQQQ ${(e.tpk*0.75).toFixed(2)}`):''}</div>`; }
-  { const S=TQ&&TQ.spx, el=document.getElementById('pickS'); if(el&&S){ const IN=S.state==='IN'; TODAY['TQQQ 신호판']=IN?'TQQQ':'SGOV'; el.innerHTML=`<div class="l">TQQQ 신호판</div><div class="v">${IN?'TQQQ':'SGOV'}</div><div class="note">${IN?'보유':'대피'} · S&P500 ${S.idx.toLocaleString()} · 밴드 ${S.lo.toLocaleString()}~${S.up.toLocaleString()}${S.cycle&&S.cycle.ts_line?` · TS선 TQQQ ${S.cycle.ts_line}`:''} · <a href="index.html" style="color:var(--accent)">신호판 페이지</a></div>`; } }
+    const last=(e.ev||[]).slice(-1)[0], chgTxt=last?chg(last[0],label(lab,last[1],last[3]),label(lab,last[2],last[4]),why(cfg,last[0],last[1],last[2],last[4])):'';
+    const el=document.getElementById(id); if(el) el.innerHTML=`<div class="l">${nm}</div><div class="v" style="font-size:${txt.length>6?15:20}px">${txt}</div><div class="note">${d[N-1]} 나스닥100 종가 기준 · 52주 고점 대비 ${(dv*100).toFixed(1)}%${hasT&&e.cur===st?(cutNow?' · TS 발동됨 — 구간이 바뀌거나 탈출 뒤 다시 들어올 때까지 TQQQ 없음':` · TS선 TQQQ ${(e.tpk*0.75).toFixed(2)}`):''}</div>${chgTxt}`; }
+  // 종합형: 백테스트 단계(나스닥100 기준)의 마지막 변화
+  { const pI=pos.I, LI={C:'SGOV',Q:'QQQ',X:'TQQQ 50% + SGOV 50%',T:'TQQQ'}; let i=N-1; while(i>0&&pI[i]===pI[i-1]) i--;
+    const el=document.getElementById('pick_I'); if(el&&i>0){ const m=sp200[i], dv=nd[i]/hi[i]-1, m2=mav(200,i), up=m!=null&&sp[i]>m;
+      const r= !up?'S&P500이 200일선 아래로':dv<-0.15?'QQQ가 52주 고점 −15% 아래로':nd[i]/m2>1.15?'과열 (QQQ가 200일선 +15% 넘음)':dv>=-0.05?'QQQ가 52주 고점 −5% 이내로':(pI[i-1]==='X'?'QQQ가 52주 고점 −5% 아래로':pI[i-1]==='C'?'S&P500 200일선 위 + 52주 고점 −15% 이내로':'과열 해소');
+      el.insertAdjacentHTML('beforeend',chg(i,LI[pI[i-1]],LI[pI[i]],r+' (나스닥100 기준)')); } }
+  { const S=TQ&&TQ.spx, el=document.getElementById('pickS'); if(el&&S){ const IN=S.state==='IN'; TODAY['TQQQ 신호판']=IN?'TQQQ':'SGOV';
+      let ch=''; try{ const ago=x=>{ const k=d.indexOf(x); return k>=0?` (${agoTxt(N-1-k)})`:''; };
+        if(IN&&S.cycle){ const c=S.cycle, lastTs=(c.ts||[]).slice(-1)[0]; ch= lastTs&&lastTs.date>c.entry_date ? chg_s(`${lastTs.date}${ago(lastTs.date)}: TQQQ → <b>TQQQ 절반 매도 (SPYM으로)</b> — TS −25% 발동 (구간 고점 ${lastTs.from_peak} → ${lastTs.price})`) : chg_s(`${c.entry_date}${ago(c.entry_date)}: SGOV → <b>TQQQ (3일 분할 매수)</b> — S&P500이 밴드 위로 (200일선 +2.5%)`); }
+        else if(!IN&&S.cycles&&S.cycles.length){ const c=S.cycles.slice(-1)[0]; ch=chg_s(`${c.exit_date}${ago(c.exit_date)}: TQQQ → <b>SGOV</b> — S&P500이 밴드 아래로 (200일선 −2.5%), 그 사이클 ${c.ret>=0?'+':''}${c.ret}%`); } }catch(e){}
+      el.innerHTML=`<div class="l">TQQQ 신호판</div><div class="v">${IN?'TQQQ':'SGOV'}</div><div class="note">${IN?'보유':'대피'} · S&P500 ${S.idx.toLocaleString()} · 밴드 ${S.lo.toLocaleString()}~${S.up.toLocaleString()}${S.cycle&&S.cycle.ts_line?` · TS선 TQQQ ${S.cycle.ts_line}`:''} · <a href="index.html" style="color:var(--accent)">신호판 페이지</a></div>${ch}`; } }
   // ── TQQQ 신호판 (S&P500 200일선 ±2.5% V2: 3분할·소익절 10/25/50%→10%·대익절 100/200/400…→50%·연쇄 TS −25%→50% SPYM·하단 이탈 전량 SGOV) — 신호일 종가 체결 ──
   function engineS(a,b,tax){ const SMALL=[10,25,50], BIG=[...Array(12)].map((_,k)=>100*2**k);
     let h={C:1}, bs={C:1}, v=1, pk=1, mdd=0, sw=0, pkd=d[a], w=['',''], yr=d[a].slice(0,4), yg=0, state='OUT', left=0, ent=0, tpk=0, mx=0, hs=new Set(), hb=new Set(), q=[], vs=0; const cv=[], tr=[];
