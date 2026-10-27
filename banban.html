@@ -58,6 +58,7 @@
   details[open] summary { background:rgba(154,208,245,.1); }
   details .in { margin-top:8px; padding:10px 12px; border-left:3px solid rgba(154,208,245,.5); background:rgba(255,255,255,.03); border-radius:0 8px 8px 0; }
   details ul { margin:4px 0; padding-left:18px; }
+  .one ul { margin:8px 0 0; padding-left:18px; } .one li { margin:3px 0; } .one .today { margin-top:8px; padding:6px 10px; border-left:3px solid var(--accent); background:rgba(255,255,255,.04); border-radius:0 6px 6px 0; font-size:12.5px; color:var(--fg); }
   @media (max-width:560px){ details, .step .one { margin-left:0; } }
   /* 흐름도 */
   .flow { display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; justify-content:center; }
@@ -104,12 +105,19 @@
   </div>
 
   <div class="panel">
-    <h2>규칙 <span class="desc">4단계 · 숫자는 밴드 2.5% · 구간 −10% · TQQQ 50% · TS −25% 넷뿐 · 절충형과 TQQQ 비중만 다름 · 자세한 건 ＋를 누르세요</span></h2>
+    <h2>규칙 <span class="desc">4단계 · 숫자는 밴드 2.5% · 구간 −10% · TQQQ 50% · TS −25% 넷뿐 · 절충형과 TQQQ 비중만 다름 · 왜 그런지·주문 방법 같은 설명은 ＋를 누르세요</span></h2>
     <div class="body">
       <div class="flow" id="flow"></div>
       <div class="steps">
         <div class="step"><div class="h"><div class="n">1</div><b>들어가기 · 나오기 — S&amp;P500 200일선 ±2.5% 밴드</b></div>
-          <div class="one">SGOV로 쉬고 있을 때 S&amp;P500 종가가 <b>200일선 × 1.025 위</b>로 올라오면 그날 종가에 투자 시작. 투자 중에 <b>200일선 × 0.975 아래</b>로 내려가면 그날 종가에 <b>전부 SGOV</b>. 밴드 안(−2.5%~+2.5%)에선 하던 대로.</div>
+          <div class="one">SGOV로 쉬고 있을 때 S&amp;P500 종가가 <b>200일선 × 1.025 위</b>로 올라오면 그날 종가에 투자 시작. 투자 중에 <b>200일선 × 0.975 아래</b>로 내려가면 그날 종가에 <b>전부 SGOV</b>. 밴드 안(−2.5%~+2.5%)에선 하던 대로.
+            <ul>
+              <li><b>대기 중(SGOV)</b> · S&amp;P500 종가 &gt; 200일선 × 1.025 → 그날 종가에 투자 시작. 들어갈 때 비중은 ②대로 — QQQ가 52주 고점 −10% 안이면 <b>TQQQ 50% + SPYM 50%</b>, 밖이면 <b>QQQ 100%</b></li>
+              <li><b>투자 중</b> · S&amp;P500 종가 &lt; 200일선 × 0.975 → 그날 종가에 들고 있던 것(TQQQ·SPYM 또는 QQQ) 전부 팔아 <b>SGOV</b></li>
+              <li><b>밴드 안</b>(0.975~1.025) · 전날 상태 그대로 — 200일선 "위냐 아래냐"가 아니라 밴드를 넘었느냐만 봅니다</li>
+              <li>판단은 나스닥·QQQ가 아니라 <b>S&amp;P500</b> 종가로 · 200일선 = 오늘 포함 최근 200거래일 종가의 단순평균</li>
+            </ul>
+            <div class="today" id="r1now"></div></div>
           <details><summary>왜 밴드인가 · 숫자 뜻</summary><div class="in">
             <b>200일선</b>은 오늘 포함 최근 200거래일 종가의 평균. 지수가 그 위에 있으면 큰 흐름이 상승, 아래면 하락이라고 보는 가장 오래된 추세 판별법입니다. 그런데 200일선 "딱 그 선"으로 사고팔면 선 근처에서 하루 걸러 신호가 뒤집혀 레버리지가 녹습니다. 그래서 위로 2.5% 넘어야 들어가고 아래로 2.5% 깨져야 나오는 <b>밴드(완충 구간)</b>를 둡니다 — TQQQ 신호판(아기티큐 200슨피단)과 똑같은 숫자라 들어가고 나오는 날이 신호판과 같습니다.<br>
             왜 나스닥이 아니라 S&amp;P500을 보나: 1987·2000·2008·2020·2022년 큰 하락은 S&amp;P500이 먼저 또는 함께 200일선을 깼고, 나스닥100보다 가짜 신호가 적었습니다. 단점은 2000년 3~5월처럼 나스닥만 먼저 무너질 때 늦게 나온다는 것(그때 −37%, 이 매매법 40년 최대낙폭).<br>
@@ -117,7 +125,14 @@
           </div></details>
         </div>
         <div class="step"><div class="h"><div class="n">2</div><b>투자 중 비중 — QQQ가 52주 고점 −10% 이내면 TQQQ 50% + SPYM 50%, 아니면 QQQ 100%</b></div>
-          <div class="one">투자 중엔 매일 QQQ 종가와 <b>52주 최고 종가 × 0.90</b>을 비교. 그 위면 <b>신고가 구간</b> → 계좌의 절반은 TQQQ, 절반은 SPYM(S&amp;P500 ETF). 그 아래로 떨어진 날 → <b>QQQ 100%</b>로. 다시 올라온 날 → 다시 반반.</div>
+          <div class="one">투자 중엔 매일 QQQ 종가와 <b>52주 최고 종가 × 0.90</b>을 비교. 그 위면 <b>신고가 구간</b> → 계좌의 50%는 TQQQ, 50%는 SPYM(S&amp;P500 ETF). 그 아래로 떨어진 날 → <b>QQQ 100%</b>로. 다시 올라온 날 → 다시 50:50.
+            <ul>
+              <li>QQQ 종가 ≥ 52주 최고 종가 × 0.90 → <b>TQQQ 50% + SPYM 50%</b> (신고가 구간)</li>
+              <li>QQQ 종가 &lt; 52주 최고 종가 × 0.90 → <b>QQQ 100%</b> — TQQQ·SPYM(TS로 들고 있던 SGOV까지) 전부 팔아 QQQ</li>
+              <li>구간이 바뀐 날 그날 종가에 전부 갈아탐 · 다시 신고가 구간이 되는 날 TQQQ 50% + SPYM 50%로 돌아오고, 그날부터 ③의 구간 최고가를 새로 셈</li>
+              <li>52주 최고 종가 = 오늘 포함 최근 252거래일 중 가장 높은 <u>종가</u>(장중 고가 아님) · QQQ가 신고가를 내면 −10%선도 같이 올라감</li>
+            </ul>
+            <div class="today" id="r2now"></div></div>
           <details><summary>왜 고점 근처에서만 3배인가</summary><div class="in">
             TQQQ 40년 보유는 연 12%밖에 안 됩니다. 지수가 떨어지는 기간에 3배 레버리지가 거의 0이 되기 때문입니다. 반대로 S&amp;P500이 밴드 위이면서 QQQ가 52주 고점 −10% 안에 있던 날만 골라 보면(전체의 67%) TQQQ는 그 26.8년 동안 619배(연 27%)였습니다. 즉 레버리지는 "지수가 고점 근처에서 올라갈 때"만 쓰고, 고점에서 10% 넘게 밀린 조정 구간에선 1배(QQQ)로 버티는 것이 이 규칙의 핵심입니다.<br>
             절반만 TQQQ인 이유: 이 뼈대에서 TQQQ 비중을 바꾸면 연복리와 낙폭이 같이 움직입니다 — 100%면 30.5% · −56%, 70%면 26.4% · −45%, 60%(절충형)면 24.7% · −41%, <b>50%면 22.9% · −37%</b>, 40%면 20.9% · −34%. 가성비(연복리 ÷ 최대낙폭)는 30~50%에서 0.62로 가장 높고 60%부터 내려갑니다. 50%는 그중 연복리가 가장 높은 자리이고, 신호판(23.6% · −44%)과 연복리는 비슷하면서 최대낙폭이 7%p 작습니다. 반은 3배, 반은 1배 S&amp;P500이라 실질 노출은 약 2배 — QLD 하나 드는 것과 비슷하지만, 나스닥 하락을 S&amp;P500 절반이 완충합니다.<br>
@@ -125,7 +140,14 @@
           </div></details>
         </div>
         <div class="step"><div class="h"><div class="n">3</div><b>TS(손절선) — TQQQ가 구간 최고가에서 −25% 빠지면 TQQQ 몫만 SGOV로</b></div>
-          <div class="one">신고가 구간이 시작된 날부터 TQQQ 최고 종가를 기억해 두고, TQQQ 종가가 <b>그 최고가 × 0.75 이하</b>가 되면 그날 TQQQ를 전부 팔아 SGOV로(SPYM 50%는 그대로). 그 뒤 구간이 바뀔 때까지(QQQ가 −10% 아래로 가서 QQQ 100%가 되거나, 밴드 아래로 나가거나) TQQQ를 다시 사지 않습니다. 구간이 새로 시작되면 최고가도 그날부터 다시 셉니다.</div>
+          <div class="one">신고가 구간이 시작된 날부터 TQQQ 최고 종가를 기억해 두고, TQQQ 종가가 <b>그 최고가 × 0.75 이하</b>가 되면 그날 TQQQ를 전부 팔아 SGOV로(SPYM 50%는 그대로). 그 뒤 구간이 바뀔 때까지 TQQQ를 다시 사지 않습니다.
+            <ul>
+              <li><b>구간 최고가</b> = 이번 신고가 구간이 시작된 날(그날 포함)부터의 TQQQ 최고 종가 · <b>TS선</b> = 구간 최고가 × 0.75 · 매일 종가로 갱신 — 오르면 TS선도 따라 올라가고, 내려도 TS선은 안 내려감</li>
+              <li>TQQQ 종가 ≤ TS선 → 그날 종가에 <b>TQQQ 전량 매도 → SGOV</b> · SPYM 50%는 그대로 → <b>SPYM 50% + SGOV 50%</b></li>
+              <li>TS 발동 뒤 할 일은 셋뿐: ① QQQ가 52주 고점 −10% 아래로 가는 날 → <b>QQQ 100%</b>(SPYM·SGOV 전부 QQQ로) ② S&amp;P500이 밴드 아래로 가는 날 → 전부 SGOV ③ 그 전엔 QQQ가 신고가를 내도 TQQQ를 다시 사지 않음</li>
+              <li>그 뒤 QQQ가 다시 −10% 안으로 들어오는 날 <b>TQQQ 50% + SPYM 50%</b> 재매수 · 구간 최고가는 그날 종가부터 새로 (밴드 탈출 뒤 재진입 때도 같음)</li>
+            </ul>
+            <div class="today" id="r3now"></div></div>
           <details><summary>TS는 급락 방어가 아니라 "한 걸음 앞선 탈출"</summary><div class="in">
             TQQQ −25%는 QQQ로 치면 −8~9%입니다. 그래서 TS가 걸리는 날 QQQ는 대개 고점 대비 −9% 근처이고, 며칠 뒤 −10%선을 깨면서 어차피 QQQ 100%로 바뀝니다. TS는 그 며칠을 앞당겨 TQQQ 몫의 −7% 정도를 아끼는 장치이고, 40년 동안 이런 컷이 수십 번 쌓여 연복리 몇 %p 차이를 만듭니다.<br>
             단점: TS로 나간 뒤 QQQ가 −10% 아래로 안 가고 그대로 신고가를 내면, 구간이 안 바뀌어서 TQQQ 없이 SPYM 50% + SGOV 50%로 랠리를 구경하게 됩니다(2026년 7월에 고급형이 그랬습니다). 반반형은 구간 판정을 매일 다시 하므로 QQQ가 잠깐이라도 −10% 아래로 갔다 오면 리셋됩니다.<br>
@@ -133,7 +155,12 @@
           </div></details>
         </div>
         <div class="step"><div class="h"><div class="n">4</div><b>리밸런싱 — 매달 첫 거래일에 50 : 50으로</b></div>
-          <div class="one">신고가 구간에서 TQQQ가 오르면 비중이 60%, 70%로 커집니다. 매달 첫 미국 거래일 종가에 그날 평가금액 기준 TQQQ 50% : SPYM 50%로 되돌립니다(TS 발동 중엔 하지 않음). 그 밖의 날엔 아무것도 안 합니다.</div>
+          <div class="one">신고가 구간에서 TQQQ가 오르면 비중이 60%, 70%로 커집니다. 매달 첫 미국 거래일 종가에 그날 평가금액 기준 TQQQ 50% : SPYM 50%로 되돌립니다(TS 발동 중엔 하지 않음). 그 밖의 날엔 아무것도 안 합니다.
+            <ul>
+              <li>매달 <b>첫 미국 거래일</b> 종가에 그날 평가금액 기준 <b>50 : 50</b> — 신고가 구간이고 TS 발동 중이 아닐 때만 (QQQ 100% 구간·대기 중엔 할 게 없음)</li>
+              <li>예: 평가금액 1억 → TQQQ 5,000만 · SPYM 5,000만. 한 달 뒤 TQQQ 6,250만 · SPYM 5,100만(합 11,350만)이면 TQQQ 575만 팔아 SPYM을 사서 5,675만 : 5,675만</li>
+              <li>그 밖의 날엔 비중이 벌어져 있어도 그대로 둠 · 퍼센트는 모두 "그날 종가 기준 계좌 전체 평가금액"에 대한 비중</li>
+            </ul></div>
           <details><summary>퍼센트의 뜻 · 실제 주문 방법</summary><div class="in">
             퍼센트는 전부 <b>그날 종가 기준 계좌 전체 평가금액</b>에 대한 비중입니다. 예: 평가금액 1억 → TQQQ 5,000만, SPYM 5,000만. 한 달 뒤 TQQQ 6,250만·SPYM 5,100만(합 1억 1,350만)이면 첫 거래일 종가에 TQQQ 575만 팔아 SPYM을 사서 5,675만 : 5,675만으로.<br>
             SPYM은 S&amp;P500 ETF면 아무거나(SPLG·SPY·VOO·IVV). SGOV는 현금 대용(초단기 국채 ETF)이고 BIL·SHV도 같습니다. 장 마감 직전가와 확정 종가 차이는 보통 0.3% 안쪽이라 결과엔 거의 영향이 없습니다.<br>
@@ -164,9 +191,9 @@
     <div class="body">
       <div class="tiles" id="tiles"></div>
       <div id="plot40" class="plot" style="height:300px"></div>
-      <details><summary>24번의 거래 전부 보기 (들어간 날 → 나온 날 · 그 사이 계좌 변화)</summary><div class="in tbl" id="trades"></div></details>
-      <details><summary>해마다 성적 · 큰 낙폭 구간</summary><div class="in" id="yearly"></div></details>
-      <details><summary>과최적화 점검 — 숫자를 한 칸씩 바꿔 봤을 때</summary><div class="in">
+      <details open><summary>24번의 거래 전부 보기 (들어간 날 → 나온 날 · 그 사이 계좌 변화)</summary><div class="in tbl" id="trades"></div></details>
+      <details open><summary>해마다 성적 · 큰 낙폭 구간</summary><div class="in" id="yearly"></div></details>
+      <details open><summary>과최적화 점검 — 숫자를 한 칸씩 바꿔 봤을 때</summary><div class="in">
         <div class="tbl"><table><tr><th>바꾼 숫자</th><th>가성비</th><th>기준(0.62) 대비</th></tr>
           <tr><td>밴드 ±2% / ±3%</td><td>0.58 / 0.62</td><td>−6% / +1%</td></tr>
           <tr><td>신고가 구간 −8% / −12%</td><td>0.46 / 0.49</td><td class="bad">−26% / −21%</td></tr>
@@ -344,6 +371,11 @@ function render(){
     [`TQQQ 종가가 <b>${inm&&st==='T'?tsLine.toFixed(2):'—'}</b>(TS선) 위인가?`, inm&&st==='T'?(cutNow?'이미 발동됨 — 구간이 바뀔 때까지 TQQQ 없음':'이하로 마감하면 TQQQ만 전부 SGOV로'):'신고가 구간이 아니면 볼 필요 없음'],
     ['오늘이 이달 첫 거래일인가?', '신고가 구간이고 TS 발동 중이 아니면 50 : 50으로 다시 맞춤'],
   ].map(([q,a],k)=>`<label><input type="checkbox"><span><b>${k+1}.</b> ${q}<br><span class="muted" style="font-size:12px">${a}</span></span></label>`).join('');
+  // ── 규칙 안의 "오늘 기준" 숫자 ──
+  { const f2=v=>v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    $('#r1now').innerHTML=`오늘 기준 · 200일선 <b>${f2(S.ma200)}</b> → 진입선 ${f2(S.ma200*1.025)} · 탈출선 ${f2(S.ma200*0.975)} · S&amp;P500 ${f2(S.idx)}(${fmtPct(spUpPct*100)}) → <b>${inm?'투자 중':'대기 중'}</b>${inm?` · 탈출선까지 ${fmtPct((S.idx/(S.ma200*0.975)-1)*100)}`:` · 진입선까지 ${fmtPct((S.idx/(S.ma200*1.025)-1)*100)}`}`;
+    $('#r2now').innerHTML=`오늘 기준 · 52주 최고 종가 <b>${qhi.toFixed(2)}</b>(${qhiD}) → −10%선 ${(qhi*0.9).toFixed(2)} · QQQ ${qc[qi].toFixed(2)}(${fmtPct(qdd*100)}) → <b>${qdd>=-0.1?'신고가 구간':'조정 구간'}</b> · 선까지 ${Math.abs(qdd*100+10).toFixed(1)}%p${inm?'':' (지금은 대기 중이라 비중은 SGOV)'}`;
+    $('#r3now').innerHTML= !inm?'오늘 기준 · 대기 중이라 TS 없음': st!=='T'?`오늘 기준 · QQQ 100% 구간이라 TS 없음 (신고가 구간으로 돌아오는 날부터 다시 셈)`: cutNow?`오늘 기준 · <b class="bad">TS 발동 중</b> — 구간 최고가 ${e.tpk.toFixed(2)} · TS선 ${tsLine.toFixed(2)} · 지금 SPYM 50% + SGOV 50%, QQQ가 −10% 아래로 가거나 밴드를 벗어날 때까지 TQQQ 없음`:`오늘 기준 · 구간 최고가 <b>${e.tpk.toFixed(2)}</b> → TS선 ${tsLine.toFixed(2)} · TQQQ ${tq.toFixed(2)}(${fmtPct((tq/e.tpk-1)*100)}) → TS선까지 <b>${fmtPct((tq/tsLine-1)*100)}</b> 여유`; }
   // ── 2차 검증 ──
   verify2();
 }
