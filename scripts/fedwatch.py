@@ -92,6 +92,99 @@ def news():
     return out
 
 
+# ── 커뮤니티 (디시 미국주식 갤러리 · 에펨코리아 주식 게시판) ──
+BH = {"User-Agent": "Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Mobile Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8"}
+CKW = ["fedwatch", "페드워치", "페드와치", "fed watch"]
+
+
+def html(url, ref=None):
+    import urllib.request, gzip
+    h = dict(BH)
+    if ref: h["Referer"] = ref
+    with urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=20) as r:
+        b = r.read()
+        if r.headers.get("Content-Encoding") == "gzip": b = gzip.decompress(b)
+        return r.status, b.decode("utf-8", "replace")
+
+
+def strip(x):
+    import html as H
+    return H.unescape(re.sub(r"<[^>]+>", "", x)).strip()
+
+
+def dc(now):
+    out = []
+    for kw in CKW:
+        enc = quote(kw).replace("%", ".")
+        for gid, kind in (("stockus", "mgallery"), ("neostock", "mgallery")):
+            url = f"https://gall.dcinside.com/{kind}/board/lists/?id={gid}&s_type=search_subject_memo&s_keyword={enc}"
+            try:
+                st, t = html(url, "https://gall.dcinside.com/")
+            except Exception as e:
+                note("디시 실패", gid, kw, type(e).__name__, str(e)[:80]); continue
+            rows = re.findall(r'<tr class="ub-content[^"]*"[^>]*>(.*?)</tr>', t, re.S); n = 0
+            for r in rows:
+                a = re.search(r'<td class="gall_tit[^"]*">\s*<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', r, re.S)
+                dt = re.search(r'<td class="gall_date"[^>]*title="([0-9: -]+)"', r)
+                if not a or not dt: continue
+                title = strip(a.group(2)); link = "https://gall.dcinside.com" + a.group(1).replace("&amp;", "&")
+                try: ts = datetime.strptime(dt.group(1).strip(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
+                except Exception: continue
+                out.append(dict(site="디시 " + gid, title=title, link=link, ts=ts.isoformat(timespec="minutes"))); n += 1
+            note("디시", gid, kw, st, len(t), "행", len(rows), "글", n)
+    return out
+
+
+def fmk(now):
+    out = []
+    for kw in CKW[:2]:
+        for base in ("https://www.fmkorea.com", "https://m.fmkorea.com"):
+            url = f"{base}/search.php?mid=stock&category=&search_target=title_content&search_keyword={quote(kw)}"
+            try:
+                st, t = html(url, base + "/")
+            except Exception as e:
+                note("에펨 실패", base[8:], kw, type(e).__name__, str(e)[:80]); continue
+            items = re.findall(r'<li[^>]*>(.*?)</li>', t, re.S); n = 0
+            for it in items:
+                a = re.search(r'<h3 class="title">\s*<a href="([^"]+)"[^>]*>(.*?)</a>', it, re.S) or re.search(r'<a href="(/\d+[^"]*)"[^>]*class="[^"]*hx[^"]*"[^>]*>(.*?)</a>', it, re.S)
+                d = re.search(r'<span class="regdate">\s*([0-9.: ]+)</span>', it)
+                if not a or not d: continue
+                title = strip(re.sub(r'<span class="comment_count".*?</span>', "", a.group(2), flags=re.S))
+                ds = d.group(1).strip()
+                try:
+                    if re.match(r"\d{4}\.\d{2}\.\d{2}", ds): ts = datetime.strptime(ds[:16], "%Y.%m.%d %H:%M" if len(ds) >= 16 else "%Y.%m.%d")
+                    else: ts = datetime.combine((now + timedelta(hours=9)).date(), datetime.strptime(ds[:5], "%H:%M").time())
+                    ts = ts.replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
+                except Exception: continue
+                out.append(dict(site="에펨", title=title, link=base + a.group(1).replace("&amp;", "&"), ts=ts.isoformat(timespec="minutes"))); n += 1
+            note("에펨", base[8:], kw, st, len(t), "글", n, "| 앞부분:", re.sub(r"\s+", " ", t[:160]))
+            if n: break
+    return out
+
+
+def community(now):
+    seen = {}; 
+    for x in dc(now) + fmk(now):
+        k = x["link"].split("&page")[0]
+        if k not in seen: seen[k] = x
+    out = sorted(seen.values(), key=lambda x: x["ts"], reverse=True)
+    out = [x for x in out if now - datetime.fromisoformat(x["ts"]) <= timedelta(days=8)]
+    for x in out:
+        t = x["title"].lower(); probs = []
+        for m in PCT.finditer(x["title"]):
+            val = float(m.group(1))
+            if val > 100: continue
+            win = t[max(0, m.start() - 30): m.end() + 30]; kind = None; best = 999
+            for k, ws in KW.items():
+                for w in ws:
+                    j = win.find(w)
+                    if j >= 0 and abs(j - 30) < best: best = abs(j - 30); kind = k
+            if kind: probs.append([kind, val, month_of(t, m.start(), kind)])
+        x["probs"] = probs
+    return out
+
+
 # ── 폭락 가능성 (FedWatch 주변 신호만으로, 5단계) ──
 FOMC = ["2026-10-28", "2026-12-09", "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-16", "2027-07-28", "2027-09-22", "2027-10-27", "2027-12-08"]
 GRADES = ["매우낮음", "낮음", "중간", "높음", "매우높음"]
@@ -140,6 +233,10 @@ def main():
     nw = news()
     if not nw and old.get("news"):
         nw = old["news"]; note("뉴스 전부 실패 — 이전 값 유지")
+    try: cm = community(now)
+    except Exception as e: cm = []; note("커뮤니티 실패", type(e).__name__, str(e)[:120])
+    if not cm and old.get("comm"): cm = [x for x in old["comm"] if now - datetime.fromisoformat(x["ts"]) <= timedelta(days=8)]
+    c24 = sum(1 for x in cm if now - datetime.fromisoformat(x["ts"]) <= timedelta(hours=24))
     age = lambda x: now - datetime.fromisoformat(x["ts"])
     byq = {q: dict(h24=sum(1 for x in nw if q in x.get("q", []) and age(x) <= timedelta(hours=24)), d7=sum(1 for x in nw if q in x.get("q", [])))
            for _, q in QUERIES}
@@ -147,15 +244,16 @@ def main():
     fw24 = sum(1 for x in nw if age(x) <= timedelta(hours=24) and ("FedWatch" in x.get("q", []) or "페드워치" in x.get("q", []) or x.get("fw")))
     fw7 = sum(1 for x in nw if "FedWatch" in x.get("q", []) or "페드워치" in x.get("q", []) or x.get("fw"))
     figs = [dict(kind=p[0], v=p[1], mon=p[2] if len(p) > 2 else None, ts=x["ts"], title=x["title"], src=x["src"], link=x["link"])
-            for x in nw for p in x["probs"]]
+            for x in nw for p in x["probs"]] + [dict(kind=p[0], v=p[1], mon=p[2], ts=x["ts"], title=x["title"], src=x["site"], link=x["link"]) for x in cm for p in x["probs"]]
+    figs.sort(key=lambda f: f["ts"], reverse=True)
     def med(k):
         v = sorted(f["v"] for f in figs if f["kind"] == k and now - datetime.fromisoformat(f["ts"]) <= timedelta(hours=72))
         return None if not v else v[len(v) // 2]
     rt = crash_rating(nw, figs, now, fw24, fw7)
     snap = dict(t=now.isoformat(timespec="minutes"), n24=n24, fw24=fw24, q={q: v["h24"] for q, v in byq.items()},
-                cut=med("cut"), hold=med("hold"), hike=med("hike"), g=rt["g"], sc=rt["score"])
+                cut=med("cut"), hold=med("hold"), hike=med("hike"), g=rt["g"], sc=rt["score"], c24=c24)
     hist = [h for h in old.get("hist", []) if datetime.fromisoformat(h["t"]) >= now - timedelta(days=30)] + [snap]
-    json.dump(dict(ts=int(now.timestamp()), rating=rt, news=nw[:60], figs=figs[:30], diag=DIAG,
+    json.dump(dict(ts=int(now.timestamp()), rating=rt, comm=cm[:60], ccount=dict(h24=c24, d7=len(cm)), news=nw[:60], figs=figs[:30], diag=DIAG,
                    counts=dict(n24=n24, fw24=fw24, n7d=len(nw), fw7d=fw7, byq=byq),
                    news_probs=dict(cut=med("cut"), hold=med("hold"), hike=med("hike"), n=sum(1 for f in figs if now - datetime.fromisoformat(f["ts"]) <= timedelta(hours=72))), hist=hist[-3000:]),
               open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))
