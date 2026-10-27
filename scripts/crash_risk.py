@@ -12,7 +12,7 @@ import bisect, json, os, time
 from datetime import date, timedelta, datetime, timezone
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
-LAG = {"T10Y3M": 1, "T10Y2Y": 1, "BAA10Y": 1, "BAMLH0A0HYM2": 1, "VIXCLS": 0, "VXOCLS": 0, "DFF": 1, "DGS2": 1, "NFCI": 5, "STLFSI4": 6,
+LAG = {"T10Y3M": 1, "T10Y2Y": 1, "BAA10Y": 1, "BAMLH0A0HYM2": 1, "VIXCLS": 0, "VXOCLS": 0, "DFF": 1, "NFCI": 5, "STLFSI4": 6,
        "ICSA": 5, "SAHMREALTIME": 38, "UNRATE": 38, "PERMIT": 48, "DRTSCILM": 40, "TDSP": 170, "DRSFRMACBS": 145, "NCBEILQ027S": 162, "GDP": 120}
 GRADES = ["매우낮음", "낮음", "중간", "높음", "매우높음"]
 MEMORY = 20   # 한 번 오른 등급은 20거래일(약 한 달) 유지 — 매일의 흔들림 제거
@@ -317,11 +317,6 @@ def main():
         episodes.append(row)
     # 단일 지표 검증: 조건이 켜진 날 다음 1년 안 S&P500 −10%/−20% 확률 (2006-11~ , 1년 뒤가 있는 날만)
     fwd_by = {h[0]: f for h, f in zip(hist, fwd)}
-    A = B["A"]
-    def fs(i):
-        return A["DGS2"][i] - A["DFF"][i]
-    def dd_(i):
-        return B["spx"][i] / B["ath"][i] - 1
     def single(cond, a="2006-11-01"):
         ia = bisect.bisect_left(d, a); xs = []; al = []
         for i2 in range(ia, N):
@@ -345,20 +340,8 @@ def main():
         krw_dn=single(lambda m: m["krw"][3] <= -0.05),
         vix25=single(lambda m: m["vix"][3] >= 25),
         qqq_dn=single(lambda m: m["trend"][4] <= -0.025),
-        qqq_hot=single(lambda m: m["dev"][4] >= 80),
-        # 금리 기대 (FedWatch 대체 검증): 2년 국채 - 기준금리. 음수 = 시장이 인하를 예상, 양수 = 인상 예상
-        fw_cut=single(lambda m, i: fs(i) <= -0.5, "1991-01-02"),
-        fw_hike=single(lambda m, i: fs(i) >= 0.5, "1991-01-02"),
-        fw_swing=single(lambda m, i: fs(i) - fs(B["back"](i, 91)) <= -0.5, "1991-01-02"),
-        fw_mid=single(lambda m, i: -0.5 < fs(i) < 0.5, "1991-01-02"),
-        fw_cut_hi=single(lambda m, i: fs(i) <= -0.5 and dd_(i) > -0.10, "1991-01-02"),
-        fw_cut_lo=single(lambda m, i: fs(i) <= -0.5 and dd_(i) <= -0.10, "1991-01-02"),
-        fw_hike_hi=single(lambda m, i: fs(i) >= 0.5 and dd_(i) > -0.05, "1991-01-02"))
-    fsw = []
-    for i2 in list(range(max(0, N - 800), N - 1, 5)) + [N - 1]:
-        try: fsw.append([d[i2], round(fs(i2), 3), A["DFF"][i2], A["DGS2"][i2]])
-        except Exception: pass
-    out = dict(ts=int(time.time()), raw_ts=R.get("ts"), memory=MEMORY, t_cap=T_CAP, single=single_tests, fedspread=fsw, today=today, recent=recent, weekly=weekly, stats=stats, base=base, episodes=episodes,
+        qqq_hot=single(lambda m: m["dev"][4] >= 80))
+    out = dict(ts=int(time.time()), raw_ts=R.get("ts"), memory=MEMORY, t_cap=T_CAP, single=single_tests, today=today, recent=recent, weekly=weekly, stats=stats, base=base, episodes=episodes,
                buf_q=[[x[3], round(x[2], 3)] for x in B["qs"]][-12:], mavg_last=[[m_, round(B["mavg"][m_], 2)] for m_ in sorted(B["mavg"])[-30:]])
     json.dump(out, open(os.path.join(ROOT, "crash.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     g = today["g"]

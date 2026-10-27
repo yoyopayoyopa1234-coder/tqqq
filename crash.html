@@ -47,12 +47,10 @@
   .fwc { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; } @media (max-width:820px){ .fwc { grid-template-columns:1fr 1fr; } } @media (max-width:420px){ .fwc { grid-template-columns:1fr; } }
   .fwc > div { border:1px solid var(--line); border-radius:10px; padding:10px 12px; min-width:0; }
   .fwc .k { font-size:11.5px; color:var(--muted); } .fwc .v { font-size:21px; font-weight:800; line-height:1.3; margin:2px 0; font-variant-numeric:tabular-nums; } .fwc .s { font-size:12px; color:var(--muted); line-height:1.5; }
-  .seg { display:flex; height:8px; border-radius:4px; overflow:hidden; margin:6px 0 4px; background:rgba(255,255,255,.06); } .seg i { display:block; height:100%; }
   .cut { color:#9ad0f5; } .hold { color:#c9cfd8; } .hike { color:#ff9f68; }
   .news { display:grid; gap:2px; } .news a { color:var(--fg); text-decoration:none; } .news a:hover { text-decoration:underline; }
   .news .row { display:grid; grid-template-columns:78px 1fr; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; line-height:1.5; } .news .tm { color:var(--muted); font-variant-numeric:tabular-nums; } .news .src { color:var(--muted); font-size:11.5px; }
   .tag { display:inline-block; padding:0 6px; border-radius:4px; font-size:11px; margin-left:4px; border:1px solid var(--line); color:var(--muted); }
-  .charts2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; } @media (max-width:760px){ .charts2 { grid-template-columns:1fr; } } .charts2 > div { height:240px; min-width:0; }
 </style>
 </head><body>
 <div class="wrap">
@@ -86,29 +84,14 @@
   </div>
 
   <div class="panel" id="fwPanel">
-    <h2>금리 기대 — FedWatch 대신 <span class="desc">CME FedWatch와 같은 원재료(연방기금 선물) · 예측시장 · 뉴스 반응 · 참고용, 등급 계산에는 안 넣음</span></h2>
+    <h2>FedWatch 주변 반응 <span class="desc">CME FedWatch는 접속이 안 돼서 그 주변을 셈 — 언급 수 · 반응 뉴스 · 기사에 떠도는 확률 · 15분마다 · 참고용(등급에 안 넣음)</span></h2>
     <div class="body">
       <div class="fwc" id="fwCards"><div class="muted">불러오는 중…</div></div>
-      <div class="meant" id="fwRead" style="--gc:#9ad0f5"></div>
-      <div class="tbl"><table id="fwMeet"></table></div>
-      <div class="charts2"><div id="fwCurve"></div><div id="fwSpread"></div></div>
+      <div class="tbl"><table id="fwQ"></table></div>
       <div id="fwHistWrap" style="display:none"><div class="fine">최근 30일 추이 (15분마다 쌓임)</div><div id="fwHist" style="height:200px"></div></div>
-      <details><summary>뉴스 반응 — 기사 수와 제목 속 확률</summary><div class="in">
-        <div class="tbl"><table id="fwQ"></table></div>
-        <div id="fwNP" style="margin:8px 0"></div>
-        <div class="news" id="fwNews"></div>
-        <div class="fine" style="margin-top:6px">Google 뉴스 검색(최근 7일)으로 센 기사 수. 제목에 '확률·odds·FedWatch' 같은 말과 함께 나온 퍼센트만 뽑았고, 같은 기사가 여러 매체에 실리면 한 번만 셉니다. 기사 수가 평소의 2배 넘게 늘면 시장이 금리에 예민해졌다는 뜻 — 다만 FOMC 주간엔 원래 늘어납니다.</div>
-      </div></details>
-      <details><summary>예측시장(Polymarket) — 돈을 건 사람들의 확률</summary><div class="in" id="fwPoly"></div></details>
-      <details><summary>이걸로 폭락을 미리 알 수 있나 — 1991년~ 검증</summary><div class="in">
-        <div class="tbl"><table id="fwTest"></table></div>
-        <div id="fwTestNote" style="margin-top:8px"></div>
-      </div></details>
-      <details><summary>어떻게 계산하나</summary><div class="in">
-        <b>FedWatch 계산법 그대로.</b> 연방기금 30일 선물(CBOT ZQ)은 '그 달 평균 기준금리'에 거는 상품이라, 100 − 가격 = 시장이 예상하는 그 달 평균 금리입니다. FOMC가 있는 달은 회의 전 날짜는 옛 금리, 회의 뒤는 새 금리가 섞여 있으니 날짜 비율로 풀어 '회의 직후 금리'를 구하고, 그 변화를 0.25%p 한 번으로 나눠 확률로 바꿉니다(0.4번이면 인상 40% · 동결 60%). 회의 바로 다음 달에 회의가 없으면 그 달 선물을 그대로 씁니다.<br>
-        <b>CME 사이트와 다를 수 있는 점.</b> 가격은 Yahoo의 지연 시세(약 10~20분), 출발점은 전날 실효금리(FRED). CME는 실시간 가격과 더 촘촘한 처리라 몇 %p 차이가 날 수 있습니다. 예측시장·뉴스 숫자와 나란히 보면 어긋남을 바로 알 수 있습니다.<br>
-        <b>2년물 − 기준금리.</b> 2년 국채 금리는 앞으로 2년 평균 기준금리 예상에 가깝습니다. 기준금리보다 0.5%p 넘게 낮으면 '인하가 여러 번 온다', 높으면 '인상이 온다'고 시장이 보는 것. 1976년부터 매일 있어 과거 검증에 씁니다(선물·예측시장·뉴스는 과거 기록이 없어 검증 못 함).
-      </div></details>
+      <div><b>기사에 떠도는 수치</b> <span class="muted">제목에 '확률·odds·FedWatch·페드워치'와 함께 나온 퍼센트 · 최근 7일</span><div class="news" id="fwFigs" style="margin-top:4px"></div></div>
+      <details open><summary>반응 뉴스 — 최근 기사</summary><div class="in"><div class="news" id="fwNews"></div></div></details>
+      <div class="fine">읽는 법: 기사 수가 평소(7일 하루 평균)의 2배를 넘으면 시장이 금리에 예민해졌다는 뜻입니다 — 다만 FOMC 주간에는 원래 늘어납니다. 같은 기사가 여러 매체에 실리면 한 번만 셉니다. 수치는 기사 제목에서 자동으로 뽑아서 어느 회의 얘기인지 섞일 수 있고, 제목에 숫자가 없는 날이 많습니다.</div>
       <div class="fine" id="fwTs"></div>
     </div>
   </div>
@@ -345,106 +328,43 @@ function drawChart(r){
   {displayModeBar:false,responsive:true});
 }
 document.querySelectorAll('#rng .btn').forEach(b=>b.addEventListener('click',()=>drawChart(b.dataset.r)));
-// ── 금리 기대 (FedWatch 대신) ──
+// ── FedWatch 주변 반응 ──
 let FW=null;
-const MONEN=['january','february','march','april','may','june','july','august','september','october','november','december'];
 const kst=t=>{ const d=new Date(new Date(t).getTime()+9*36e5); return `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`; };
-const md=ds=>{ const [y,m,d]=ds.split('-').map(Number); return `${m}/${d}`; };
-// 발표: 미국 동부 오후 2시 = 한국 다음 날 새벽 3시(서머타임 해제 뒤 4시)
-const dleft=ds=>{ const a=new Date(Date.parse(ds+'T18:00:00Z')+9*36e5), k=new Date(Date.now()+9*36e5);
-  const n=Math.round((Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate())-Date.UTC(k.getUTCFullYear(),k.getUTCMonth(),k.getUTCDate()))/864e5);
-  return `한국 ${a.getUTCMonth()+1}/${a.getUTCDate()} 새벽 · ${n<=0?'오늘':'D-'+n}`; };
 const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function probs(m){ const cut=m.cut||0, hike=m.hike||0; return {cut,hike,hold:Math.max(0,100-cut-hike)}; }
-function lead(p){ const a=[['인하',p.cut,'cut'],['동결',p.hold,'hold'],['인상',p.hike,'hike']].sort((x,y)=>y[1]-x[1]); return a[0]; }
-function polyFor(ds){
-  if(!FW||!FW.poly) return null; const m=MONEN[+ds.slice(5,7)-1];
-  return FW.poly.find(e=>/decision/i.test(e.title||'')&&(e.title||'').toLowerCase().includes(m)&&(!e.close||Math.abs(new Date(e.close)-new Date(ds))<20*864e5))||null;
-}
-function polyPH(e){ // 예측시장 → 인하/동결/인상 합계
-  if(!e) return null; let cut=0,hold=0,hike=0;
-  for(const m of e.markets){ const n=(m.name||'').toLowerCase(); if(/decrease|cut/.test(n)) cut+=m.p; else if(/increase|hike/.test(n)) hike+=m.p; else if(/no change|hold/.test(n)) hold+=m.p; }
-  return {cut,hold,hike};
-}
-const segbar=p=>`<div class="seg"><i style="width:${p.cut}%;background:#9ad0f5"></i><i style="width:${p.hold}%;background:#5b6472"></i><i style="width:${p.hike}%;background:#ff9f68"></i></div>`;
+const KN={cut:'인하',hold:'동결',hike:'인상'};
 function renderFW(){
   if(!FW){ $('#fwCards').innerHTML='<div class="muted">자료 준비 중 — 15분 안에 첫 수집이 끝납니다.</div>'; return; }
-  const M=(FW.meetings||[]).filter(m=>m.post!=null), effr=FW.effr, F=FW.futures||[], cnt=FW.counts||{};
-  const cards=[];
-  M.slice(0,2).forEach((m,ix)=>{
-    const p=probs(m), L=lead(p), pm=polyPH(polyFor(m.date));
-    cards.push(`<div><div class="k">${ix?'그다음':'다음'} FOMC · ${dleft(m.date)}</div>
-      <div class="v ${L[2]}">${L[0]} ${L[1].toFixed(0)}%</div>${segbar(p)}
-      <div class="s"><span class="cut">인하 ${p.cut.toFixed(0)}</span> · <span class="hold">동결 ${p.hold.toFixed(0)}</span> · <span class="hike">인상 ${p.hike.toFixed(0)}</span> <span class="muted">(선물)</span>${pm?`<br>예측시장: <span class="cut">인하 ${pm.cut.toFixed(0)}</span> · <span class="hold">동결 ${pm.hold.toFixed(0)}</span> · <span class="hike">인상 ${pm.hike.toFixed(0)}</span>`:''}</div></div>`);
-  });
-  const f12=F[12]&&F[12].rate, y1=f12!=null&&effr!=null?f12-effr:null;
-  cards.push(`<div><div class="k">1년 뒤 기준금리 (선물)</div><div class="v ${y1>0.12?'hike':y1<-0.12?'cut':'hold'}">${f12!=null?f12.toFixed(2)+'%':'—'}</div>
-    <div class="s">지금 ${effr!=null?effr.toFixed(2)+'%':'—'} → ${y1==null?'—':pp(y1)} <br>${y1==null?'':Math.abs(y1)<0.12?'거의 그대로':`${y1>0?'인상':'인하'} 약 ${Math.round(Math.abs(y1)/0.25)}번 예상`}</div></div>`);
-  const avg=cnt.n7d?cnt.n7d/7:null, heat=avg?cnt.n24/avg:null;
-  cards.push(`<div><div class="k">뉴스 열기 (24시간)</div><div class="v">${cnt.n24??'—'}건</div>
-    <div class="s">7일 하루 평균의 <b style="color:${heat>=2?'#ff9f68':'#c9cfd8'}">${heat?heat.toFixed(1)+'배':'—'}</b><br>'FedWatch·페드워치' 기사 ${cnt.fw24??'—'}건</div></div>`);
-  $('#fwCards').innerHTML=cards.join('');
-  // 회의별 표
-  $('#fwMeet').innerHTML='<tr><th>FOMC</th><th class="r">회의 전 → 후 (예상)</th><th class="r cut">인하</th><th class="r hold">동결</th><th class="r hike">인상</th><th class="r">지금 대비 누적</th><th class="r">예측시장</th></tr>'+
-    M.slice(0,6).map((m,ix)=>{ const p=probs(m), pm=polyPH(polyFor(m.date)); return `<tr${ix===0?' class="cur"':''}><td>${md(m.date)} <span class="muted">${m.date.slice(0,4)}</span></td><td class="r">${m.pre.toFixed(2)} → ${m.post.toFixed(2)}%</td><td class="r cut">${p.cut?p.cut.toFixed(0)+'%':'·'}</td><td class="r hold">${p.hold.toFixed(0)}%</td><td class="r hike">${p.hike?p.hike.toFixed(0)+'%':'·'}</td><td class="r">${pp(m.cum)}</td><td class="r muted">${pm?`동결 ${pm.hold.toFixed(0)} · 인상 ${pm.hike.toFixed(0)} · 인하 ${pm.cut.toFixed(0)}`:''}</td></tr>`; }).join('')+
-    '<tr><td colspan="7" class="fine">확률은 0.25%p 한 번 기준. 먼 회의일수록 선물 거래가 적고 앞 회의 예상이 쌓여 있어 덜 정확합니다(FedWatch도 같음). 그래서 앞 6번만 보여 줍니다.</td></tr>';
-  // 해석
-  const fsArr=C&&C.fedspread||[], fsNow=fsArr.length?fsArr[fsArr.length-1]:null, S=C&&C.single||{};
-  const dd=C&&C.today&&C.today.ath?C.today.spx/C.today.ath-1:null;
-  let rd='', key=null;
-  if(fsNow){
-    const v=fsNow[1];
-    if(v<=-0.5&&dd>-0.10){ key='fw_cut_hi'; rd=`<b>시장이 인하를 서두르는데 주가는 아직 고점 근처</b> — 2007년·2000년·2019년에 나타난 모양. 1991년~ 이 상태 뒤 1년 안 −20% 하락 ${S.fw_cut_hi?.p20}% (평소 ${S.fw_cut_hi?.b20}%).`; }
-    else if(v<=-0.5){ key='fw_cut_lo'; rd=`<b>이미 하락 중에 인하 기대가 큼</b> — 위기가 진행 중이라는 확인. 1991년~ 이 상태 뒤 1년 안 −20% 더 떨어진 경우 ${S.fw_cut_lo?.p20}%.`; }
-    else if(v>=0.5&&dd>-0.05){ key='fw_hike_hi'; rd=`<b>시장은 인상 쪽, 주가는 고점 근처</b>. 인상 기대 = 경기가 뜨겁다는 뜻이라, 1991년~ 이 상태에서 1년 안 −20%는 ${S.fw_hike_hi?.p20}%로 평소(${S.fw_hike_hi?.b20}%)보다 오히려 낮았습니다. 큰 폭락은 대개 인상이 끝나고 <b>인하 기대로 돌아선 뒤</b> 왔습니다(2000→2001, 2007→2008). 예외가 2022년 — 인상이 계속 이어지며 비싼 주가(지금 버핏 지수 경고와 같은 연료)를 눌러 −25%. 그래서 볼 것은 <b>인상 횟수가 계속 늘어나는지</b>, 그리고 <b>갑자기 인하 쪽으로 꺾이는지</b>.`; }
-    else if(v>=0.5){ key='fw_hike'; rd=`<b>시장은 인상 쪽인데 주가는 고점에서 5% 넘게 내려와 있음</b> — 2022년형(긴축이 주가를 누름)을 경계할 구간.`; }
-    else { key='fw_mid'; rd=`<b>금리 방향 기대가 뚜렷하지 않음</b> (2년물과 기준금리 차 ±0.5%p 안). 이 상태 자체는 폭락 확률과 거의 관계없었습니다(1년 안 −20% ${S.fw_mid?.p20}%, 평소 ${S.fw_mid?.b20}%).`; }
-    rd=`2년 국채 ${fsNow[3]?.toFixed(2)}% − 기준금리 ${fsNow[2]?.toFixed(2)}% = <b>${pp(v)}</b> · S&P500 고점 대비 ${pc(dd,1)}<br>`+rd;
-    // 급선회 경보
-    const old=fsArr.find(r=>r[0]>=new Date(Date.parse(fsNow[0])-91*864e5).toISOString().slice(0,10));
-    if(old&&v-old[1]<=-0.5) rd+=`<br><b style="color:#ff9f68">⚠ 3개월 새 인하 쪽으로 ${pp(v-old[1])} 급선회</b> — 시장이 경기 걱정을 시작했다는 신호(1991년~ 1년 안 −20% ${S.fw_swing?.p20}%).`;
-  }
-  $('#fwRead').innerHTML=rd||'2년물 자료 준비 중';
-  // 검증 표
-  const TR=[['fw_cut_hi','인하 기대 큼 (2년물이 기준금리보다 0.5%p+ 낮음) · 주가는 고점 −10% 안'],['fw_cut_lo','인하 기대 큼 · 이미 −10% 넘게 하락 중'],['fw_swing','3개월 새 인하 쪽으로 0.5%p+ 급선회'],['fw_mid','중립 (±0.5%p 안)'],['fw_hike_hi','인상 기대 (0.5%p+ 높음) · 주가는 고점 −5% 안'],['fw_hike','인상 기대 전체']];
-  $('#fwTest').innerHTML='<tr><th>상태</th><th class="r">해당 날</th><th class="r">1년 안 −10%</th><th class="r">−20%</th><th class="r">평소 대비</th></tr>'+
-    TR.filter(r=>S[r[0]]).map(([k,n])=>{ const x=S[k], ratio=x.p20!=null&&x.b20?x.p20/x.b20:null; return `<tr${k===key||(k==='fw_swing'&&rd.includes('급선회'))?' class="cur"':''}><td>${n}</td><td class="r">${x.share}%</td><td class="r">${x.p10??'—'}%</td><td class="r"><b style="color:${ratio>=1.5?'#ff7b82':ratio<=0.5?'#8be37a':'#c9cfd8'}">${x.p20??'—'}%</b></td><td class="r">${ratio?ratio.toFixed(1)+'배':'—'}</td></tr>`; }).join('')+
-    (S.fw_mid?`<tr><td class="muted">평소 (1991~2025 모든 날)</td><td class="r muted">100%</td><td class="r muted">${S.fw_mid.b10}%</td><td class="r muted">${S.fw_mid.b20}%</td><td class="r muted">1배</td></tr>`:'');
-  $('#fwTestNote').innerHTML=`<b>읽는 법.</b> 쓸모 있는 신호는 '주가가 아직 높은데 시장이 인하를 서두를 때'(평소의 약 ${S.fw_cut_hi&&S.fw_cut_hi.b20?(S.fw_cut_hi.p20/S.fw_cut_hi.b20).toFixed(1):'—'}배) 하나입니다. 채권 시장이 경기 둔화를 주식보다 먼저 본 경우 — 리먼형 '균열'과 같은 쪽 신호라 등급의 금리차·신용 지표와 겹칩니다. 그래서 점수에 또 넣지 않고 참고로만 둡니다.<br>
-    <b>한계.</b> 2023~2025년에도 인하 기대가 오래 컸지만 −20%는 2025년 4월 한 번(−19%)뿐이었습니다. 선물·예측시장·뉴스 수는 과거 기록이 없어 검증 못 했고, 위 표는 같은 정보를 담은 2년 국채로 대신 검증한 결과입니다.`;
-  // 예측시장
-  $('#fwPoly').innerHTML=(FW.poly||[]).length?(FW.poly.map(e=>`<div style="margin-bottom:8px"><b>${esc(e.title)}</b> <span class="muted">${e.close?'~'+e.close.slice(0,10):''}</span><br>${e.markets.slice().sort((a,b)=>b.p-a.p).slice(0,5).map(m=>`${esc((m.name||'').trim())} <b>${m.p.toFixed(1)}%</b>`).join(' · ')}</div>`).join('')+'<div class="fine">Polymarket 공개 API. 돈이 걸린 확률이라 뉴스보다 빠르게 움직이지만, 거래가 적은 시장은 한두 명의 베팅에 흔들립니다.</div>'):'<span class="muted">이번 수집에서 받지 못함</span>';
-  // 뉴스
-  const BQ=cnt.byq||{}, QN={'FedWatch':'FedWatch (영문)','페드워치':'페드워치 (한글)','"rate cut" odds Fed':'rate cut odds','fed funds futures':'fed funds futures','금리 인하 확률 연준':'금리 인하 확률 연준'};
-  $('#fwQ').innerHTML='<tr><th>검색어</th><th class="r">24시간</th><th class="r">7일</th><th class="r">평소 대비</th></tr>'+Object.entries(BQ).map(([q,v])=>{ const r=v.d7?v.h24/(v.d7/7):null; return `<tr><td>${esc(QN[q]||q)}</td><td class="r">${v.h24}</td><td class="r">${v.d7}</td><td class="r" style="color:${r>=2?'#ff9f68':'inherit'}">${r?r.toFixed(1)+'배':'—'}</td></tr>`; }).join('');
-  const NP=FW.news_probs||{};
-  $('#fwNP').innerHTML=NP.n?`최근 3일 제목에 나온 확률(중앙값): ${NP.cut!=null?`<span class="cut">인하 ${NP.cut}%</span> `:''}${NP.hold!=null?`<span class="hold">동결 ${NP.hold}%</span> `:''}${NP.hike!=null?`<span class="hike">인상 ${NP.hike}%</span>`:''} <span class="muted">(${NP.n}개 숫자 · 어느 회의 얘기인지는 제목마다 다를 수 있음)</span>`:'<span class="muted">최근 3일 제목에 확률 숫자가 거의 없음 — 위 선물 계산을 보세요.</span>';
+  const cnt=FW.counts||{}, BQ=cnt.byq||{}, NP=FW.news_probs||{};
+  const heat=(h,d7)=>d7?h/(d7/7):null, hc=r=>r>=2?'#ff9f68':'#c9cfd8';
+  const hAll=heat(cnt.n24,cnt.n7d), hFw=heat(cnt.fw24,cnt.fw7d);
+  const top=['cut','hold','hike'].filter(k=>NP[k]!=null).sort((a,b)=>NP[b]-NP[a])[0];
+  $('#fwCards').innerHTML=`
+    <div><div class="k">'FedWatch·페드워치' 언급 (24시간)</div><div class="v">${cnt.fw24??'—'}건</div><div class="s">평소의 <b style="color:${hc(hFw)}">${hFw?hFw.toFixed(1)+'배':'—'}</b> · 7일 ${cnt.fw7d??'—'}건</div></div>
+    <div><div class="k">금리 기대 기사 전체 (24시간)</div><div class="v">${cnt.n24??'—'}건</div><div class="s">평소의 <b style="color:${hc(hAll)}">${hAll?hAll.toFixed(1)+'배':'—'}</b> · 7일 ${cnt.n7d??'—'}건</div></div>
+    <div><div class="k">기사 속 확률 (최근 3일 가운데값)</div><div class="v ${top||''}">${top?KN[top]+' '+NP[top]+'%':'—'}</div><div class="s">${['cut','hold','hike'].filter(k=>NP[k]!=null).map(k=>`<span class="${k}">${KN[k]} ${NP[k]}%</span>`).join(' · ')||'최근 3일 제목에 숫자 없음'}${NP.n?` <span class="muted">(${NP.n}개)</span>`:''}</div></div>
+    <div><div class="k">가장 많이 나온 말 (24시간)</div><div class="v" id="fwWord">—</div><div class="s" id="fwWordS"></div></div>`;
+  // 24시간 제목에서 인하/동결/인상 단어 수
+  const now=Date.now(), N24=(FW.news||[]).filter(n=>now-Date.parse(n.ts)<=864e5), W={cut:/\bcuts?\b|easing|인하/i,hold:/\bhold|pause|unchanged|steady|동결/i,hike:/\bhikes?\b|raise|tighten|인상/i};
+  const wc=Object.fromEntries(Object.entries(W).map(([k,r])=>[k,N24.filter(n=>r.test(n.title)).length])), wt=Object.keys(wc).sort((a,b)=>wc[b]-wc[a])[0];
+  $('#fwWord').innerHTML=wc[wt]?`<span class="${wt}">${KN[wt]}</span>`:'—'; $('#fwWordS').innerHTML=Object.keys(wc).map(k=>`<span class="${k}">${KN[k]} ${wc[k]}</span>`).join(' · ')+' <span class="muted">(제목 수)</span>';
+  const QN={'FedWatch':'FedWatch (영문)','페드워치':'페드워치 (한글)','"rate cut" odds Fed':'rate cut odds','fed funds futures':'fed funds futures','금리 인하 확률 연준':'금리 인하 확률 연준'};
+  $('#fwQ').innerHTML='<tr><th>검색어</th><th class="r">24시간</th><th class="r">7일</th><th class="r">평소 대비</th></tr>'+Object.entries(BQ).map(([q,v])=>{ const r=heat(v.h24,v.d7); return `<tr><td>${esc(QN[q]||q)}</td><td class="r">${v.h24}</td><td class="r">${v.d7}</td><td class="r" style="color:${r>=2?'#ff9f68':'inherit'}">${r?r.toFixed(1)+'배':'—'}</td></tr>`; }).join('');
+  const FG=FW.figs||[];
+  $('#fwFigs').innerHTML=FG.length?FG.slice(0,10).map(f=>`<div class="row"><div class="tm">${kst(f.ts)}</div><div><span class="tag ${f.kind}" style="font-weight:700">${KN[f.kind]} ${f.v}%</span>${f.mon?`<span class="tag">${f.mon}월 회의</span>`:''} <a href="${esc(f.link)}" target="_blank" rel="noopener">${esc(f.title.replace(/\s+-\s+[^-]+$/,''))}</a> <span class="src">${esc(f.src)}</span></div></div>`).join(''):'<div class="muted" style="font-size:12.5px">최근 7일 제목에 확률 숫자가 나온 기사가 없습니다.</div>';
   const rel=/fed|fomc|rate|연준|금리|페드워치|treasury|yield|powell|warsh/i;
-  const NS=(FW.news||[]).filter(n=>rel.test(n.title)).slice(0,15);
-  $('#fwNews').innerHTML=NS.map(n=>{ const t=n.title.replace(/\s+-\s+[^-]+$/,''); return `<div class="row"><div class="tm">${kst(n.ts)}</div><div><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(t)}</a> <span class="src">${esc(n.src)}</span>${n.lang==='ko'?'<span class="tag">한</span>':''}${(n.probs||[]).map(p=>`<span class="tag ${p[0]}">${{cut:'인하',hold:'동결',hike:'인상'}[p[0]]} ${p[1]}%</span>`).join('')}</div></div>`; }).join('')||'<span class="muted">기사 없음</span>';
-  $('#fwTs').innerHTML=`15분마다 다시 모음 · 마지막 ${kst(FW.ts*1000)} (한국 시각) · 이 페이지는 열어 두면 15분마다 새로 불러옵니다.${FW.ts*1000<Date.now()-90*60e3?' <b style="color:#ff9f68">· 1시간 넘게 갱신이 없음 — 수집이 막혔을 수 있음</b>':''}`;
+  $('#fwNews').innerHTML=(FW.news||[]).filter(n=>rel.test(n.title)).slice(0,15).map(n=>`<div class="row"><div class="tm">${kst(n.ts)}</div><div><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title.replace(/\s+-\s+[^-]+$/,''))}</a> <span class="src">${esc(n.src)}</span>${n.lang==='ko'?'<span class="tag">한</span>':''}${(n.probs||[]).map(p=>`<span class="tag ${p[0]}">${KN[p[0]]} ${p[1]}%</span>`).join('')}</div></div>`).join('')||'<span class="muted">기사 없음</span>';
+  $('#fwTs').innerHTML=`15분마다 다시 셈 · 마지막 ${kst(FW.ts*1000)} (한국 시각) · 페이지를 열어 두면 15분마다 새로 불러옵니다.${FW.ts*1000<Date.now()-90*60e3?' <b style="color:#ff9f68">· 1시간 넘게 갱신이 없음 — 수집이 막혔을 수 있음</b>':''}`;
   drawFW();
 }
 function drawFW(){
   if(!window.Plotly||!FW) return;
-  const L={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:40,r:10,t:28,b:30},showlegend:false};
-  const F=(FW.futures||[]).filter(f=>f.rate!=null), M=(FW.meetings||[]).filter(m=>m.post!=null).slice(0,6);
-  Plotly.react('fwCurve',[
-    {type:'scatter',mode:'lines+markers',x:F.map(f=>f.month+'-15'),y:F.map(f=>f.rate),line:{color:'#ff9f68',width:2},marker:{size:5},hovertemplate:'%{x|%Y-%m} 평균 %{y:.2f}%<extra>선물</extra>'},
-    {type:'scatter',mode:'markers',x:M.map(m=>m.date),y:M.map(m=>m.post),marker:{symbol:'diamond',size:8,color:'#9ad0f5'},hovertemplate:'%{x} 회의 뒤 %{y:.2f}%<extra>FOMC</extra>'}],
-    {...L,title:{text:'선물이 보는 기준금리 경로',font:{size:12}},xaxis:{gridcolor:'#262c35',tickformat:'%y.%m'},yaxis:{gridcolor:'#262c35',ticksuffix:'%'},
-     shapes:FW.effr!=null?[{type:'line',xref:'paper',x0:0,x1:1,y0:FW.effr,y1:FW.effr,line:{color:'#8a93a3',dash:'dot',width:1}}]:[],
-     annotations:FW.effr!=null?[{xref:'paper',x:0,y:FW.effr,text:'지금 '+FW.effr.toFixed(2)+'%',showarrow:false,yshift:-9,xanchor:'left',font:{size:10,color:'#8a93a3'}}]:[]},{displayModeBar:false,responsive:true});
-  const S=(C&&C.fedspread)||[];
-  if(S.length) Plotly.react('fwSpread',[{type:'scatter',mode:'lines',x:S.map(r=>r[0]),y:S.map(r=>r[1]),line:{color:'#9ad0f5',width:1.6},fill:'tozeroy',fillcolor:'rgba(154,208,245,.08)',hovertemplate:'%{x} %{y:+.2f}%p<extra></extra>'}],
-    {...L,title:{text:'2년 국채 − 기준금리 (−면 인하 예상)',font:{size:12}},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',zeroline:true,zerolinecolor:'#8a93a3'},
-     shapes:[{type:'rect',xref:'paper',x0:0,x1:1,y0:-0.5,y1:Math.min(-0.6,...S.map(r=>r[1])),fillcolor:'rgba(242,54,69,.08)',line:{width:0}}],
-     annotations:[{xref:'paper',x:0.01,y:-0.5,text:'인하 기대 큼',showarrow:false,yshift:-9,xanchor:'left',font:{size:10,color:'#ff7b82'}}]},{displayModeBar:false,responsive:true});
-  const H=(FW.hist||[]).filter(h=>h.hike1!=null||h.n24!=null);
-  if(H.length>=12){ $('#fwHistWrap').style.display='';
-    Plotly.react('fwHist',[{type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.hike1!=null&&h.cut1!=null?h.hike1-h.cut1:null),name:'그다음 회의 인상−인하 %',line:{color:'#ff9f68',width:1.5},hovertemplate:'%{y:.0f}%<extra>그다음 회의 인상−인하</extra>'},
-      {type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.n24),name:'24시간 기사 수',yaxis:'y2',line:{color:'#8a93a3',width:1,dash:'dot'},hovertemplate:'%{y}건<extra>기사</extra>'}],
-      {...L,showlegend:true,legend:{orientation:'h',y:1.15},margin:{l:40,r:40,t:10,b:30},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',ticksuffix:'%'},yaxis2:{overlaying:'y',side:'right',showgrid:false}},{displayModeBar:false,responsive:true}); }
+  const H=(FW.hist||[]).filter(h=>h.n24!=null);
+  if(H.length<12) return;
+  $('#fwHistWrap').style.display='';
+  Plotly.react('fwHist',[{type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.n24),name:'금리 기대 기사 (24시간)',line:{color:'#c9cfd8',width:1.4},hovertemplate:'%{y}건<extra>전체</extra>'},
+    {type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>h.fw24),name:'FedWatch 언급',line:{color:'#ff9f68',width:1.6},hovertemplate:'%{y}건<extra>FedWatch</extra>'}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:36,r:10,t:10,b:30},showlegend:true,legend:{orientation:'h',y:1.15},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',rangemode:'tozero'}},{displayModeBar:false,responsive:true});
 }
 const loadFW=()=>fetch('fedwatch.json?'+Math.floor(Date.now()/60000)).then(r=>r.ok?r.json():null).catch(()=>null);
 const PLOTLY_SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js'];
