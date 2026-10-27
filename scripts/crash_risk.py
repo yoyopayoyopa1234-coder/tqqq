@@ -16,11 +16,18 @@ LAG = {"T10Y3M": 1, "T10Y2Y": 1, "BAA10Y": 1, "BAMLH0A0HYM2": 1, "VIXCLS": 0, "V
        "ICSA": 5, "SAHMREALTIME": 38, "UNRATE": 38, "PERMIT": 48, "DRTSCILM": 40, "TDSP": 170, "DRSFRMACBS": 145, "NCBEILQ027S": 162, "GDP": 120}
 GRADES = ["매우낮음", "낮음", "중간", "높음", "매우높음"]
 MEMORY = 20   # 한 번 오른 등급은 20거래일(약 한 달) 유지 — 매일의 흔들림 제거
+# 추가 지표 (공포·탐욕 · 풋콜 · RSI · 원달러 · 나스닥 200일선) — 검증 때 하나씩 끄고 켜 보려고 스위치로 둠
+OPT = dict(sent=True, rsi=True, krw=True, qqq_trend=True)
+T_CAP = 4     # 불씨는 '몇 개가 켜졌나': 켜진 단계 합 ÷ (2 × 4) — 지표가 늘어도 묽어지지 않게 (8점이면 100)
 
 
 def load():
     J = json.load(open(os.path.join(ROOT, "tq40.json")))
     R = json.load(open(os.path.join(ROOT, "crash_raw.json")))
+    try:
+        R["fg"] = json.load(open(os.path.join(ROOT, "fg_hist.json")))
+    except Exception:
+        R["fg"] = {"d": [], "v": []}
     return J, R
 
 
@@ -56,6 +63,40 @@ def build(J, R):
     ath = []; m = 0
     for v in spx: m = max(m, v); ath.append(m)
     vix = [A["VIXCLS"][i] if A["VIXCLS"][i] is not None else A["VXOCLS"][i] for i in range(N)]
+
+    # ── 추가 지표 ──
+    # 공포·탐욕 (CNN, 2011~): 그날 값 (발표 당일 장 마감 뒤)
+    fgm = dict(zip(R["fg"]["d"], R["fg"]["v"])); fg = [None] * N; fgd = [None] * N; last = None; lastd = None
+    fgk = sorted(fgm); j = -1
+    for i in range(N):
+        while j + 1 < len(fgk) and fgk[j + 1] <= d[i]: j += 1
+        if j >= 0 and (D[i] - date.fromisoformat(fgk[j])).days <= 7: fg[i] = fgm[fgk[j]]; fgd[i] = fgk[j]
+    # 풋콜 5일 평균: CBOE 전체(2006-11~2019-10, 직접 5일 평균) + CNN(5일 평균, 2025-10~ 쌓이는 중) — 수준이 시기마다 달라 '최근 1년 안의 위치'로 판단
+    pcm = {}
+    tot = R["series"].get("PC_TOTAL", [])
+    for k in range(4, len(tot)): pcm[tot[k][0]] = sum(x[1] for x in tot[k - 4:k + 1]) / 5
+    for r in R["series"].get("CNN_put_call_options", []): pcm[r[0]] = r[1]
+    pck = sorted(pcm); pc = [None] * N; pcd = [None] * N; j = -1
+    for i in range(N):
+        while j + 1 < len(pck) and pck[j + 1] <= d[i]: j += 1
+        if j >= 0 and (D[i] - date.fromisoformat(pck[j])).days <= 7: pc[i] = pcm[pck[j]]; pcd[i] = pck[j]
+    pc_pct = [None] * N
+    for i in range(N):
+        if pc[i] is None: continue
+        k = back(i, 365); h = [pc[t] for t in range(k, i + 1) if pc[t] is not None]
+        if len(h) >= 150: pc_pct[i] = sum(1 for x in h if x <= pc[i]) / len(h) * 100
+    # 나스닥100 RSI(14, Wilder)
+    rsi = [None] * N; g = l = 0.0
+    for i in range(1, N):
+        ch = ndx[i] - ndx[i - 1]; up = max(ch, 0); dn = max(-ch, 0)
+        if i <= 14: g += up / 14; l += dn / 14
+        else: g = (g * 13 + up) / 14; l = (l * 13 + dn) / 14
+        if i >= 14: rsi[i] = 100.0 if l == 0 else 100 - 100 / (1 + g / l)
+    # 원/달러 (FRED DEXKOUS, tq40.json에 이미 있음)
+    krw = []; lf = None
+    for v in J.get("krw", [None] * N):
+        if v is not None: lf = v
+        krw.append(lf)
 
     # 버핏 지수: 비금융기업 주식 시가총액 / 명목 GDP — 분기말 값을 S&P500 변화로 그날까지 늘림
     gdp = {r[0]: r[1] for r in R["series"]["GDP"]}
@@ -139,6 +180,9 @@ def build(J, R):
         o.append(("s3", "F", lv(p_s3[i], 80, 95), s3[i], p_s3[i]))
         o.append(("dev", "F", lv(p_dev[i], 80, 95), dev[i], p_dev[i]))
         o.append(("rel", "F", lv(p_rel[i], 80, 95), rel[i], p_rel[i]))
+        if OPT["sent"]:   # 참고(R, 등급에 안 넣음): 극단적 탐욕 · 풋콜 쏠림 — 검증에서 폭락 예측력이 없었음
+            o.append(("greed", "R", None if fg[i] is None else (2 if fg[i] >= 85 else 1 if fg[i] >= 75 else 0), fg[i], None))
+            o.append(("pc", "R", None if pc_pct[i] is None else (1 if pc_pct[i] <= 10 or pc_pct[i] >= 90 else 0), pc[i], pc_pct[i], pcd[i]))
         # ── 균열 (리먼형) ──
         cur, last_neg, last_m = curve_state(i)
         if cur is None: c_lv = None
@@ -164,21 +208,31 @@ def build(J, R):
         o.append(("fed", "C", lv(f12, 1.0, 2.0), f12, A["DFF"][i]))
         # ── 불씨 (진행 확인) ──
         t1 = None if ma_s[i] is None else (2 if spx[i] < ma_s[i] * 0.975 else 1 if spx[i] < ma_s[i] else 0)
-        o.append(("trend", "T", t1, spx[i] / ma_s[i] - 1 if ma_s[i] else None, None))
+        if OPT["qqq_trend"] and ma_n[i] is not None:   # 나스닥100(QQQ) 200일선도 같은 기준 — 둘 중 나쁜 쪽
+            t1 = worst(t1, 2 if ndx[i] < ma_n[i] * 0.975 else 1 if ndx[i] < ma_n[i] else 0)
+        o.append(("trend", "T", t1, spx[i] / ma_s[i] - 1 if ma_s[i] else None, ndx[i] / ma_n[i] - 1 if ma_n[i] else None))
         ddv = spx[i] / ath[i] - 1
         o.append(("dd", "T", lv(ddv, -0.10, -0.20, up=False), ddv, None))
         o.append(("vix", "T", lv(vix[i], 25, 35), vix[i], None))
         k3 = back(i, 91)
         b3 = A["BAA10Y"][i] - A["BAA10Y"][k3] if A["BAA10Y"][i] is not None and A["BAA10Y"][k3] is not None else None
         o.append(("baa3", "T", lv(b3, 0.3, 0.6), b3, None))
+        if OPT["sent"]:   # 공포 확산: CNN 공포·탐욕 25 이하(극단적 공포) 주의 · 10 이하 경고
+            o.append(("fear", "T", None if fg[i] is None else (2 if fg[i] <= 10 else 1 if fg[i] <= 25 else 0), fg[i], fgd[i]))
+        if OPT["rsi"]:    # 단기 매도세: 나스닥100 RSI 40 이하(약세 구간) 주의 · 30 이하(과매도 투매) 경고
+            o.append(("rsi", "T", lv(rsi[i], 40, 30, up=False), rsi[i], None))
+        if OPT["krw"]:    # 달러 쏠림: 원/달러 3개월 +5% 주의 · +10% 경고 (위기 때 달러로 돈이 몰림)
+            k3 = back(i, 91); kc = krw[i] / krw[k3] - 1 if krw[i] and krw[k3] else None
+            o.append(("krw", "T", lv(kc, 0.05, 0.10), kc, krw[i]))
         return o
 
-    return dict(d=d, D=D, N=N, spx=spx, ndx=ndx, ind=ind, A=A, OBS=OBS, buf=buf, qs=qs, ath=ath, vix=vix, mavg=mavg)
+    return dict(d=d, D=D, N=N, spx=spx, ndx=ndx, ind=ind, A=A, OBS=OBS, buf=buf, qs=qs, ath=ath, vix=vix, mavg=mavg, fgd=fgd, pcd=pcd, krw=krw, rsi=rsi)
 
 
 def pillar(o, p):
     xs = [x[2] for x in o if x[1] == p and x[2] is not None]
     if len(xs) < 2: return None
+    if p == "T": return min(100.0, sum(xs) / (2 * T_CAP) * 100)
     return sum(xs) / (2 * len(xs)) * 100
 
 
@@ -228,7 +282,7 @@ def main():
     since = i
     while since - 1 in gm and gm[since - 1] == gm[i]: since -= 1
     today = dict(date=d[i], F=F, C=C, T=T, g=gm[i], g_raw=graw[i], since=d[since],
-                 ind=[dict(k=x[0], p=x[1], lv=x[2], v=x[3], x=x[4]) for x in o],
+                 ind=[dict(k=x[0], p=x[1], lv=x[2], v=x[3], x=x[4], y=x[5] if len(x) > 5 else None) for x in o],
                  obs={k: B["OBS"][k][i] for k in B["OBS"]}, spx=spx[i], ath=B["ath"][i], vix=B["vix"][i],
                  ctx={k: B["A"][k][i] for k in ("T10Y3M", "BAA10Y", "NFCI", "STLFSI4", "SAHMREALTIME", "UNRATE", "ICSA", "PERMIT", "DRSFRMACBS", "DRTSCILM", "DFF", "BAMLH0A0HYM2")})
     # 최근 60거래일 매일 기록
@@ -261,7 +315,33 @@ def main():
         while k <= mn and (gm.get(k) is None or gm[k] < 3): k += 1
         row["first_high"] = [d[k], spx[k], spx[mn] / spx[k] - 1] if k <= mn else None
         episodes.append(row)
-    out = dict(ts=int(time.time()), raw_ts=R.get("ts"), memory=MEMORY, today=today, recent=recent, weekly=weekly, stats=stats, base=base, episodes=episodes,
+    # 단일 지표 검증: 조건이 켜진 날 다음 1년 안 S&P500 −10%/−20% 확률 (2006-11~ , 1년 뒤가 있는 날만)
+    fwd_by = {h[0]: f for h, f in zip(hist, fwd)}
+    def single(cond, a="2006-11-01"):
+        ia = bisect.bisect_left(d, a); xs = []; al = []
+        for i2 in range(ia, N):
+            f = fwd_by.get(i2)
+            if f is None: continue
+            o2 = B["ind"](i2); m = {x[0]: x for x in o2}
+            al.append(f)
+            try:
+                if cond(m): xs.append(f)
+            except Exception: pass
+        r = lambda arr, t: round(sum(1 for x in arr if x <= t) / len(arr) * 100, 1) if arr else None
+        return dict(n=len(xs), share=round(len(xs) / len(al) * 100, 1) if al else None, p10=r(xs, -0.1), p20=r(xs, -0.2), b10=r(al, -0.1), b20=r(al, -0.2))
+    single_tests = dict(
+        greed=single(lambda m: m["greed"][3] >= 75, "2011-01-03"),
+        fear=single(lambda m: m["fear"][3] <= 25, "2011-01-03"),
+        pc_low=single(lambda m: m["pc"][4] <= 10),
+        pc_high=single(lambda m: m["pc"][4] >= 90),
+        rsi40=single(lambda m: m["rsi"][3] <= 40),
+        rsi70=single(lambda m: m["rsi"][3] >= 70),
+        krw_up=single(lambda m: m["krw"][3] >= 0.05),
+        krw_dn=single(lambda m: m["krw"][3] <= -0.05),
+        vix25=single(lambda m: m["vix"][3] >= 25),
+        qqq_dn=single(lambda m: m["trend"][4] <= -0.025),
+        qqq_hot=single(lambda m: m["dev"][4] >= 80))
+    out = dict(ts=int(time.time()), raw_ts=R.get("ts"), memory=MEMORY, t_cap=T_CAP, single=single_tests, today=today, recent=recent, weekly=weekly, stats=stats, base=base, episodes=episodes,
                buf_q=[[x[3], round(x[2], 3)] for x in B["qs"]][-12:], mavg_last=[[m_, round(B["mavg"][m_], 2)] for m_ in sorted(B["mavg"])[-30:]])
     json.dump(out, open(os.path.join(ROOT, "crash.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     g = today["g"]

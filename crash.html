@@ -65,9 +65,15 @@
   </div>
 
   <div class="panel">
-    <h2>판단 근거 — 지표 15개 <span class="desc">정상 · 주의 · 경고 · 이름을 누르면 왜 보는지</span></h2>
+    <h2>판단 근거 — 지표 18개 + 참고 2개 <span class="desc">정상 · 주의 · 경고 · 이름을 누르면 왜 보는지</span></h2>
     <div class="body"><div class="tbl"><table id="ind"></table></div>
       <div class="fine">'역대 상위 X%' = 그날까지 쌓인 역사(버핏 지수 1945년~, 시장 지표 1988년~)에서 지금보다 높았던 날의 비율. 월·분기 지표는 실제 발표일 기준으로 '그날 알 수 있었던 값'만 씁니다(예: 실업률은 다음 달 초, 기업 시가총액은 분기 끝 뒤 약 10주).</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>공포·탐욕 · VIX · QQQ 200일선 · 풋콜 · RSI · 원달러는 이렇게 씁니다 <span class="desc">대시보드 지표 6개를 과거 자료로 하나씩 검증한 뒤, 예측력이 있는 쪽만 등급에 넣음</span></h2>
+    <div class="body"><div class="tbl"><table id="dash"></table></div>
+      <div id="dashNote"></div></div>
   </div>
 
   <div class="panel">
@@ -79,7 +85,7 @@
           <details><summary>그래서 세 기둥으로 봅니다</summary><div class="in"><b>연료</b>(버블형 조짐) — 시장이 얼마나 비싸고 많이 올랐나: 떨어질 '높이'. <b>균열</b>(리먼형 조짐) — 경제·신용이 깨지기 시작했나: 떨어지게 만드는 '원인'. <b>불씨</b>(진행 확인) — 시장 자체가 이미 꺾였나: 실제로 '시작'됐는지. 연료와 균열은 몇 달~몇 년 앞서 쌓이고, 불씨는 시작된 뒤에야 켜집니다. 그래서 대폭락 '조짐'은 연료·균열로, '임박/진행'은 불씨로 판단합니다.</div></details>
         </div>
         <div class="step"><div class="h"><div class="n">2</div><b>지표마다 정상 0 · 주의 1 · 경고 2점, 기둥 점수 = 받은 점수 ÷ 최대 × 100</b></div>
-          <div class="one">25 미만 <b>낮음</b> · 25~50 <b>중간</b> · 50 이상 <b>높음</b>. 연료 4개 · 균열 7개 · 불씨 4개 지표.</div>
+          <div class="one">25 미만 <b>낮음</b> · 25~50 <b>중간</b> · 50 이상 <b>높음</b>. 연료 4개 · 균열 7개 · 불씨 7개 지표. 불씨만은 '받은 점수 ÷ 8'(경고 4개면 가득)로 셉니다 — 불씨는 '몇 개가 동시에 켜졌나'가 핵심이고, 신호를 더 넣어도 점수가 묽어지지 않게 하려는 것입니다.</div>
           <details><summary>기준선은 어떻게 정했나</summary><div class="in">연료 지표(밸류에이션 · 3년 상승 · 과열 · 쏠림)는 정해진 '적정선'이 없어서 <b>그날까지 역사의 상위 20% = 주의, 상위 5% = 경고</b>로 통일했습니다. 균열·불씨 지표는 경제학·시장에서 이미 쓰는 기준을 그대로 씁니다 — 샴 법칙 0.5, 금리차 0(역전), 금융여건지수 0(평균), 대출 기준 강화 25%, S&amp;P500 200일선, 약세장 −20%, VIX 35 등. 이 숫자들을 과거 폭락에 맞춰 조정하지 않았고, 그래서 아래 검증 결과도 '맞춘 결과'가 아니라 '그 기준을 그대로 들고 갔을 때'입니다.</div></details>
         </div>
         <div class="step"><div class="h"><div class="n">3</div><b>종합 등급 — 연료·균열이 쌓인 곳에 불씨가 붙을수록 높다</b></div>
@@ -94,7 +100,7 @@
           <details><summary>왜 연료만 높으면 '중간'인가</summary><div class="in">비싸고 많이 오른 것만으로는 폭락 시기를 알 수 없습니다 — 1997~1999년, 2017~2021년, 2024~2026년처럼 연료가 가득한 채로 몇 년 더 오른 때가 많았고, 아래 검증에서도 '연료만 높은' 날들(중간)의 1년 안 −20% 하락 확률은 평소보다 오히려 낮았습니다. 연료에 균열이나 불씨가 더해질 때 확률이 크게 뛰었습니다.</div></details>
         </div>
         <div class="step"><div class="h"><div class="n">4</div><b>한 번 오른 등급은 20거래일(약 한 달) 유지</b></div>
-          <div class="one">매일 계산하지만, 불씨 지표가 기준선 근처에서 오르내리면 등급이 하루걸러 바뀝니다(연 15번). 최근 20거래일 중 가장 높았던 등급을 표시하면 연 3번으로 줄고, 검증 결과는 거의 같습니다. '오늘 하루만 본 등급'도 함께 보여줍니다.</div>
+          <div class="one">매일 계산하지만, 불씨 지표가 기준선 근처에서 오르내리면 등급이 하루걸러 바뀝니다(연 19번). 최근 20거래일 중 가장 높았던 등급을 표시하면 연 5번으로 줄고, 검증 결과는 거의 같습니다. '오늘 하루만 본 등급'도 함께 보여줍니다.</div>
         </div>
       </div>
     </div>
@@ -133,8 +139,8 @@
       ② <b>충격형은 못 잡습니다.</b> 2020년 코로나, 2018년 연말 급락은 '낮음'에서 왔습니다. 그래서 '낮음'의 1년 안 −20% 확률(약 13%)은 평소와 비슷합니다 — 낮음은 '안전'이 아니라 '쌓인 조짐이 적음'입니다.<br>
       ③ <b>틀린 경고도 있습니다.</b> 2022~23년엔 금리차 역전 · 대출 기준 강화 · 급격한 금리 인상이 모두 켜졌지만 침체도 추가 폭락도 오지 않았습니다. 1997~99년, 2021년엔 연료가 가득했지만 1~3년 더 올랐습니다.<br>
       ④ <b>밸류에이션의 '정상'은 변합니다.</b> 버핏 지수는 1990년대 이후 꾸준히 높아졌고(해외 매출, 무형자산, 낮은 금리), 지금의 '역대 최고'에는 그런 구조 변화도 섞여 있습니다.<br>
-      ⑤ <b>자료의 한계.</b> 실업률·건축허가 등은 나중에 수정된 값이라 당시 알던 값과 조금 다를 수 있습니다(샴 지표는 실시간 값). 하이일드 스프레드는 무료로 3년치만 공개돼 Baa 회사채 스프레드로 대신했습니다. 1991년 전은 일부 지표가 없어 검증에서 뺐습니다.</div>
-      <div class="fine">원자료: FRED(세인트루이스 연은) — T10Y3M · BAA10Y · NFCI · VIXCLS/VXOCLS · DFF · SAHMREALTIME · ICSA · PERMIT · DRTSCILM · DRSFRMACBS · NCBEILQ027S · GDP, S&amp;P500·나스닥100 종가. 경제 지표는 12시간마다, 시장 지표는 15분마다 새로 받아 계산합니다. 투자 자문이 아닙니다.</div>
+      ⑤ <b>자료의 한계.</b> 실업률·건축허가 등은 나중에 수정된 값이라 당시 알던 값과 조금 다를 수 있습니다(샴 지표는 실시간 값). 하이일드 스프레드는 무료로 3년치만 공개돼 Baa 회사채 스프레드로 대신했습니다. 공포·탐욕 지수는 2011년부터, 풋콜 비율은 2006~2019년(CBOE)과 2025년 10월 이후(CNN)만 있어 그 사이 기간엔 없는 지표로 계산했습니다. 1991년 전은 일부 지표가 없어 검증에서 뺐습니다.</div>
+      <div class="fine">원자료: FRED(세인트루이스 연은) — T10Y3M · BAA10Y · NFCI · VIXCLS/VXOCLS · DFF · SAHMREALTIME · ICSA · PERMIT · DRTSCILM · DRSFRMACBS · NCBEILQ027S · GDP · DEXKOUS, CNN 공포·탐욕 지수와 구성 지표, CBOE 풋콜 비율, S&amp;P500·나스닥100 종가. 경제 지표는 12시간마다, 시장 지표는 15분마다 새로 받아 계산합니다. 투자 자문이 아닙니다.</div>
     </div>
   </div>
 </div>
@@ -182,9 +188,9 @@ const IND=[
  {k:'fed',p:'C',n:'통화 긴축 (기준금리 1년 변화)',w:'+1.0%p',a:'+2.0%p',src:'DFF',
   f:(x,t)=>`${pp(x.v)} <span class="muted">(1년)</span><br><span class="muted">지금 ${x.x==null?'—':x.x.toFixed(2)+'%'}</span>`,
   why:'"연준은 뭔가 깨질 때까지 올린다." 1987 · 2000 · 2006 · 2022년 급락 전 모두 1년 새 1%p 넘게 올렸습니다. 내리는 중이면 0점이지만, 2001 · 2007년처럼 경기가 나빠져서 급히 내리는 경우도 있으니 균열의 다른 지표와 함께 봐야 합니다.'},
- {k:'trend',p:'T',n:'큰 추세 (S&P500 200일선)',w:'200일선 아래',a:'200일선 −2.5% 아래',src:'mkt',
-  f:x=>`200일선 대비 ${pc(x.v,1)}`,
-  why:'S&P500이 200일 평균 아래로 내려가면 큰 추세가 꺾인 것. −2.5% 아래는 TQQQ 신호판의 탈출선과 같은 기준입니다. 2000·2008년 대폭락의 대부분은 이 선 아래에서 일어났습니다.'},
+ {k:'trend',p:'T',n:'큰 추세 (S&P500·QQQ 200일선)',w:'200일선 아래',a:'200일선 −2.5% 아래',src:'mkt',
+  f:x=>`S&amp;P500 ${pc(x.v,1)} · QQQ ${pc(x.x,1)}<br><span class="muted">200일선 대비 · 둘 중 나쁜 쪽으로 판정</span>`,
+  why:'S&P500이나 나스닥100(QQQ)이 200일 평균 아래로 내려가면 큰 추세가 꺾인 것. −2.5% 아래는 TQQQ 신호판의 탈출선과 같은 기준입니다. 2000·2008년 대폭락의 대부분은 이 선 아래에서 일어났고, 2022년엔 나스닥이 S&P500보다 먼저 선을 깼습니다.'},
  {k:'dd',p:'T',n:'고점 대비 낙폭 (S&P500)',w:'−10% (조정)',a:'−20% (약세장)',src:'mkt',
   f:(x,t)=>`${pc(x.v,1)}<br><span class="muted">사상 최고 ${t.ath.toLocaleString(undefined,{maximumFractionDigits:0})}</span>`,
   why:'이미 얼마나 떨어졌나. −10%는 조정, −20%는 약세장의 관례적 정의입니다.'},
@@ -194,8 +200,25 @@ const IND=[
  {k:'baa3',p:'T',n:'신용 경색 진행 (스프레드 3개월 변화)',w:'+0.30%p',a:'+0.60%p',src:'BAA10Y',
   f:x=>`${pp(x.v)} <span class="muted">(3개월)</span>`,
   why:'회사채 스프레드가 지금 빠르게 벌어지는 중인가 — 균열이 실제 신용 경색으로 번지는 중인지 확인합니다.'},
+ {k:'fear',p:'T',n:'공포 확산 (CNN 공포·탐욕 지수)',w:'25 이하 (극단적 공포)',a:'10 이하',src:'fg',
+  f:x=>`${x.v==null?'—':x.v.toFixed(0)} <span class="muted">${fgLabel(x.v)}</span>`,
+  why:'CNN이 7개 지표(S&P500 125일선 대비 · 52주 신고가/신저가 · 거래량 폭 · 풋콜 · VIX · 정크본드 수요 · 안전자산 수요)로 만든 0~100 심리 지수. 25 이하(극단적 공포)인 날은 1년 안 −10% 조정 확률이 평소보다 높았지만(아래 표), −20% 대폭락으로 커진 비율은 오히려 낮았습니다 — 그래서 \'조짐\'이 아니라 \'진행 확인\'(불씨)에 넣습니다. 2011년부터.'},
+ {k:'rsi',p:'T',n:'단기 매도세 (나스닥100 RSI 14일)',w:'40 이하',a:'30 이하 (과매도)',src:'mkt',
+  f:x=>`${x.v==null?'—':x.v.toFixed(1)}`,
+  why:'최근 14일 동안 오른 날과 내린 날의 힘의 비율(Wilder 방식, 0~100). 30 이하는 관례적 과매도, 40 이하는 약세장에서 RSI가 주로 머무는 구간입니다. 단기 매매에선 \'과매도 = 매수\'로 쓰지만, 대폭락 관점에선 \'파는 힘이 강하다\'는 진행 신호 — 40 이하인 날은 1년 안 −20% 하락 확률이 평소보다 높았습니다(아래 표).'},
+ {k:'krw',p:'T',n:'달러 쏠림 (원/달러 3개월 변화)',w:'+5%',a:'+10%',src:'mkt',
+  f:x=>`${pc(x.v,1)} <span class="muted">(3개월)</span><br><span class="muted">지금 ${x.x==null?'—':Math.round(x.x).toLocaleString()}원</span>`,
+  why:'세계 금융시장이 불안해지면 돈이 달러로 몰리고 원화가 약해집니다(2008년 1,000 → 1,570원, 2022년 1,180 → 1,440원). 3개월에 5% 넘게 오르면 위험 회피가 진행 중이라는 신호 — 그런 날은 1년 안 −20% 하락 확률이 평소보다 높았습니다. 반대로 원화가 크게 강해지는 때(3개월 −5% 이상)는 대폭락이 거의 없었습니다. 1985년부터.'},
+ {k:'greed',p:'R',n:'탐욕 과열 (CNN 공포·탐욕 75 이상)',w:'75 이상',a:'85 이상',src:'fg',
+  f:x=>`${x.v==null?'—':x.v.toFixed(0)} <span class="muted">${fgLabel(x.v)}</span>`,
+  why:'\'모두가 탐욕스러울 때 두려워하라\'는 말과 달리, 극단적 탐욕(75 이상)인 날은 1년 안 −10% 조정 확률이 평소의 절반이었고 −20% 확률도 평소와 같았습니다(아래 표) — 탐욕은 상승 추세가 강하다는 뜻이기도 해서 폭락 신호가 아니었습니다. 그래서 등급에 넣지 않고 참고로만 봅니다.'},
+ {k:'pc',p:'R',n:'풋콜 비율 (5일 평균, 최근 1년 안의 위치)',w:'1년 하위 10% (콜 쏠림)',a:'1년 상위 10% (풋 쏠림)',src:'pc',
+  f:x=>`${x.v==null?'—':x.v.toFixed(2)} <span class="muted">(1년 중 ${x.x==null?'—':topPct(x.x).replace('역대 ','')})</span>`,
+  why:'하락에 거는 풋옵션 거래량 ÷ 상승에 거는 콜옵션 거래량. 낮으면 낙관(콜 쏠림), 높으면 비관(풋 쏠림). 2006~2019년 CBOE 자료로 보면 콜 쏠림 · 풋 쏠림 어느 쪽도 1년 안 큰 하락 확률을 바꾸지 못했습니다(아래 표). 2020년 뒤 개인 콜옵션 거래가 늘어 수준 자체가 낮아졌기 때문에 숫자 그대로가 아니라 최근 1년 안의 위치로 봅니다. 등급에는 넣지 않습니다(공포·탐욕 지수 안에 이미 들어 있음). 자료: CBOE 2006-11~2019-10, CNN 2025-10~(쌓이는 중).'},
 ];
-const PILL={F:['연료','버블형 조짐 — 비싸고 많이 올랐나'],C:['균열','리먼형 조짐 — 경제·신용이 깨지나'],T:['불씨','진행 확인 — 시장이 이미 꺾였나']};
+const PILL={F:['연료','버블형 조짐 — 비싸고 많이 올랐나'],C:['균열','리먼형 조짐 — 경제·신용이 깨지나'],T:['불씨','진행 확인 — 시장이 이미 꺾였나'],R:['참고','등급 계산에 넣지 않음 — 검증에서 폭락 예측력이 없었음']};
+const IM=Object.fromEntries(IND.map(m=>[m.k,m]));
+function fgLabel(v){ return v==null?'':v<=25?'극단적 공포':v<45?'공포':v<=55?'중립':v<75?'탐욕':'극단적 탐욕'; }
 const lt=l=>l==null?'<span class="lt lna">—</span>':`<span class="lt l${l}">${LV[l]}</span>`;
 const chip=g=>g==null?'—':`<span class="chip" style="background:${GHEX[g]}">${G[g]}</span>`;
 let C=null;
@@ -203,33 +226,36 @@ function render(){
   const t=C.today, g=t.g, st=C.stats.find(s=>s.g===g), base=C.base;
   document.documentElement.style.setProperty('--gc',GHEX[g]);
   // 요약 문장
-  const lit=p=>t.ind.map((x,k)=>({...x,m:IND[k]})).filter(x=>x.p===p&&x.lv>0);
+  const V=k=>t.ind.find(x=>x.k===k)||{};
+  const lit=p=>t.ind.map(x=>({...x,m:IM[x.k]})).filter(x=>x.p===p&&x.lv>0&&x.m);
   const say=p=>{ const L=lit(p); return L.length?L.map(x=>`${x.m.n.replace(/ \(.*\)/,'')} <span class="lt l${x.lv}">${LV[x.lv]}</span>`).join(' · '):'켜진 지표 없음'; };
   const sF=band(t.F), sC=band(t.C), sT=band(t.T);
   $('#now').innerHTML=`<div class="l">${t.date} 종가 기준 · 이 등급이 이어진 지 ${t.since} 부터</div>
     <div class="big">${G[g]}</div>
     <div class="scale">${GHEX.map((c,k)=>`<div class="${k===g?'on':''}" style="background:${c};color:${c}"></div>`).join('')}</div><div class="scale-l">${G.map(x=>`<span>${x}</span>`).join('')}</div>
-    <div class="sumtxt"><b>버블형 연료 ${PB[sF]}</b> — ${say('F')}<br><b>리먼형 균열 ${PB[sC]}</b> — ${say('C')}<br><b>불씨 ${PB[sT]}</b> — ${say('T')}${sT===0?` <span class="muted">(S&amp;P500 200일선 대비 ${pc(t.ind[11].v,1)} · 고점 대비 ${pc(t.ind[12].v,1)} · VIX ${t.ind[13].v?.toFixed(0)})</span>`:''}</div>
-    <div class="meant">과거(1991~2025년)에 이 등급이었던 날 다음 1년 안에 S&amp;P500이 <b>−20% 이상</b> 떨어진 확률 <b>${st&&st.p20!=null?st.p20.toFixed(0):'—'}%</b>, <b>−30% 이상</b> <b>${st&&st.p30!=null?st.p30.toFixed(0):'—'}%</b> <span class="muted">(아무 날이나 고르면 ${base.p20.toFixed(0)}% · ${base.p30.toFixed(0)}%)</span>${t.g_raw!==g?`<br><span class="muted">오늘 하루만 보면 ${G[t.g_raw]} — 최근 20거래일 안에 ${G[g]}였던 날이 있어 그대로 표시</span>`:''}</div>`;
+    <div class="sumtxt"><b>버블형 연료 ${PB[sF]}</b> — ${say('F')}<br><b>리먼형 균열 ${PB[sC]}</b> — ${say('C')}<br><b>불씨 ${PB[sT]}</b> — ${say('T')}${sT===0?` <span class="muted">(S&amp;P500 200일선 대비 ${pc(V('trend').v,1)} · 고점 대비 ${pc(V('dd').v,1)} · VIX ${V('vix').v?.toFixed(0)} · 공포·탐욕 ${V('fear').v?.toFixed(0)} · RSI ${V('rsi').v?.toFixed(0)})</span>`:''}</div>
+    <div class="meant">과거(1991~2025년)에 이 등급이었던 날 다음 1년 안에 S&amp;P500이 <b>−20% 이상</b> 떨어진 확률 <b>${st&&st.p20!=null?st.p20.toFixed(0):'—'}%</b>, <b>−30% 이상</b> <b>${st&&st.p30!=null?st.p30.toFixed(0):'—'}%</b> <span class="muted">(아무 날이나 고르면 ${base.p20.toFixed(0)}% · ${base.p30.toFixed(0)}%)</span>${t.g_raw!==g?`<br><span class="muted">오늘 하루만 보면 ${G[t.g_raw]} — 최근 20거래일 안에 ${G[g]}이었던 날이 있어 그대로 표시</span>`:''}</div>`;
   $('#pills').innerHTML=['F','C','T'].map(p=>{ const s=t[p], b=band(s), L=t.ind.filter(x=>x.p===p), n=L.filter(x=>x.lv!=null).length;
     return `<div class="pill"><div class="t"><b>${PILL[p][0]} <span class="muted" style="font-weight:400;font-size:12px">${PILL[p][1]}</span></b><span class="sc" style="color:${['#8be37a','#f0b429','#ff7b82'][b]}">${Math.round(s)}</span></div>
       <div class="bar"><i style="left:${Math.max(1,Math.min(99,s))}%"></i></div>
       <div class="w">${PB[b]} · 지표 ${n}개 중 경고 ${L.filter(x=>x.lv===2).length} · 주의 ${L.filter(x=>x.lv===1).length}</div></div>`; }).join('')+
-    `<div class="fine">점수 = 켜진 단계 합 ÷ 최대 × 100 · 25 미만 낮음 · 25~50 중간 · 50 이상 높음</div>`;
+    `<div class="fine">연료·균열 = 켜진 단계 합 ÷ 최대 × 100 · 불씨 = 켜진 단계 합 ÷ 8 × 100 (경고 4개면 가득) · 25 미만 낮음 · 25~50 중간 · 50 이상 높음</div>`;
   const age=Math.round((Date.now()/1000-C.ts)/60), rawAge=C.raw_ts?Math.round((Date.now()/1000-C.raw_ts)/3600):null;
   $('#stamp').innerHTML=`계산 ${new Date(C.ts*1000).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} (${age}분 전) · 경제 지표 수신 ${rawAge==null?'—':rawAge+'시간 전'} · 시장 지표는 ${t.date} 종가`;
   // 지표 표
-  const obsOf=(m)=>m.src==='mkt'?t.date:(t.obs[m.src]||'—');
+  const obsOf=(m,x)=>m.src==='mkt'?t.date:m.src==='fg'?(x.x&&typeof x.x==='string'?x.x:t.date):m.src==='pc'?(x.y||'—'):(t.obs[m.src]||'—');
   let h='<tr><th>지표</th><th>지금</th><th>주의</th><th>경고</th><th class="r">상태</th><th class="r">자료</th></tr>';
-  for(const p of ['F','C','T']){
-    h+=`<tr><td colspan="6" class="grp">${PILL[p][0]} <span>${PILL[p][1]} · 점수 ${Math.round(t[p])} (${PB[band(t[p])]})</span></td></tr>`;
-    t.ind.forEach((x,k)=>{ if(x.p!==p) return; const m=IND[k];
-      h+=`<tr><td><details><summary>${m.n}</summary><div class="in">${m.why}</div></details></td><td>${x.v==null&&m.k!=='jobs'?'—':m.f(x,t)}</td><td class="muted">${m.w}</td><td class="muted">${m.a}</td><td class="r">${lt(x.lv)}</td><td class="r muted">${obsOf(m)}</td></tr>`; });
+  for(const p of ['F','C','T','R']){
+    h+=`<tr><td colspan="6" class="grp">${PILL[p][0]} <span>${PILL[p][1]}${p!=='R'?` · 점수 ${Math.round(t[p])} (${PB[band(t[p])]})`:''}</span></td></tr>`;
+    t.ind.forEach(x=>{ if(x.p!==p) return; const m=IM[x.k]; if(!m) return;
+      const st_=p==='R'?(x.lv==null?lt(null):x.lv>0?'<span class="lt l1">극단</span>':'<span class="lt lna">보통</span>'):lt(x.lv);
+      h+=`<tr><td><details><summary>${m.n}</summary><div class="in">${m.why}</div></details></td><td>${x.v==null&&m.k!=='jobs'?'—':m.f(x,t)}</td><td class="muted">${m.w}</td><td class="muted">${m.a}</td><td class="r">${st_}</td><td class="r muted">${obsOf(m,x)}</td></tr>`; });
   }
   $('#ind').innerHTML=h;
   // 매일 기록
   const R=C.recent.slice().reverse();
-  const row=(r,k)=>{ const prev=R[k+1]; const names=r[6].map((l,j)=>l>0?`<span class="lt l${l}" title="${IND[j].n}">${IND[j].n.replace(/ \(.*\)/,'')}</span>`:'').filter(Boolean).join(' ');
+  const KEYS=t.ind.map(x=>x.k), PK=t.ind.map(x=>x.p);
+  const row=(r,k)=>{ const prev=R[k+1]; const names=r[6].map((l,j)=>l>0&&PK[j]!=='R'&&IM[KEYS[j]]?`<span class="lt l${l}" title="${IM[KEYS[j]].n}">${IM[KEYS[j]].n.replace(/ \(.*\)/,'')}</span>`:'').filter(Boolean).join(' ');
     const ch=prev&&(prev[4]!==r[4]||prev[5]!==r[5]||prev[6].join()!==r[6].join());
     return `<tr${k===0?' class="cur"':''}><td>${r[0]}${ch?' <span class="lt l1">변화</span>':''}</td><td class="r">${Math.round(r[1])}</td><td class="r">${Math.round(r[2])}</td><td class="r">${Math.round(r[3])}</td><td>${chip(r[5])}</td><td>${chip(r[4])}</td><td>${names||'<span class="muted">없음</span>'}</td></tr>`; };
   const head='<tr><th>날짜</th><th class="r">연료</th><th class="r">균열</th><th class="r">불씨</th><th>그날</th><th>표시 등급</th><th>켜진 지표</th></tr>';
@@ -239,13 +265,27 @@ function render(){
   const M=['24','12','6','3','0'];
   $('#ep').innerHTML='<tr><th>위기</th><th>고점 → 바닥</th>'+M.map(m=>`<th>${m==='0'?'고점':m+'개월 전'}</th>`).join('')+'<th>처음 \'높음\' 이상</th></tr>'+
     C.episodes.map(e=>`<tr><td><b>${e.name}</b></td><td>${e.peak} → ${e.trough}<br><span class="muted">${pc(e.depth)}</span></td>${M.map(m=>`<td>${chip(e.at[m]?.[4])}</td>`).join('')}<td>${e.first_high?`${e.first_high[0]}<br><span class="muted">S&amp;P ${Math.round(e.first_high[1]).toLocaleString()} · 그 뒤 ${pc(e.first_high[2])}</span>`:'—'}</td></tr>`).join('');
-  $('#epNote').innerHTML=`<div><b>읽는 법</b> — 대폭락 두 번(2000 · 2008)은 고점 직후 '높음' 이상이 켜졌고, 그때도 하락의 대부분(−48% · −53%)이 남아 있었습니다. 고점 전에는 2000년이 '연료'로 '중간~높음', 2008년이 '균열'로 '중간'이었습니다 — 조짐은 보였지만 '확실한 경고'는 시작된 뒤였습니다. 2020년 코로나와 2018년 연말은 '낮음'에서 왔고, 켜진 뒤 남은 하락은 −25% · −11%였습니다. 2020년 줄의 '12개월 전 매우높음'(2019년 2월)은 2018년 연말 급락의 여파가 남아 있던 것이고, 2022년 줄의 '12개월 전 높음'(2021년 1월)은 연료가 가득 찬 데다 코로나 실업·은행 대출 기준 강화의 여파가 균열에 남아 있던 것입니다 — 다음 하락을 내다본 신호로 보면 안 됩니다.</div>`;
+  const E=y=>C.episodes.find(e=>e.peak.startsWith(y))||{}, FH=y=>{ const f=E(y).first_high; return f?`${f[0].slice(5).replace('-','/')} (그 뒤 ${pc(f[2])})`:'—'; };
+  $('#epNote').innerHTML=`<div><b>읽는 법</b> — 대폭락 두 번은 고점 직후 '높음' 이상이 켜졌습니다: 2000년 ${FH('2000')}, 2008년 ${FH('2007')} — 그때도 하락의 대부분이 남아 있었습니다. 고점 전에는 2000년이 연료로, 2008년이 균열로 '중간~높음'이었습니다 — 조짐은 보였지만 '확실한 경고'는 시작된 뒤였습니다. 2018년 ${FH('2018')}, 2022년 ${FH('2022')}에 켜진 건 공포·탐욕 지수의 극단적 공포와 나스닥 RSI 약세가 S&amp;P500보다 먼저 꺾임을 알렸기 때문입니다(두 지표를 넣기 전엔 2018년 12/07 · 2022년 2/22). 2020년 코로나는 ${FH('2020')}. 고점 몇 달 전의 '매우높음'은 대개 직전 급락(2018년 2월 · 12월, 2020년 코로나)이나 짧은 흔들림(2021년 10월)의 여파라 다음 하락을 내다본 신호로 보면 안 됩니다.</div>`;
   // 등급별 통계
   $('#stats').innerHTML='<tr><th>등급</th><th class="r">기간 중 비율</th><th class="r">1년 안 −20% 이상</th><th class="r">1년 안 −30% 이상</th><th class="r">1년 안 평균 최대낙폭</th></tr>'+
     C.stats.slice().reverse().map(s=>`<tr${s.g===g?' class="cur"':''}><td>${chip(s.g)}${s.g===g?' <span class="muted">← 지금</span>':''}</td><td class="r">${s.share.toFixed(0)}%</td><td class="r"><b>${s.p20==null?'—':s.p20.toFixed(0)+'%'}</b></td><td class="r">${s.p30==null?'—':s.p30.toFixed(0)+'%'}</td><td class="r">${s.avg==null?'—':s.avg.toFixed(0)+'%'}</td></tr>`).join('')+
     `<tr><td class="muted">아무 날이나 (평소)</td><td class="r muted">100%</td><td class="r muted">${base.p20.toFixed(0)}%</td><td class="r muted">${base.p30.toFixed(0)}%</td><td class="r muted">${base.avg.toFixed(0)}%</td></tr>`;
   const S=k=>C.stats.find(s=>s.g===k);
-  $('#statsNote').innerHTML=`<div><b>읽는 법</b> — '매우높음'인 날은 1년 안 −20% 하락 확률이 ${S(4).p20.toFixed(0)}%로 평소(${base.p20.toFixed(0)}%)의 약 ${(S(4).p20/base.p20).toFixed(1)}배, '매우낮음'은 0%였습니다. '높음'은 ${S(3).p20.toFixed(0)}%로 평소보다 조금 높고, '중간'(연료만 쌓인 때가 대부분)은 ${S(2).p20.toFixed(0)}%로 오히려 낮았습니다 — 비싼 시장은 비싼 채로 더 오르는 일이 많았기 때문입니다. '낮음'이 ${S(1).p20.toFixed(0)}%로 평소와 비슷한 건 2018년 연말과 2020년 코로나 같은 충격이 '낮음'에서 왔기 때문입니다. 같은 하락이 여러 날에 걸쳐 세어지므로(겹치는 1년 창) 독립된 표본 수는 훨씬 적습니다 — 큰 폭락은 실제로 4~5번입니다.</div>`;
+  $('#statsNote').innerHTML=`<div><b>읽는 법</b> — '매우높음'인 날은 1년 안 −20% 하락 확률이 ${S(4).p20.toFixed(0)}%로 평소(${base.p20.toFixed(0)}%)의 약 ${(S(4).p20/base.p20).toFixed(1)}배, '매우낮음'은 ${S(0).p20.toFixed(0)}%였습니다. 그 사이 등급('높음' ${S(3).p20.toFixed(0)}% · '중간' ${S(2).p20.toFixed(0)}% · '낮음' ${S(1).p20.toFixed(0)}%)은 평소와 큰 차이가 없거나 오히려 낮았습니다 — '중간'은 연료만 쌓인 때가 대부분이라(비싼 시장은 비싼 채로 더 오르는 일이 많았음) 낮고, '낮음'은 2020년 코로나 같은 충격이 거기서 왔기 때문에 평소와 비슷합니다. 즉 이 등급이 확실히 말해 주는 건 양 끝(매우높음 · 매우낮음)입니다. 같은 하락이 여러 날에 걸쳐 세어지므로(겹치는 1년 창) 독립된 표본 수는 훨씬 적습니다 — 큰 폭락은 실제로 4~5번입니다.</div>`;
+  // 대시보드 지표 6개 — 하나씩 검증한 결과
+  const SG=C.single, sr=(o,lab)=>o?`${lab}: <b>${o.p10}%</b> · <b>${o.p20}%</b> <span class="muted">(평소 ${o.b10}% · ${o.b20}%)</span>`:'—';
+  const DROWS=[
+    ['공포·탐욕 지수 (공포 쪽)', `${V('fear').v?.toFixed(0)??'—'} <span class="muted">${fgLabel(V('fear').v)}</span>`, '불씨 \'공포 확산\' — 25 이하 주의 · 10 이하 경고', sr(SG.fear,'25 이하인 날'), '조정은 이어지기 쉽지만 대폭락으로 커진 비율은 오히려 낮음 → \'조짐\'이 아니라 \'진행 확인\''],
+    ['공포·탐욕 지수 (탐욕 쪽)', '', '참고만 (등급에 안 넣음)', sr(SG.greed,'75 이상인 날'), '극단적 탐욕 = 강한 상승 추세 — 폭락 신호가 아니었음'],
+    ['VIX', `${V('vix').v?.toFixed(1)??'—'}`, '불씨 \'공포지수\' — 25 주의 · 35 경고', sr(SG.vix25,'25 이상인 날'), '불안이 커진 때 — 하락이 이어지기 쉬움'],
+    ['QQQ vs 200일선', `${pc(V('trend').x,1)}`, '위쪽: 연료 \'단기 과열\'(역대 상위 20%/5%) · 아래쪽: 불씨 \'큰 추세\'(S&amp;P500과 둘 중 나쁜 쪽)', sr(SG.qqq_dn,'200일선 −2.5% 아래')+'<br>'+sr(SG.qqq_hot,'이격 상위 20%'), '아래로 깨지면 대시보드 지표 중 가장 강한 위험 신호 · 위로 과열은 혼자서는 오히려 1년 하락 확률이 낮았음(강한 추세) — 균열·불씨와 겹칠 때만 의미'],
+    ['풋콜 비율', `${V('pc').v?.toFixed(2)??'—'}`, '참고만 (등급에 안 넣음)', sr(SG.pc_low,'1년 하위 10%')+'<br>'+sr(SG.pc_high,'1년 상위 10%'), '2006~2019년 어느 쪽도 예측력 없음'],
+    ['나스닥 RSI', `${V('rsi').v?.toFixed(1)??'—'}`, '불씨 \'단기 매도세\' — 40 이하 주의 · 30 이하 경고', sr(SG.rsi40,'40 이하인 날')+'<br>'+sr(SG.rsi70,'70 이상인 날'), '약세(40 이하)는 대폭락 확률을 올림 · 과매수(70 이상)는 예측력 없음'],
+    ['원달러 환율', `${V('krw').x?Math.round(V('krw').x).toLocaleString()+'원':'—'} <span class="muted">(3개월 ${pc(V('krw').v,1)})</span>`, '불씨 \'달러 쏠림\' — 3개월 +5% 주의 · +10% 경고', sr(SG.krw_up,'3개월 +5% 이상')+'<br>'+sr(SG.krw_dn,'3개월 −5% 이하'), '원화 급락은 위험 신호, 원화 강세는 안전 신호'],
+  ];
+  $('#dash').innerHTML='<tr><th>지표</th><th>지금</th><th>어디에 쓰나</th><th>검증: 1년 안 −10% · −20% 확률</th><th>판단</th></tr>'+DROWS.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td class="muted">${r[4]}</td></tr>`).join('');
+  $('#dashNote').innerHTML=`<div><b>읽는 법</b> — 대시보드의 \'공포 = 분할 매수\', \'RSI 과매도 = 강력 매수\', \'풋콜 낮음 = 매도 신호\'는 며칠~몇 주짜리 단기 매매 해석입니다. 1년 안 대폭락 관점에서 다시 재 보면 의미가 달라집니다: 공포·탐욕의 극단적 공포와 RSI 약세는 '하락이 진행 중'이라는 신호(1년 안 하락 확률 ↑), 극단적 탐욕과 풋콜은 예측력이 없었고, 원화 강세는 오히려 안전 신호였습니다. 그래서 공포 · RSI · 원달러 · QQQ 200일선은 불씨에 넣고, 탐욕 · 풋콜은 참고로만 둡니다. 확률은 2006년 11월(공포·탐욕은 2011년)부터 1년 뒤가 있는 날까지, 겹치는 1년 창이라 독립 표본은 훨씬 적습니다. 처음부터 전부 넣어 보면 지표가 늘수록 점수가 묽어져 2018·2022년 경고가 오히려 늦어졌기 때문에, 불씨는 '켜진 개수(경고 4개면 가득)'로 셉니다.</div>`;
   drawChart('2000');
 }
 function drawChart(r){
