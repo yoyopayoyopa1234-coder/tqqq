@@ -98,9 +98,13 @@ BH = {"User-Agent": "Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.3
 CKW = ["fedwatch", "페드워치", "페드와치", "fed watch"]
 
 
-def html(url, ref=None):
+DESK = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36"
+
+
+def html(url, ref=None, ua=None):
     import urllib.request, gzip
     h = dict(BH)
+    if ua: h["User-Agent"] = ua
     if ref: h["Referer"] = ref
     with urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=20) as r:
         b = r.read()
@@ -132,7 +136,29 @@ def dc(now):
                 try: ts = datetime.strptime(dt.group(1).strip(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
                 except Exception: continue
                 out.append(dict(site="디시 " + gid, title=title, link=link, ts=ts.isoformat(timespec="minutes"))); n += 1
-            note("디시", gid, kw, st, len(t), "행", len(rows), "글", n)
+            note("디시", gid, kw, st, len(t), "행", len(rows), "글", n, "| gall_tit", t.count("gall_tit"), "ub-content", t.count("ub-content"), "| 결과없음" if ("검색 결과가 없" in t or "등록된 게시물이 없" in t) else "")
+            if n == 0 and kw == CKW[0] and gid == "stockus":
+                k = t.find("gall_tit"); DIAG.append("디시 HTML: " + re.sub(r"\s+", " ", t[k - 300:k + 700]) if k >= 0 else "디시 HTML 앞: " + re.sub(r"\s+", " ", t[:400]))
+    # 디시 통합검색 (모든 갤러리, 최신순)
+    for kw in CKW[:3]:
+        enc = quote(kw).replace("%", ".")
+        url = f"https://search.dcinside.com/post/p/1/sort/latest/q/{enc}"
+        try:
+            st, t = html(url, "https://search.dcinside.com/")
+        except Exception as e:
+            note("디시검색 실패", kw, type(e).__name__, str(e)[:80]); continue
+        items = re.findall(r"<li>(.*?)</li>", t, re.S); n = 0
+        for it in items:
+            a = re.search(r'<a href="([^"]+)"[^>]*class="tit_txt"[^>]*>(.*?)</a>', it, re.S)
+            d = re.search(r'<span class="date_time">\s*([0-9.: ]+)</span>', it)
+            g = re.search(r'<a [^>]*class="sub_txt"[^>]*>(.*?)</a>', it, re.S)
+            if not a or not d: continue
+            try: ts = datetime.strptime(d.group(1).strip()[:16], "%Y.%m.%d %H:%M").replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
+            except Exception: continue
+            out.append(dict(site="디시 " + (strip(g.group(1)) if g else ""), title=strip(a.group(2)), link=a.group(1).replace("&amp;", "&"), ts=ts.isoformat(timespec="minutes"))); n += 1
+        note("디시검색", kw, st, len(t), "글", n, "| tit_txt", t.count("tit_txt"), "date_time", t.count("date_time"))
+        if n == 0 and kw == CKW[0]:
+            k = t.find("tit_txt"); DIAG.append("디시검색 HTML: " + re.sub(r"\s+", " ", t[max(0, k - 400):k + 600] if k >= 0 else t[:400]))
     return out
 
 
@@ -142,7 +168,7 @@ def fmk(now):
         for base in ("https://www.fmkorea.com", "https://m.fmkorea.com"):
             url = f"{base}/search.php?mid=stock&category=&search_target=title_content&search_keyword={quote(kw)}"
             try:
-                st, t = html(url, base + "/")
+                st, t = html(url, base + "/", DESK if base.startswith("https://www") else None)
             except Exception as e:
                 note("에펨 실패", base[8:], kw, type(e).__name__, str(e)[:80]); continue
             items = re.findall(r'<li[^>]*>(.*?)</li>', t, re.S); n = 0
