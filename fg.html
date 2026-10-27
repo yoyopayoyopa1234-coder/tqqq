@@ -49,7 +49,7 @@
   <div class="panel"><h2>공포·탐욕 지수 추이<span class="desc" id="fgh-desc">2011~</span>
     <span class="tools"><button class="btn fr" data-y="1" type="button">1년</button><button class="btn fr" data-y="5" type="button">5년</button><button class="btn fr" data-y="0" type="button">전체</button></span></h2>
     <div id="plot-fg" style="height:520px"></div>
-    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 위: 초록 선 = TQQQ 종가(5년·전체는 로그) · 아래: 보라 = 공탐 200일선 · 파랑 = 200일선의 200일선 (200일선 값을 다시 200일 평균) · 두 선만 보이도록 세로축을 확대함 · 범례를 누르면 선을 켜고 끌 수 있습니다</div></div>
+    <div class="sum note" id="fgh-note">배경색 = 구간(빨강 극단적 공포 0~25 · 주황 공포 25~45 · 회색 중립 · 연두 탐욕 55~75 · 초록 극단적 탐욕 75~100) · 위: 초록 선 = TQQQ 종가(5년·전체는 로그) · 아래: 파랑 = 공탐 200일선의 200일선 (공탐 200일선 값을 다시 200일 평균한 것 · 200일선 자체는 표시하지 않음) · 이 선이 잘 보이도록 세로축을 확대함</div></div>
 </div>
 <script>
 (async()=>{
@@ -80,9 +80,9 @@ function drawFG(){
     const lg=FGY!==1; tq.push({x:tx,y:ty,type:'scatter',mode:'lines',name:'TQQQ',yaxis:'y',line:{color:'#2bb58f',width:1.4},hovertemplate:'TQQQ <b>%{y:.2f}</b>'});
     var tqAxis={domain:[0.56,1],gridcolor:'#262c35',type:lg?'log':'linear',range:lg?[Math.log10(lo*0.85),Math.log10(hi*1.1)]:[lo*0.92,hi*1.05],title:{text:'TQQQ',font:{size:10}}}; }
   const pre=[0]; y.forEach(v=>pre.push(pre.at(-1)+v));
-  const ma=k=>y.map((_,i)=>i<k-1?null:(pre[i+1]-pre[i+1-k])/k), m200=ma(200), m2005=m200.map((_,i)=>i<398?null:m200.slice(i-199,i+1).reduce((a,b)=>a+b,0)/200), M=[{k:'200일선',c:'#c678dd',v:m200,w:2.2},{k:'200일선의 200일선',c:'#5aa9ff',v:m2005,w:1.8}];
-  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 지금 ${y[n-1].toFixed(0)} · 200일선 ${mNow(200)} · 200일선의 200일선 ${m2005[n-1]!=null?m2005[n-1].toFixed(1):'—'} · 기간 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)}`;
-  const vv=[]; for(let i=k0;i<n;i++){ if(m200[i]!=null) vv.push(m200[i]); if(m2005[i]!=null) vv.push(m2005[i]); }
+  const ma=k=>y.map((_,i)=>i<k-1?null:(pre[i+1]-pre[i+1-k])/k), m200=ma(200), m2005=m200.map((_,i)=>i<398?null:m200.slice(i-199,i+1).reduce((a,b)=>a+b,0)/200), M=[{k:'200일선의 200일선',c:'#5aa9ff',v:m2005,w:2.2}];   // 공탐 200일선 자체는 그리지 않고, 그것을 다시 200일 평균한 선만 표시
+  document.getElementById('fgh-desc').textContent=`${FGH.d[k0]} ~ ${FGH.d[n-1]} · 지금 ${y[n-1].toFixed(0)} · 200일선의 200일선 ${m2005[n-1]!=null?m2005[n-1].toFixed(1):'—'} · 기간 평균 ${avg.toFixed(0)} · 최저 ${Math.min(...vis).toFixed(0)} · 최고 ${Math.max(...vis).toFixed(0)}`;
+  const vv=[]; for(let i=k0;i<n;i++){ if(m2005[i]!=null) vv.push(m2005[i]); }
   const y2r= vv.length? [Math.max(0,Math.floor(Math.min(...vv))-3), Math.min(100,Math.ceil(Math.max(...vv))+3)] : [0,100];
   const last=y[n-1], col=last<25?'#f23645':last<45?'#f0a030':last<55?'#c9cfd8':last<75?'#8be37a':'#5ad445';
   Plotly.react('plot-fg',[
