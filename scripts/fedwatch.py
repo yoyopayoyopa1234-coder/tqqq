@@ -18,6 +18,9 @@ OUT = os.path.join(ROOT, "fedwatch.json")
 # FOMC 결정일(둘째 날). 2027년은 연준 발표 일정 기준 — 바뀌면 여기만 고치면 됨
 FOMC = ["2026-10-28", "2026-12-09", "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-16", "2027-07-28", "2027-09-22", "2027-10-27", "2027-12-08"]
 MC = "FGHJKMNQUVXZ"
+DIAG = []
+def note(*a):
+    m = " ".join(str(x) for x in a); print(m); DIAG.append(m[:300])
 QUERIES = [("en", "FedWatch"), ("en", "\"rate cut\" odds Fed"), ("en", "fed funds futures"), ("ko", "페드워치"), ("ko", "금리 인하 확률 연준")]
 
 
@@ -28,7 +31,7 @@ def yahoo_price(sym):
         p = m.get("regularMarketPrice")
         return (float(p), m.get("regularMarketTime")) if p else (None, None)
     except Exception as e:
-        print("yahoo 실패", sym, type(e).__name__, str(e)[:80]); return None, None
+        note("yahoo 실패", sym, type(e).__name__, str(e)[:80]); return None, None
 
 
 def futures(now):
@@ -85,7 +88,7 @@ def kalshi():
         try:
             j = json.loads(get(f"https://api.elections.kalshi.com/trade-api/v2/events?series_ticker={st}&status=open&with_nested_markets=true&limit=10"))
         except Exception as e:
-            print("kalshi 실패", st, type(e).__name__, str(e)[:80]); continue
+            note("kalshi 실패", st, type(e).__name__, str(e)[:80]); continue
         for ev in j.get("events", []):
             mk = []
             for m in ev.get("markets", []):
@@ -94,22 +97,32 @@ def kalshi():
                 mk.append(dict(name=m.get("yes_sub_title") or m.get("subtitle") or m.get("ticker"), p=float(p), vol=m.get("volume")))
             if mk:
                 out.append(dict(title=ev.get("title"), ticker=ev.get("event_ticker"), close=ev.get("strike_date") or ev.get("close_time"), markets=mk))
-        print("kalshi", st, len(out), [(e["title"], e["markets"][:4]) for e in out[:2]])
+        note("kalshi", st, len(j.get("events", [])), "이벤트", len(out), [(e["title"], e["markets"][:4]) for e in out[:2]])
         if out: break
     return out
 
 
+MON = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+
+
 def polymarket():
-    out = []
-    for url in ("https://gamma-api.polymarket.com/events?closed=false&limit=20&tag_slug=fed-rates",
-                "https://gamma-api.polymarket.com/public-search?q=fed%20decision&limit_per_type=10"):
+    out = []; seen = set()
+    urls = []
+    for ds in [x for x in FOMC if x >= datetime.now(timezone.utc).date().isoformat()][:2]:
+        y, m = int(ds[:4]), int(ds[5:7])
+        for sl in (f"fed-decision-in-{MON[m-1]}-{y}", f"fed-decision-in-{MON[m-1]}"):
+            urls.append(f"https://gamma-api.polymarket.com/events?slug={sl}")
+    urls += ["https://gamma-api.polymarket.com/events?closed=false&limit=30&tag_slug=fed-rates",
+             "https://gamma-api.polymarket.com/public-search?q=fed%20decision&limit_per_type=10"]
+    for url in urls:
         try:
             j = json.loads(get(url))
         except Exception as e:
-            print("polymarket 실패", url[30:70], type(e).__name__, str(e)[:80]); continue
+            note("polymarket 실패", url[30:90], type(e).__name__, str(e)[:80]); continue
         evs = j if isinstance(j, list) else j.get("events", [])
         for ev in evs:
-            if ev.get("closed") or "fed" not in (ev.get("title") or "").lower(): continue
+            if ev.get("closed") or "fed" not in (ev.get("title") or "").lower() or ev.get("slug") in seen: continue
+            seen.add(ev.get("slug"))
             mk = []
             for m in ev.get("markets", []):
                 if m.get("closed"): continue
@@ -118,9 +131,13 @@ def polymarket():
                 mk.append(dict(name=m.get("groupItemTitle") or m.get("question"), p=round(p, 1), vol=m.get("volume")))
             if mk:
                 out.append(dict(title=ev.get("title"), slug=ev.get("slug"), close=ev.get("endDate"), markets=mk))
-        print("polymarket", len(out), [(e["title"], e["markets"][:4]) for e in out[:3]])
-        if out: break
-    return out
+        note("polymarket", url[30:95], len(evs))
+    # 회의 '결정' 시장을 앞에, 나머지는 거래량 순
+    def vol(e):
+        try: return sum(float(m["vol"] or 0) for m in e["markets"])
+        except Exception: return 0
+    out.sort(key=lambda e: (0 if "decision" in (e["title"] or "").lower() else 1, -vol(e)))
+    return out[:8]
 
 
 PCT = re.compile(r"(\d{1,3}(?:\.\d+)?)\s?%")
@@ -135,7 +152,7 @@ def news():
         try:
             root = ET.fromstring(get(url))
         except Exception as e:
-            print("뉴스 실패", q, type(e).__name__, str(e)[:80]); continue
+            note("뉴스 실패", q, type(e).__name__, str(e)[:80]); continue
         n = 0
         for it in root.iter("item"):
             title = (it.findtext("title") or "").strip(); link = it.findtext("link") or ""
@@ -144,6 +161,7 @@ def news():
             src = it.find("source"); src = src.text if src is not None else ""
             key = re.sub(r"\s+-\s+[^-]+$", "", title).lower()[:90]
             if key in items: items[key]["q"].add(q); continue
+            if ts < datetime.now(timezone.utc) - timedelta(days=8): continue
             items[key] = dict(title=title, link=link, ts=ts, src=src, lang=lang, q={q}); n += 1
         print(f"뉴스 '{q}': {n}건")
     out = []
@@ -161,7 +179,7 @@ def news():
             if kind and any(w in t for w in ("fedwatch", "페드워치", "odds", "probability", "chance", "확률", "가능성", "price in", "priced", "bets", "futures", "traders")):
                 probs.append([kind, val])
         out.append(dict(title=v["title"], link=v["link"], ts=v["ts"].isoformat(timespec="minutes"), src=v["src"], lang=v["lang"],
-                        fw="fedwatch" in t or "페드워치" in t, probs=probs))
+                        fw="fedwatch" in t or "페드워치" in t, q=sorted(v["q"]), probs=probs))
     out.sort(key=lambda x: x["ts"], reverse=True)
     return out
 
@@ -194,10 +212,17 @@ def main():
     def med(k):
         v = sorted(p[1] for p in recent_probs if p[0] == k)
         return None if not v else v[len(v) // 2]
-    snap = dict(t=now.isoformat(timespec="minutes"), n24=cnt(24), fw24=cnt(24, True), n7d=len(nw),
-                cut=mt[0].get("cut") if mt else None, cum=next((m.get("cum") for m in mt if m["date"] >= "2026-12-31"), None))
+    byq = {}
+    for _, q in QUERIES:
+        byq[q] = dict(h24=sum(1 for x in nw if q in x.get("q", []) and datetime.fromisoformat(x["ts"]) >= now - timedelta(hours=24)),
+                      d7=sum(1 for x in nw if q in x.get("q", [])))
+    snap = dict(t=now.isoformat(timespec="minutes"), n24=cnt(24), fw24=byq["FedWatch"]["h24"] + byq["페드워치"]["h24"], n7d=len(nw),
+                m0=mt[0]["date"] if mt else None, cut=mt[0].get("cut") if mt else None, hike=mt[0].get("hike") if mt else None,
+                m1=mt[1]["date"] if len(mt) > 1 else None, cut1=mt[1].get("cut") if len(mt) > 1 else None, hike1=mt[1].get("hike") if len(mt) > 1 else None,
+                y1=round(fut[12]["rate"] - effr, 3) if effr is not None and fut[12].get("rate") is not None else None,
+                pm=next((round(sum(x["p"] for x in e["markets"] if x["name"] and ("0 (" in x["name"] or "no change" in x["name"].lower())), 1) for e in pm if "decision" in (e["title"] or "").lower()), None))
     hist = [h for h in old.get("hist", []) if datetime.fromisoformat(h["t"]) >= now - timedelta(days=30)] + [snap]
-    json.dump(dict(ts=int(now.timestamp()), effr=effr, futures=fut, meetings=mt, kalshi=ks, poly=pm, news=nw[:40], counts=dict(n24=snap["n24"], fw24=snap["fw24"], n7d=len(nw), fw7d=sum(1 for x in nw if x["fw"])),
+    json.dump(dict(ts=int(now.timestamp()), effr=effr, futures=fut, meetings=mt, kalshi=ks, poly=pm, news=nw[:60], diag=DIAG, counts=dict(n24=snap["n24"], fw24=snap["fw24"], n7d=len(nw), fw7d=byq["FedWatch"]["d7"] + byq["페드워치"]["d7"], byq=byq),
                    news_probs=dict(cut=med("cut"), hold=med("hold"), hike=med("hike"), n=len(recent_probs)), hist=hist[-3000:]),
               open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))
     print("fedwatch", "다음 회의", mt[0] if mt else None, "뉴스 24h", snap["n24"], "FedWatch 언급", snap["fw24"])
