@@ -209,10 +209,10 @@ function backtest(){
   { const S=TQ&&TQ.spx, el=document.getElementById('pickS'); if(el&&S){ const IN=S.state==='IN'; el.innerHTML=`<div class="l">TQQQ 신호판</div><div class="v">${IN?'TQQQ':'SGOV'}</div><div class="note">${IN?'보유':'대피'} · S&P500 ${S.idx.toLocaleString()} · 밴드 ${S.lo.toLocaleString()}~${S.up.toLocaleString()}${S.cycle&&S.cycle.ts_line?` · TS선 TQQQ ${S.cycle.ts_line}`:''} · <a href="index.html" style="color:var(--accent)">신호판 페이지</a></div>`; } }
   // ── TQQQ 신호판 (S&P500 200일선 ±2.5% V2: 3분할·소익절 10/25/50%→10%·대익절 100/200/400…→50%·연쇄 TS −25%→50% SPYM·하단 이탈 전량 SGOV) — 신호일 종가 체결 ──
   function engineS(a,b,tax){ const SMALL=[10,25,50], BIG=[...Array(12)].map((_,k)=>100*2**k);
-    let h={C:1}, bs={C:1}, v=1, pk=1, mdd=0, sw=0, pkd=d[a], w=['',''], yr=d[a].slice(0,4), yg=0, state='OUT', left=0, ent=0, tpk=0, mx=0, hs=new Set(), hb=new Set(), q=[], vs=0; const cv=[1], tr=[];
+    let h={C:1}, bs={C:1}, v=1, pk=1, mdd=0, sw=0, pkd=d[a], w=['',''], yr=d[a].slice(0,4), yg=0, state='OUT', left=0, ent=0, tpk=0, mx=0, hs=new Set(), hb=new Set(), q=[], vs=0; const cv=[], tr=[];
     const mv=(f,t,x)=>{ if(!(x>1e-12)||!(h[f]>0)) return; x=Math.min(x,h[f]); if(f!=='C') yg+=x*(1-(bs[f]||0)/h[f]); bs[f]=(bs[f]||0)*(1-x/h[f]); h[f]-=x; if(h[f]<1e-12){ delete h[f]; delete bs[f]; } h[t]=(h[t]||0)+x; bs[t]=(bs[t]||0)+x; };
-    for(let i=a+1;i<=b;i++){ v=0; for(const k in h){ h[k]*=1+ret[k][i]; v+=h[k]; }
-      if(tax&&d[i].slice(0,4)!==yr){ if(yg>0){ const f=1-yg*0.22/v; for(const k in h){ h[k]*=f; bs[k]*=f; } v*=f; } yr=d[i].slice(0,4); yg=0; }
+    for(let i=a;i<=b;i++){ if(i>a){ v=0; for(const k in h){ h[k]*=1+ret[k][i]; v+=h[k]; }   // 시작일(a)의 신호도 그날 종가에 체결(검증 코드 tq_bt40.sim과 같음)
+        if(tax&&d[i].slice(0,4)!==yr){ if(yg>0){ const f=1-yg*0.22/v; for(const k in h){ h[k]*=f; bs[k]*=f; } v*=f; } yr=d[i].slice(0,4); yg=0; } }
       q=[]; const m=sp200[i];
       if(m!=null){ const up=m*1.025, lo=m*0.975;
         if(state==='OUT'&&sp[i]>up){ state='IN'; ent=tpk=T[i]; mx=0; hs=new Set(); hb=new Set(); left=3; }
@@ -251,9 +251,9 @@ function backtest(){
   const RSI=[null]; { let g=0,l=0; for(let i=1;i<N;i++){ const c=T[i]-T[i-1], u=Math.max(c,0), w=Math.max(-c,0); if(i<=14){ g+=u/14; l+=w/14; } else { g=(g*13+u)/14; l=(l*13+w)/14; } RSI.push(i>=14?(l===0?100:100-100/(1+g/l)):null); } }
   // 눈덩이 (snow.html run): 5/220 골든크로스 전액 매수·데드크로스 전량 매도(쿨다운 5일), 하락장 DIP −10%(20%, RSI≤35면 30%)/−22%(50%), −40% 아래 중단, +15/+68/+350% 익절(보유량 50/35/15%만 유지). 대기 자금은 기준금리, 세금은 해마다 현금에서(모자라면 일부 매도)
   function engineN(a,b,tax){ const TP=[[15,.5],[68,.35],[350,.15]];
-    let cash=1, sh=0, cost=0, cool=0, d1=false, d2=false, tpi=0, pkSh=0, pk=1, mdd=0, pkd=d[a], w=['',''], vs=0, yr=d[a].slice(0,4), yg=0, v=1, sw=0; const cv=[1], tr=[];
-    for(let i=a+1;i<=b;i++){ cash*=1+ret.C[i]; v=cash+sh*T[i];
-      if(tax&&d[i].slice(0,4)!==yr){ if(yg>0){ const t_=yg*0.22; if(cash>=t_) cash-=t_; else { const rem=t_-cash; cash=0; sh-=Math.min(sh,rem/T[i]); } } yr=d[i].slice(0,4); yg=0; v=cash+sh*T[i]; }
+    let cash=1, sh=0, cost=0, cool=0, d1=false, d2=false, tpi=0, pkSh=0, pk=1, mdd=0, pkd=d[a], w=['',''], vs=0, yr=d[a].slice(0,4), yg=0, v=1, sw=0; const cv=[], tr=[];
+    for(let i=a;i<=b;i++){ if(i>a){ cash*=1+ret.C[i]; v=cash+sh*T[i];   // 시작일의 신호도 그날 종가에 체결(원본 run(i0)과 같음)
+        if(tax&&d[i].slice(0,4)!==yr){ if(yg>0){ const t_=yg*0.22; if(cash>=t_) cash-=t_; else { const rem=t_-cash; cash=0; sh-=Math.min(sh,rem/T[i]); } } yr=d[i].slice(0,4); yg=0; v=cash+sh*T[i]; } }
       const m220=mT(220,i), m220p=mT(220,i-1), bull=m220!=null&&mT(5,i)>m220, pb=m220p!=null&&mT(5,i-1)>m220p, gc=bull&&!pb, dc=!bull&&pb;
       if(cool>0) cool--;
       else if(dc&&sh>0){ yg+=sh*(T[i]-cost); cash+=sh*T[i]; sh=0; cool=5; d1=d2=false; tpi=0; tr.push(cash/vs-1); vs=0; sw++; }
@@ -295,7 +295,7 @@ function backtest(){
   <tr><td>반반형</td><td>4</td><td>0.62 → 0.45 (−27%, TS −30%)</td><td>−4%</td><td>비슷</td><td><b style="color:#8be37a">낮음</b></td></tr>
   <tr><td>과열형</td><td>4</td><td>0.56 → 0.43 (−23%, 구간 −9%)</td><td>−4.8%</td><td>비슷</td><td><b style="color:#8be37a">낮음</b></td></tr>
   <tr><td>상시형</td><td>4</td><td>0.58 → 0.46 (−22%, 구간 −12%)</td><td>−3%</td><td>비슷</td><td><b style="color:#8be37a">낮음</b></td></tr>
-  <tr><td>삼단형</td><td>4</td><td>0.59 → 0.45 (−28%, 구간 −12%)</td><td>−8%</td><td>비슷</td><td><b style="color:#8be37a">낮음</b></td></tr>
+  <tr><td>삼단형</td><td>4</td><td>0.59 → 0.42 (−28%, TS −30%)</td><td>−8%</td><td>비슷</td><td><b style="color:#8be37a">낮음</b></td></tr>
   <tr><td>TQQQ 신호판</td><td>4 (원작자가 정함)</td><td>0.54 → 0.44 (−18%, 밴드 ±2%)</td><td>−7%</td><td>차이 있음</td><td><b style="color:#f0b429">중간</b></td></tr>
   <tr><td>3/161</td><td>2 (원작자)</td><td>0.22 → 0.17 (−23%, 3일선 → 5일선)</td><td>−4.6%</td><td>한쪽만</td><td><b style="color:#8be37a">낮음</b></td></tr>
   <tr><td>3/161/185</td><td>4 (원작자)</td><td>0.25 → 0.17 (−32%, 3일선 → 5일선)</td><td>−3%</td><td>한쪽만</td><td><b style="color:#f0b429">중간</b></td></tr>
