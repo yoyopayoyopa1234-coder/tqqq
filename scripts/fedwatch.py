@@ -86,7 +86,19 @@ def classify(raw, ts):
     t = raw.lower(); out = []
     if not any(c in t for c in CUE): return out
     for m in PCT.finditer(raw):
-        if raw[m.end():m.end() + 1] in ("p", "P"): continue
+        if raw[m.end():m.end() + 1] in ("p", "P", "대"): continue
+        # 금리 수준(3.75~4.00%, 4.00%)은 확률이 아님
+        if re.search(r"[~\-–]\s*$", raw[max(0, m.start() - 2):m.start()]) or re.match(r"\s*[~\-–]\s*\d", raw[m.end():m.end() + 4]): continue
+        if re.fullmatch(r"\d\.\d\d", m.group(1)) and float(m.group(1)) < 10: continue
+        # 오래된 날짜를 인용한 숫자(‘9월 24일 기준’)는 뺌: 숫자 앞 60자 안의 날짜가 글 시각보다 5일 넘게 이르면
+        old = False
+        for dm in re.finditer(r"(\d{1,2})월\s?(\d{1,2})일", raw[max(0, m.start() - 60):m.start()]):
+            try:
+                dd = datetime(ts.year, int(dm.group(1)), int(dm.group(2)), tzinfo=timezone.utc)
+                if dd > ts + timedelta(days=60): dd = dd.replace(year=ts.year - 1)
+                if ts - dd > timedelta(days=5): old = True
+            except ValueError: pass
+        if old: continue
         val = float(m.group(1))
         if val > 100: continue
         cands = []
@@ -268,7 +280,7 @@ def dcinside(now):
 def estimate(items, now):
     us_today = (now - timedelta(hours=5)).date()
     meets = [x for x in FOMC if x >= us_today.isoformat()][:3]
-    figs = []
+    figs = []; dup = set()
     for it in items:
         for k, v, mo, sure in it["probs"]:
             usd = (it["ts"] - timedelta(hours=5)).date()
@@ -276,6 +288,9 @@ def estimate(items, now):
                 nf = next_fomc(usd); mo = int(nf[5:7]) if nf else None
             mt = next((x for x in FOMC if int(x[5:7]) == mo and x >= usd.isoformat()), None)
             if mt is None or mt not in meets: continue
+            key = (mt, k, v, it["src"], it["ts"].strftime("%m%d%H"))
+            if key in dup: continue   # 같은 문장이 겹쳐 잘린 중복
+            dup.add(key)
             figs.append(dict(meet=mt, kind=k, v=v, sure=sure, ts=it["ts"], src=it["src"], title=it["title"] or it["text"][:120],
                              text=it["text"], link=it["link"], skind=it["kind"]))
     res = []

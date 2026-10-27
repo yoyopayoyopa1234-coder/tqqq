@@ -110,7 +110,7 @@ function render(){
       <div class="big">${h==null?'—':(m.derived?'≈':'')+h+'%'}${h!=null&&m.derived?'<small>100−동결</small>':''}</div>
       ${h!=null||hold!=null?`<div class="seg"><i style="width:${sc}%;background:#9ad0f5"></i><i style="width:${so}%;background:#5b6472"></i><i style="width:${sh}%;background:#ff9f68"></i></div>`:''}
       <div class="s"><span class="hike">인상 ${m.hike!=null?m.hike+'%':'—'}</span> · <span class="hold">동결 ${hold!=null?hold+'%':'—'}</span> · <span class="cut">인하 ${cut!=null?cut+'%':'—'}</span></div>
-      <div class="src">${m.window?`${WIN[m.window]} 인용 ${m.hike_n+m.hold_n+m.cut_n}개의 가운데값 · 마지막 ${kst(m.latest)}`:'최근 7일 인용된 숫자 없음'}</div></div>`; }).join('')||'<div class="muted">자료 준비 중</div>';
+      <div class="src">${m.window?`${WIN[m.window]} 인용 ${m.hike_n+m.hold_n+m.cut_n}개의 가운데값 · 마지막 ${kst(m.latest)}${(m.hike_n+m.hold_n+m.cut_n)<3?' · <b style="color:#f0b429">인용이 적어 참고만</b>':''}`:'최근 7일 인용된 숫자 없음'}</div></div>`; }).join('')||'<div class="muted">자료 준비 중</div>';
   const fs=FW.fig_src||{}, SN={news:'뉴스',search:'검색',comm:'커뮤니티'};
   $('#srcNote').innerHTML=`최근 3일 숫자 출처: ${Object.keys(fs).length?Object.entries(fs).map(([k,v])=>`${SN[k]||k} ${v}개`).join(' · '):'없음'}. 가운데값이라 숫자 한두 개가 틀려도 크게 흔들리지 않지만, 인용이 적을 땐 아래 원문을 직접 확인하세요.`;
   // 인용된 숫자
