@@ -320,6 +320,8 @@ def main():
     A = B["A"]
     def fs(i):
         return A["DGS2"][i] - A["DFF"][i]
+    def dd_(i):
+        return B["spx"][i] / B["ath"][i] - 1
     def single(cond, a="2006-11-01"):
         ia = bisect.bisect_left(d, a); xs = []; al = []
         for i2 in range(ia, N):
@@ -348,9 +350,12 @@ def main():
         fw_cut=single(lambda m, i: fs(i) <= -0.5, "1991-01-02"),
         fw_hike=single(lambda m, i: fs(i) >= 0.5, "1991-01-02"),
         fw_swing=single(lambda m, i: fs(i) - fs(B["back"](i, 91)) <= -0.5, "1991-01-02"),
-        fw_mid=single(lambda m, i: -0.5 < fs(i) < 0.5, "1991-01-02"))
+        fw_mid=single(lambda m, i: -0.5 < fs(i) < 0.5, "1991-01-02"),
+        fw_cut_hi=single(lambda m, i: fs(i) <= -0.5 and dd_(i) > -0.10, "1991-01-02"),
+        fw_cut_lo=single(lambda m, i: fs(i) <= -0.5 and dd_(i) <= -0.10, "1991-01-02"),
+        fw_hike_hi=single(lambda m, i: fs(i) >= 0.5 and dd_(i) > -0.05, "1991-01-02"))
     fsw = []
-    for i2 in range(max(0, N - 800), N, 5):
+    for i2 in list(range(max(0, N - 800), N - 1, 5)) + [N - 1]:
         try: fsw.append([d[i2], round(fs(i2), 3), A["DFF"][i2], A["DGS2"][i2]])
         except Exception: pass
     out = dict(ts=int(time.time()), raw_ts=R.get("ts"), memory=MEMORY, t_cap=T_CAP, single=single_tests, fedspread=fsw, today=today, recent=recent, weekly=weekly, stats=stats, base=base, episodes=episodes,
