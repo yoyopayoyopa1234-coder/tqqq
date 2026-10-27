@@ -3,7 +3,7 @@
 CME FedWatch 사이트(확률 화면)는 막혀 있어서, 그 숫자를 인용한 글을 여기저기서 긁어 모은다.
   · 뉴스: Google 뉴스 RSS(제목) · Bing 뉴스 RSS(제목+요약) · 네이버/다음 뉴스 검색(미리보기 문장)
   · 검색: DuckDuckGo(최근 1일) · Google 검색(되면)
-  · 커뮤니티: 디시인사이드 통합검색(제목+본문 미리보기)
+  · 커뮤니티: 디시인사이드 통합검색(제목+본문 미리보기) · 에펨코리아(직접 수집은 막혀 있어 검색엔진이 색인한 제목·요약만)
 각 글에서 'FedWatch·페드워치·확률·odds' 근처의 퍼센트를 인상/동결/인하로 나누고, 어느 회의(달) 얘기인지 붙인다.
 회의마다 최근 인용 숫자의 가운데값 = 'FedWatch 기준 인상 확률(인용값)'.
 그 밖에 언급 수(검색어별 24시간/7일), 반응 뉴스, 커뮤니티 글도 저장. 기록은 30일 쌓아 추이를 그린다.
@@ -216,6 +216,35 @@ def web_search(now):
             note(nm, q, "길이", len(page), "문장", n, "| 앞:", re.sub(r"\s+", " ", strip(page)[:120]))
 
 
+def fmk_via_search(now):
+    """에펨코리아는 직접 수집을 막아서(430), 검색엔진이 색인한 에펨 글(제목·요약)만 가져옴 — Bing 웹검색 RSS · DuckDuckGo"""
+    n = 0
+    for q in ("site:fmkorea.com 페드워치", "site:fmkorea.com fedwatch", "site:fmkorea.com 금리 인상 확률"):
+        url = f"https://www.bing.com/search?q={quote(q)}&format=rss&setlang=ko&filters=ex1%3a%22ez1%22"
+        try:
+            root = ET.fromstring(fetch(url)); k = 0
+            for it in root.iter("item"):
+                link = it.findtext("link") or ""
+                if "fmkorea" not in link: continue
+                try: ts = parsedate_to_datetime(it.findtext("pubDate")).astimezone(timezone.utc)
+                except Exception: ts = now - timedelta(hours=12)
+                add("에펨 (Bing 경유)", "comm", strip(it.findtext("title") or ""), strip(it.findtext("description") or ""), link, ts, q); k += 1
+            note("에펨-빙", q, k); n += k
+        except Exception as e:
+            note("에펨-빙 실패", q, type(e).__name__, str(e)[:80])
+        url = f"https://html.duckduckgo.com/html/?q={quote(q)}&df=w"
+        try:
+            t = fetch(url, "https://duckduckgo.com/"); k = 0
+            for m in re.finditer(r'<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>.*?<a[^>]*class="result__snippet"[^>]*>(.*?)</a>', t, re.S):
+                link = H.unescape(m.group(1))
+                if "fmkorea" not in link: continue
+                add("에펨 (DuckDuckGo 경유)", "comm", strip(m.group(2)), strip(m.group(3)), link, rel_ts(strip(m.group(3)), now) or (now - timedelta(days=2)), q); k += 1
+            note("에펨-덕덕고", q, k, "길이", len(t)); n += k
+        except Exception as e:
+            note("에펨-덕덕고 실패", q, type(e).__name__, str(e)[:80])
+    return n
+
+
 def dcinside(now):
     for kw in ("fedwatch", "페드워치", "페드와치"):
         enc = quote(kw).replace("%", ".")
@@ -273,7 +302,7 @@ def main():
     now = datetime.now(timezone.utc)
     try: old = json.load(open(OUT))
     except Exception: old = {}
-    for fn in (google_news, bing_news, lambda: kr_search(now), lambda: web_search(now), lambda: dcinside(now)):
+    for fn in (google_news, bing_news, lambda: kr_search(now), lambda: web_search(now), lambda: dcinside(now), lambda: fmk_via_search(now)):
         try: fn()
         except Exception as e: note("출처 실패", type(e).__name__, str(e)[:120])
     # 같은 글 합치기 (제목 앞부분, 없으면 문장)
