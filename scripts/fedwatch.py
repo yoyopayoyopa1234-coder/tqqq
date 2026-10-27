@@ -23,11 +23,28 @@ def note(*a):
 MON = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
 
 
-def month_of(t):
-    m = re.search(r"(\d{1,2})월", t)
-    if m and 1 <= int(m.group(1)) <= 12: return int(m.group(1))
-    m = re.search(r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b", t)
-    return MON[m.group(1)] if m else None
+MRE = re.compile(r"\b(january|february|march|april|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)\b|(\d{1,2})월")
+
+
+def kind_near(t, pos):
+    best = None
+    for k, ws in KW.items():
+        for w in ws:
+            for m in re.finditer(re.escape(w), t):
+                dd = abs(m.start() - pos)
+                if best is None or dd < best[0]: best = (dd, k)
+    return best[1] if best else None
+
+
+def month_of(t, pos, kind):
+    """퍼센트 숫자(pos) 근처(40자 안) 달 이름 — 그 달 옆의 말(인하/동결/인상)이 숫자의 종류와 같을 때만 붙임"""
+    best = None
+    for m in MRE.finditer(t):
+        mo = MON[m.group(1)[:3]] if m.group(1) else int(m.group(2))
+        if not 1 <= mo <= 12 or kind_near(t, m.start()) != kind: continue
+        dist = abs(m.start() - pos)
+        if dist <= 40 and (best is None or dist < best[0]): best = (dist, mo)
+    return best[1] if best else None
 
 
 PCT = re.compile(r"(\d{1,3}(?:\.\d+)?)\s?%")
@@ -67,7 +84,7 @@ def news():
                     j = win.find(w)
                     if j >= 0 and abs(j - 60) < best: best = abs(j - 60); kind = k
             if kind and any(w in t for w in ("fedwatch", "페드워치", "odds", "probability", "chance", "확률", "가능성", "price in", "priced", "bets", "futures", "traders")):
-                probs.append([kind, val, month_of(t)])
+                probs.append([kind, val, month_of(t, m.start(), kind)])
         out.append(dict(title=v["title"], link=v["link"], ts=v["ts"].isoformat(timespec="minutes"), src=v["src"], lang=v["lang"],
                         fw="fedwatch" in t or "페드워치" in t, q=sorted(v["q"]), probs=probs))
     out.sort(key=lambda x: x["ts"], reverse=True)
