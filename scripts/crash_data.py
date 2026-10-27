@@ -44,6 +44,54 @@ def fred(sid):
     return rows
 
 
+CNN_HDR = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/126 Safari/537.36",
+           "Referer": "https://edition.cnn.com/", "Origin": "https://edition.cnn.com", "Accept": "application/json"}
+CBOE = {"PC_TOTAL": "https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/totalpc.csv",
+        "PC_EQUITY": "https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/equitypc.csv",
+        "PC_ARCHIVE": "https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/pcratioarchive.csv"}
+
+
+def cnn_components():
+    """CNN 공포·탐욕 구성 지표 (풋콜 5일 평균 등) — 받을 수 있는 만큼(보통 최근 1년)."""
+    import urllib.request
+    out = {}
+    for url in ("https://production.dataviz.cnn.io/index/fearandgreed/graphdata/2018-01-01",
+                "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=CNN_HDR), timeout=20) as r:
+                j = json.loads(r.read())
+        except Exception as e:
+            print("CNN 실패", url[-12:], e); continue
+        for k, v in j.items():
+            if not isinstance(v, dict) or not isinstance(v.get("data"), list) or k == "fear_and_greed_historical": continue
+            rows = []
+            for p in v["data"]:
+                try: rows.append([datetime.fromtimestamp(p["x"] / 1000, timezone.utc).date().isoformat(), float(p["y"])])
+                except Exception: pass
+            if rows:
+                out["CNN_" + k] = rows; print(f"CNN {k}: {len(rows)}행 {rows[0][0]} ~ {rows[-1][0]} 마지막 {rows[-1][1]} (점수 {v.get('score')})")
+        if out: break
+    return out
+
+
+def cboe(url):
+    rows = []
+    for row in csv.reader(io.StringIO(get(url))):
+        if len(row) < 2: continue
+        try:
+            m, d_, y = row[0].strip().split("/"); dt = f"{int(y):04d}-{int(m):02d}-{int(d_):02d}"
+            rows.append([dt, float(row[-1])])
+        except Exception:
+            pass
+    return rows
+
+
+def merge(old_rows, new_rows):
+    m = {r[0]: r[1] for r in (old_rows or [])}
+    for r in new_rows: m[r[0]] = r[1]
+    return [[k, m[k]] for k in sorted(m)]
+
+
 def main():
     now = time.time()
     old = None
@@ -52,7 +100,7 @@ def main():
             old = json.load(open(OUT))
         except Exception:
             old = None
-    if old and now - old.get("ts", 0) < 12 * 3600 and all(k in old.get("series", {}) for k in SERIES):
+    if old and now - old.get("ts", 0) < 12 * 3600 and now - old.get("aux_ts", 0) < 12 * 3600 and all(k in old.get("series", {}) for k in SERIES):
         print("crash_raw 캐시 사용", datetime.fromtimestamp(old["ts"], timezone.utc).strftime("%m-%d %H:%M"))
         return
     series, fails = {}, []
@@ -71,7 +119,22 @@ def main():
     if not series:
         print("전부 실패 — 기존 파일 유지")
         return
-    json.dump({"ts": int(now), "names": SERIES, "fails": fails, "series": series}, open(OUT, "w"), separators=(",", ":"))
+    # CBOE 풋콜 비율 옛 자료(한 번 받으면 그대로 둠) · CNN 구성 지표(최근 1년을 기존 기록에 덧붙임)
+    for k, url in CBOE.items():
+        if old and old.get("series", {}).get(k):
+            series[k] = old["series"][k]; continue
+        try:
+            rows = cboe(url); print(f"{k}: {len(rows)}행", rows[:1], rows[-1:])
+            if len(rows) > 100: series[k] = rows
+        except Exception as e:
+            print(k, "실패", e)
+    try:
+        comp = cnn_components()
+    except Exception as e:
+        comp = {}; print("CNN 구성 실패", e)
+    for k in set(comp) | {k for k in (old or {}).get("series", {}) if k.startswith("CNN_")}:
+        series[k] = merge((old or {}).get("series", {}).get(k), comp.get(k, []))
+    json.dump({"ts": int(now), "aux_ts": int(now), "names": SERIES, "fails": fails, "series": series}, open(OUT, "w"), separators=(",", ":"))
     print("저장", OUT, f"실패 {fails}")
 
 
