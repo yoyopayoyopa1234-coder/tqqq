@@ -152,7 +152,7 @@ function chartB(){
     const peakI = rows.reduce((b,a,k)=> a[1]>rows[b][1]?k:b, Math.max(0,n-260));
     const ago = rows[Math.max(0,n-63)];
     tr.push(line(mx, rows.map((a,k)=>k<2?null:(rows[k][1]+rows[k-1][1]+rows[k-2][1])/3), '#2e9d4a', 'Global M2 3일 평균', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5,shape:'spline',smoothing:0.6}}));
-    const vis = rows.slice(Math.max(0,rows.findIndex(a=>new Date(a[0])>=new Date('2015-01-01')))).map(a=>a[1]); L.yaxis2.range=[Math.min(...vis)*0.98, Math.max(...vis)*1.02];
+    const vis = rows.slice(Math.max(0,rows.findIndex(a=>new Date(a[0])>=new Date('2015-01-01')))).map(a=>a[1]); { const sp=((Math.max(...vis)-Math.min(...vis))||1)/2, top=vis[vis.length-1]+sp*0.3; L.yaxis2.range=[top-sp, top]; }   // M2 세로 2배: 2015년 이후 폭의 절반만 잡고 최신 값을 70% 높이에
     m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}, 3일 평균 $${((rows[n][1]+rows[n-1][1]+rows[n-2][1])/3).toFixed(1)}조) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
       + `<br><span class="note">${M2.countries.join('+')} · 각국 최신 발표값 × 일별 환율${M2.notes&&M2.notes.length?' · '+M2.notes.join(' · '):''}</span>`;
   }
@@ -231,9 +231,11 @@ $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=
     if(!(hi>lo)) return {}; const ya=g.layout.yaxis||{};
     if(ya.type==='log'){ const A=Math.log10(lo), B=Math.log10(hi), s=(B-A)||0.1; return {'yaxis.range':[A-s*0.06, B+s*0.06]}; }
     const s=hi-lo; return {'yaxis.range':[Math.max(0,lo-s*0.06), hi+s*0.06]}; };
+  const fitM2=(g,a,b)=>{ const m=(g.data||[]).find(t=>t.name==='Global M2 3일 평균'); if(!m) return {}; const w=[]; for(let k=0;k<m.x.length;k++){ const t=+new Date(m.x[k]); if(t>=a&&t<=b&&m.y[k]!=null) w.push(m.y[k]); }
+    if(w.length<2) return {}; const sp=((Math.max(...w)-Math.min(...w))||1)/2, top=w[w.length-1]+sp*0.3; return {'yaxis2.range':[top-sp, top]}; };   // M2 세로 2배
   const apply=(id,y)=>{ const g=document.getElementById(id); if(!g||!g.data) return; const [mn,mx]=span(g); if(!isFinite(mn)) return;
     const a=y?Math.max(mn, mx-y*365.25*864e5):mn, pad=(mx-a)*0.02, u={'xaxis.range':[new Date(a), new Date(mx+pad)]};
-    if(!g.__fitOn) Object.assign(u, fitY(g,a,mx)); g.__yrBusy=true; Plotly.relayout(g,u).then(()=>{ g.__yrBusy=false; }); };
+    if(!g.__fitOn) Object.assign(u, fitY(g,a,mx), fitM2(g,a,mx)); g.__yrBusy=true; Plotly.relayout(g,u).then(()=>{ g.__yrBusy=false; }); };
   const paint=id=>{ const v=SEL[id]??DEF[id]??0; document.querySelectorAll(`.yr[data-for="${id}"] button`).forEach(b=>b.classList.toggle('on',+b.dataset.y===v)); };
   document.querySelectorAll('.plotbox > .plot').forEach(p=>{ const id=p.id, bar=document.createElement('div'); bar.className='yr'; bar.dataset.for=id;
     bar.innerHTML=YRS.map(([t,y])=>`<button type="button" data-y="${y}">${t}</button>`).join('');
@@ -243,7 +245,7 @@ $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=
   const hook=()=>{ if(!window.Plotly||Plotly.__yrHooked) return !!(window.Plotly&&Plotly.__yrHooked); const orig=Plotly.react; Plotly.__yrHooked=true;
     Plotly.react=function(id,...r){ return orig.call(this,id,...r).then(g=>{ const k=typeof id==='string'?id:g.id;
       if(!g.__yrOn){ g.__yrOn=true; g.on('plotly_relayout',ev=>{ if(!ev||g.__yrBusy||g.__fitOn) return; let a=ev['xaxis.range[0]'], b=ev['xaxis.range[1]']; if(ev['xaxis.range']) [a,b]=ev['xaxis.range']; if(a==null||b==null) return;
-        const u=fitY(g,+new Date(a),+new Date(b)); if(Object.keys(u).length){ g.__yrBusy=true; Plotly.relayout(g,u).then(()=>{ g.__yrBusy=false; }); } }); }
+        const u={...fitY(g,+new Date(a),+new Date(b)), ...fitM2(g,+new Date(a),+new Date(b))}; if(Object.keys(u).length){ g.__yrBusy=true; Plotly.relayout(g,u).then(()=>{ g.__yrBusy=false; }); } }); }
       const y=SEL[k]; if(y!=null) apply(k,y); return g; }); }; return true; };
   if(!hook()){ const t=setInterval(()=>{ if(hook()) clearInterval(t); },150); setTimeout(()=>clearInterval(t),60000); }
 })();
