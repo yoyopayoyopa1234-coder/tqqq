@@ -21,7 +21,8 @@ def get(url, tries=2, uas=({"User-Agent": "curl/8.5.0"}, UA)):
 
 def yahoo(sym, iv, rng=None):
     rng = rng or {"1wk": "since2014", "1d": "since2014", "1mo": "20y"}.get(iv, "max")
-    span = f"period1=1388534400&period2={int(time.time())}" if rng == "since2014" else f"range={rng}"   # 2015년부터 차트 + 200/218일선 계산용 1년 여유
+    span = (f"period1=1388534400&period2={int(time.time())}" if rng == "since2014"
+            else f"period1={rng[1:]}&period2={int(time.time())}" if rng.startswith("p") else f"range={rng}")   # "p<유닉스초>" = 그날부터   # 2015년부터 차트 + 200/218일선 계산용 1년 여유
     j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?{span}&interval={iv}"))
     res = j["chart"]["result"][0]
     off = (res.get("meta") or {}).get("gmtoffset", 0) or 0

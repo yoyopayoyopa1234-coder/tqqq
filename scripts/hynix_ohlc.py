@@ -1,10 +1,11 @@
-"""한국 주식 일·주·월봉 → <이름>_data.json (SOXL·KORU)"""
+"""일·주·월봉 → <이름>_data.json (SOXL·KORU·S&P500)"""
 import json, os, sys
 from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from yahoo_data import yahoo
 
-STOCKS = [("SOXL", "SOXL", "soxl_data.json"), ("KORU", "KORU", "koru_data.json")]
+STOCKS = [("SOXL", "SOXL", "soxl_data.json"), ("KORU", "KORU", "koru_data.json"), ("SPX", "%5EGSPC", "spx_data.json")]
+RANGES = {"SPX": {"1d": "p473385600", "1wk": "p473385600", "1mo": "max"}}   # 1985-01-01부터   # S&P500은 길게 (5·10·15년 버튼용)
 
 def fix_bars(bars, daily):
     """야후 주·월봉의 튀는 값(예: QLD 2024-09 고가 94.33)을 같은 기간 일봉으로 다시 계산."""
@@ -25,6 +26,7 @@ def main():
     for key, sym, fn in STOCKS:
         out = {"updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "ohlc": {}}
         for iv, rng in (("1d", None), ("1wk", None), ("1mo", "20y")):
+            rng = RANGES.get(key, {}).get(iv, rng)
             try:
                 out["ohlc"][f"{key}_{iv}"] = yahoo(sym, iv, rng); print(key, iv, len(out["ohlc"][f"{key}_{iv}"]))
             except Exception as e:
