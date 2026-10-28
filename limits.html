@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>매매법의 한계</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#9ad0f5; --g:#3ddc84; --y:#f0b429; --r:#f23645; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 48px; max-width:960px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  h1 { font-size:20px; margin:0; } .date { color:var(--muted); font-size:12px; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .panel > h2 { margin:0; padding:10px 14px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; border-bottom:1px solid var(--line); }
+  .panel > h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .body { padding:14px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.7; }
+  .muted { color:var(--muted); } .fine { font-size:11.5px; color:var(--muted); line-height:1.6; }
+  b.g { color:var(--g); } b.y { color:var(--y); } b.r { color:var(--r); } b.a { color:var(--accent); }
+  /* 결론 */
+  .hero { border-radius:12px; padding:16px 18px; border:1px solid rgba(154,208,245,.45); background:linear-gradient(135deg,rgba(154,208,245,.10),rgba(240,180,41,.06)); position:relative; overflow:hidden; }
+  .hero::after { content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%); animation:sweep 5s ease-in-out infinite; }
+  @keyframes sweep { 0%{transform:translateX(-100%)} 60%,100%{transform:translateX(100%)} }
+  .hero .q { font-size:13px; color:var(--muted); } .hero .a { font-size:21px; font-weight:800; margin:6px 0; line-height:1.45; } .hero .s { font-size:13.5px; color:#c9cfd8; }
+  /* 카드 */
+  .cards { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; } @media (max-width:640px){ .cards { grid-template-columns:1fr; } }
+  .card { border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:rgba(255,255,255,.02); opacity:0; transform:translateY(12px); transition:opacity .6s, transform .6s; }
+  .card.in { opacity:1; transform:none; }
+  .card .n { display:inline-flex; width:26px; height:26px; border-radius:50%; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#0f1216; background:var(--c); margin-right:8px; }
+  .card .t { font-weight:800; font-size:15px; display:flex; align-items:center; } .card .d { margin-top:6px; font-size:13px; color:#c9cfd8; }
+  /* 막대 */
+  .bars { display:grid; gap:10px; }
+  .bar .l { display:flex; justify-content:space-between; font-size:12.5px; } .bar .tr { height:14px; border-radius:7px; background:rgba(255,255,255,.06); overflow:hidden; margin-top:4px; }
+  .bar .tr i { display:block; height:100%; width:0; border-radius:7px; background:var(--c); box-shadow:0 0 12px var(--c); transition:width 1.6s cubic-bezier(.2,.9,.2,1); }
+  /* 두 칸 비교 */
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; } @media (max-width:640px){ .two { grid-template-columns:1fr; } }
+  .two > div { border-radius:10px; padding:12px 14px; border:1px solid var(--line); }
+  .two .keep { border-color:rgba(61,220,132,.5); background:rgba(61,220,132,.06); } .two .lose { border-color:rgba(242,54,69,.5); background:rgba(242,54,69,.06); }
+  .two h3 { margin:0 0 6px; font-size:14px; } .two ul { margin:0; padding-left:18px; } .two li { margin:4px 0; font-size:13px; }
+  /* 기대치 계산 */
+  .exp { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; } @media (max-width:640px){ .exp { grid-template-columns:1fr; } }
+  .exp > div { border:1px solid var(--line); border-radius:10px; padding:10px 12px; text-align:center; }
+  .exp .k { font-size:12px; color:var(--muted); } .exp .v { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; } .exp .x { font-size:11.5px; color:var(--muted); }
+  .exp .mid { border-color:var(--y); box-shadow:0 0 18px -6px var(--y); } .exp .mid .v { color:var(--y); }
+  .slider { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; } .slider input { flex:1; min-width:180px; accent-color:var(--y); }
+  /* 체크 */
+  .check { display:grid; gap:6px; } .check div { padding:8px 12px; border-left:3px solid var(--accent); background:rgba(255,255,255,.03); border-radius:0 8px 8px 0; font-size:13px; }
+  a { color:var(--accent); }
+  ul.src { margin:0; padding-left:18px; font-size:12.5px; } ul.src li { margin:3px 0; }
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="simple.html">간단지표</a><a href="banban.html">반반형</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="limits.html" class="cur">매매법 한계</a><a href="quotes.html">명언</a></nav>
+    <h1>매매법의 한계</h1><span class="date">왜 매매법은 10~20년 지나면 약해지나 · 간단지표는 어떻게 봐야 하나</span>
+  </header>
+
+  <div class="hero">
+    <div class="q">모든 매매법이 사라지는 건 백테스트 한계 때문? 주식시장이 카오스라서?</div>
+    <div class="a">아니요 — <b class="a">운(과최적화)</b> · <b class="y">경쟁</b> · <b class="r">시장 변화</b> · <b class="g">사람이 버티지 못함</b>이 겹쳐서입니다.</div>
+    <div class="s">간단지표도 "다 사라질 확률 80%"처럼 숫자를 붙일 수는 없습니다. 다만 백테스트만큼 S&amp;P500을 크게 이기지는 못할 가능성이 큽니다. 남는 부분과 사라질 부분이 따로 있습니다.</div>
+  </div>
+
+  <div class="panel">
+    <h2>매매법이 시간이 지나면 약해지는 네 가지 이유</h2>
+    <div class="body"><div class="cards">
+      <div class="card" style="--c:#9ad0f5"><div class="t"><span class="n">1</span>과최적화 — 백테스트의 한계</div><div class="d">숫자 수백 가지를 돌려 과거에 제일 잘 맞은 걸 고르면, 그 성적의 일부는 실력이 아니라 <b>운</b>입니다. 운은 미래에 반복되지 않습니다. 학계에서 발표된 주식 수익 패턴 수백 개를 다시 검증한 연구들은 상당수가 우연이었다고 결론 냈습니다.</div></div>
+      <div class="card" style="--c:#f0b429"><div class="t"><span class="n">2</span>알려지면 경쟁으로 깎임</div><div class="d">남들이 같은 걸 따라 하면 기회가 줄어듭니다. 논문으로 발표된 패턴 97개의 초과수익은 발표 뒤 평균 <b>절반 넘게</b> 줄었습니다(맥린·폰티프 2016).</div></div>
+      <div class="card" style="--c:#f23645"><div class="t"><span class="n">3</span>시장 구조가 바뀜</div><div class="d">금리 체제, 거래 비용, 시장 참가자(인덱스펀드·알고리즘·개인 레버리지 ETF)가 바뀌면 과거에 통하던 관계가 약해집니다. 2008년 뒤 "연준 긴축 = 주식 약세"가 약해진 것도 그런 예입니다.</div></div>
+      <div class="card" style="--c:#3ddc84"><div class="t"><span class="n">4</span>사람이 포기함</div><div class="d">매매법이 멀쩡해도 −40% 구간이나 몇 년씩 지는 구간에서 그만두는 경우가 가장 흔합니다. "사라졌다"의 상당 부분은 사실 <b>버티지 못한 것</b>입니다.</div></div>
+    </div>
+    <div class="fine">주식시장이 수학적인 의미의 카오스라서 예측이 안 되는 건 아닙니다. 수많은 참가자가 서로의 우위를 계속 깎아 먹는 경쟁 시장이라, 쉽게 보이는 우위는 오래 남지 않는 것입니다(로의 '적응적 시장 가설').</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>왜 프로도 S&amp;P500을 못 이기나 <span class="desc">카오스라서가 아니라 산수</span></h2>
+    <div class="body">
+      <div>운용사들이 서로 경쟁하는 시장에서, 비용을 빼기 전 성과를 모두 합치면 <b>시장 평균</b>이 됩니다. 거기서 수수료·매매비용·세금을 빼면 평균적으로 지수보다 못할 수밖에 없습니다(샤프의 '액티브 운용의 산수').</div>
+      <div class="bars" id="bars">
+        <div class="bar" style="--c:#f23645"><div class="l"><span>15년 기준 S&amp;P500에 진 미국 대형주 펀드 (SPIVA)</span><b>약 90%</b></div><div class="tr"><i data-w="90"></i></div></div>
+        <div class="bar" style="--c:#3ddc84"><div class="l"><span>버핏의 10년 내기 (2008~2017) — S&amp;P500 인덱스펀드</span><b>연 약 8.5%</b></div><div class="tr"><i data-w="85"></i></div></div>
+        <div class="bar" style="--c:#8a93a3"><div class="l"><span>같은 기간 헤지펀드 묶음 5개 평균</span><b>연 약 3%</b></div><div class="tr"><i data-w="30"></i></div></div>
+      </div>
+      <div>버핏이 "S&amp;P500을 사라"고 한 요지는 <b>대부분 사람은 이기는 매니저를 미리 고를 수 없고, 수수료가 수익을 갉아먹는다</b>는 것입니다. 매매법이 언젠가 다 사라진다는 뜻은 아니었습니다. 이기는 회사도 있지만(초단타·마켓메이킹 등), 속도·규모로 버는 다른 사업이라 개인이 따라 할 수 있는 게 아닙니다.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>간단지표(반반형 등)에 대입하면 <span class="desc">S&amp;P500을 이긴 이유를 둘로 나누면</span></h2>
+    <div class="body"><div class="two">
+      <div class="keep"><h3>🟢 잘 안 사라질 쪽 — 구조</h3><ul>
+        <li><b>하락장에서 레버리지를 끄는 것</b>: 하락장에선 변동성이 2배로 커지고 레버리지가 녹습니다. 피하고 상승장에서만 쓰는 구조는 남들이 따라 해도 사라지기 어렵습니다.</li>
+        <li>대가가 <b>−37~−45% 낙폭</b>을 견디는 것이라, 누구나 쉽게 하지 못합니다 — 그래서 경쟁으로 덜 깎입니다.</li>
+        <li>추세추종(200일선류)은 100년 넘는 자료에서도 확인된 편입니다. 다만 2010년대처럼 10년 가까이 신통치 않은 시기도 있었습니다.</li>
+      </ul></div>
+      <div class="lose"><h3>🔴 사라질 가능성이 큰 쪽 — 세부 숫자</h3><ul>
+        <li><b>−10%, TS −25%, 밴드 2.5%</b> 같은 숫자는 같은 40년 자료로 골랐기 때문에 그 정확한 값의 우위는 상당 부분 운입니다.</li>
+        <li>"S&amp;P보다 연 +10%p" 같은 <b>초과 폭</b>은 크게 줄어들 것으로 보는 게 맞습니다.</li>
+        <li>초과분의 일부는 <b>나스닥이 S&amp;P500보다 더 오른 덕</b>(40년 연 +3~4%p)인데, 앞으로도 그렇다는 보장은 없습니다.</li>
+      </ul></div>
+    </div></div>
+  </div>
+
+  <div class="panel">
+    <h2>현실적인 기대 — "백테스트 숫자의 절반쯤" <span class="desc">S&amp;P500을 이긴 몫을 얼마나 깎아서 볼지 직접 움직여 보세요</span></h2>
+    <div class="body">
+      <div class="slider">반반형 초과수익 중 남는 비율 <input type="range" id="keep" min="0" max="100" step="5" value="50"> <b id="keepV">50%</b></div>
+      <div class="exp">
+        <div><div class="k">S&amp;P500 보유 (배당 포함, 40년)</div><div class="v" id="eS">—</div><div class="x">기준선</div></div>
+        <div class="mid"><div class="k">반반형 — 앞으로 기대치</div><div class="v" id="eM">—</div><div class="x" id="eMx">—</div></div>
+        <div><div class="k">반반형 백테스트 (40년)</div><div class="v" id="eB">—</div><div class="x">배당 제외 · 사이트 계산값</div></div>
+      </div>
+      <div class="fine">계산 = S&amp;P500 + (백테스트 − S&amp;P500) × 남는 비율. 50%는 '발표된 패턴의 초과수익이 평균 절반쯤 줄었다'는 연구에서 가져온 대략의 값이지 예측이 아닙니다. 어떤 비율을 넣어도 <b>몇 년씩 S&amp;P500에 지는 구간과 −40%대 낙폭은 거의 확실하게 옵니다</b>.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>그래서 어떻게 쓰나</h2>
+    <div class="body"><div class="check">
+      <div>기대는 백테스트가 아니라 <b>"S&amp;P500 + 몇 %p, 대신 −40% 낙폭"</b>으로 잡는다.</div>
+      <div>규칙의 숫자를 결과 보고 자꾸 바꾸지 않는다 — 바꿀수록 과최적화가 늘어난다.</div>
+      <div>3~5년 S&amp;P500에 지는 구간이 와도 그것만으로 매매법이 '죽었다'고 판단하지 않는다. 대신 <b>규칙을 지키지 못하는 자신</b>이 가장 큰 위험이다.</div>
+      <div>−40%를 견딜 자신이 없으면 버핏 말대로 <b>S&amp;P500 보유</b>가 더 나은 선택이다.</div>
+    </div></div>
+  </div>
+
+  <div class="panel">
+    <h2>출처</h2>
+    <div class="body"><ul class="src">
+      <li><a href="https://onlinelibrary.wiley.com/doi/10.1111/jofi.12365" target="_blank" rel="noopener">McLean &amp; Pontiff (2016), Does Academic Research Destroy Stock Return Predictability? — Journal of Finance</a></li>
+      <li><a href="https://academic.oup.com/rfs/article/29/1/5/1843824" target="_blank" rel="noopener">Harvey, Liu &amp; Zhu (2016), …and the Cross-Section of Expected Returns — Review of Financial Studies</a></li>
+      <li><a href="https://web.stanford.edu/~wfsharpe/art/active/active.htm" target="_blank" rel="noopener">William Sharpe (1991), The Arithmetic of Active Management</a></li>
+      <li><a href="https://www.spglobal.com/spdji/en/research-insights/spiva/" target="_blank" rel="noopener">S&amp;P Dow Jones Indices — SPIVA 보고서</a></li>
+      <li><a href="https://www.berkshirehathaway.com/letters/2017ltr.pdf" target="_blank" rel="noopener">Berkshire Hathaway 2017 주주서한 — 10년 내기 결과</a></li>
+      <li><a href="https://www.aqr.com/Insights/Research/Journal-Article/A-Century-of-Evidence-on-Trend-Following-Investing" target="_blank" rel="noopener">Hurst, Ooi &amp; Pedersen, A Century of Evidence on Trend-Following Investing — AQR</a></li>
+    </ul><div class="fine">투자 자문이 아닙니다. 숫자는 대략값이며 보고서 연도에 따라 달라집니다.</div></div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+// 카드가 화면에 들어오면 하나씩 떠오르고, 막대가 차오름
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(!e.isIntersecting) return; const t=e.target;
+  if(t.classList.contains('card')){ setTimeout(()=>t.classList.add('in'), [...t.parentNode.children].indexOf(t)*140); }
+  else t.querySelectorAll('i[data-w]').forEach((x,k)=>setTimeout(()=>x.style.width=x.dataset.w+'%',k*250));
+  io.unobserve(t); }),{threshold:.2});
+document.querySelectorAll('.card').forEach(c=>io.observe(c)); io.observe($('#bars'));
+// 기대치 계산기
+let SP=11.4, BB=22.96;   // S&P500 배당 포함 40년(1986-10~) · 반반형 백테스트(사이트 2차 검증 값으로 갱신)
+const anim=(el,to)=>{ const from=parseFloat(el.dataset.v||0), t0=performance.now(); el.dataset.v=to; const f=t=>{ const p=Math.min(1,(t-t0)/600), v=from+(to-from)*(1-(1-p)**3); el.textContent=v.toFixed(1)+'%'; if(p<1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+const upd=()=>{ const k=+$('#keep').value/100; $('#keepV').textContent=Math.round(k*100)+'%'; anim($('#eS'),SP); anim($('#eB'),BB); const m=SP+(BB-SP)*k; anim($('#eM'),m); $('#eMx').textContent=`S&P500보다 연 +${(m-SP).toFixed(1)}%p · 40년이면 S&P500의 ${((1+m/100)**40/(1+SP/100)**40).toFixed(0)}배`; };
+$('#keep').addEventListener('input',upd); upd();
+fetch('simple_check.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null).then(C=>{ const b=C&&C.bt&&C.bt['반반형']; if(b&&b.c){ BB=b.c; upd(); } }).catch(()=>{});
+</script>
+</body></html>
