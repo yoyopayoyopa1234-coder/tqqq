@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이중경보형 매매법</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#5aa9ff; --g:#3ddc84; --y:#f0b429; --r:#f23645; --c:#5aa9ff; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 48px; max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  h1 { font-size:20px; margin:0; display:flex; align-items:center; gap:8px; }
+  .date { color:var(--muted); font-size:12px; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .panel > h2 { margin:0; padding:10px 14px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; border-bottom:1px solid var(--line); }
+  .panel > h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .body { padding:14px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.65; }
+  .num { font-variant-numeric:tabular-nums; }
+  .up { color:#3ddc84; } .dn { color:#f23645; } .ok { color:#3ddc84; } .bad { color:#f23645; } .wr { color:#f0a030; } .muted { color:var(--muted); }
+  .hero { display:grid; grid-template-columns:1.2fr 1fr; gap:14px; } @media (max-width:720px){ .hero { grid-template-columns:1fr; } }
+  .now { border:1px solid var(--c); border-radius:12px; padding:14px 16px; background:linear-gradient(180deg,color-mix(in srgb,var(--c) 10%,transparent),transparent); box-shadow:0 0 26px -8px var(--c); position:relative; }
+  .now.changed { animation:pulse 1.6s ease-out infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(242,54,69,.7)} 70%{box-shadow:0 0 0 14px rgba(242,54,69,0)} 100%{box-shadow:0 0 0 0 rgba(242,54,69,0)} }
+  .now .l { font-size:12px; color:var(--muted); display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .now .big { font-size:30px; font-weight:800; color:#fff; margin:4px 0 2px; line-height:1.2; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .now .sub { font-size:13px; color:#c9cfd8; }
+  .tag { display:inline-block; font-size:10.5px; line-height:17px; padding:0 8px; border-radius:999px; background:var(--c); color:#0f1216; font-weight:700; vertical-align:middle; }
+  .tag.chg { background:var(--r); color:#fff; animation:blink 1.2s ease-in-out infinite; } .tag.gray { background:#3a4150; color:#dfe3ea; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+  .todo { margin-top:10px; padding:10px 12px; border-radius:8px; background:rgba(255,255,255,.04); border:1px dashed color-mix(in srgb,var(--c) 50%,transparent); font-size:13.5px; } .todo b { color:var(--c); }
+  .recent { margin-top:8px; font-size:12px; color:var(--r); }
+  /* 신호등 */
+  .light { display:inline-flex; flex-direction:row; gap:6px; padding:6px 8px; border-radius:999px; background:#0a0c0f; border:1px solid var(--line); }
+  .light i { width:22px; height:22px; border-radius:50%; background:#2a2f38; opacity:.5; }
+  .light i.on { opacity:1; box-shadow:0 0 14px 2px currentColor; }
+  .light .g { color:var(--g); } .light .y { color:var(--y); } .light .r { color:var(--r); } .light i.on.g { background:var(--g); } .light i.on.y { background:var(--y); } .light i.on.r { background:var(--r); }
+  /* 게이지 */
+  .gauges { display:grid; gap:12px; } .g { display:grid; gap:4px; }
+  .g .t { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:13px; } .g .t b { font-size:14px; }
+  .track { position:relative; height:12px; border-radius:6px; background:linear-gradient(90deg, rgba(242,54,69,.38) 0 calc(var(--lo)*1%), rgba(138,147,163,.22) calc(var(--lo)*1%) calc(var(--up)*1%), rgba(61,220,132,.38) calc(var(--up)*1%) 100%); }
+  .track.hy { background:linear-gradient(90deg, rgba(240,180,41,.35) 0 calc(var(--lo)*1%), rgba(138,147,163,.22) calc(var(--lo)*1%) calc(var(--up)*1%), rgba(61,220,132,.38) calc(var(--up)*1%) 100%); }
+  .mark { position:absolute; top:-5px; width:4px; height:22px; background:#fff; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 8px rgba(255,255,255,.7); }
+  .tick { position:absolute; top:-2px; width:1px; height:16px; background:#c9cfd8; }
+  .cap { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .g .why { font-size:12px; color:var(--muted); }
+  /* 규칙 */
+  .steps { display:grid; gap:10px; }
+  .step { border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:rgba(255,255,255,.02); }
+  .step .h { display:flex; align-items:center; gap:10px; }
+  .step .n { width:28px; height:28px; border-radius:50%; background:var(--c); color:#0f1216; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none; }
+  .step .h b { font-size:15px; } .step .one { margin:6px 0 0 38px; font-size:13.5px; }
+  details { margin:6px 0 0 38px; font-size:13px; line-height:1.7; color:#c9cfd8; }
+  details.flat { margin:0; }
+  details summary { cursor:pointer; color:var(--accent); font-size:12.5px; list-style:none; display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border:1px solid rgba(90,169,255,.35); border-radius:999px; user-select:none; }
+  details summary::-webkit-details-marker { display:none; } details summary::before { content:'＋'; font-weight:700; } details[open] summary::before { content:'－'; } details[open] summary { background:rgba(90,169,255,.1); }
+  details .in { margin-top:8px; padding:10px 12px; border-left:3px solid rgba(90,169,255,.5); background:rgba(255,255,255,.03); border-radius:0 8px 8px 0; }
+  details ul, .one ul { margin:6px 0 0; padding-left:18px; } .one li { margin:3px 0; }
+  .one .today { margin-top:8px; padding:6px 10px; border-left:3px solid var(--c); background:rgba(255,255,255,.04); border-radius:0 6px 6px 0; font-size:12.5px; color:var(--fg); }
+  @media (max-width:560px){ details, .step .one { margin-left:0; } }
+  .flow { display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; justify-content:center; }
+  .box { border:1px solid var(--line); border-radius:10px; padding:10px 12px; min-width:150px; text-align:center; font-size:13px; } .box b { display:block; font-size:15px; }
+  .box.r { background:rgba(242,54,69,.12); border-color:rgba(242,54,69,.4); } .box.y { background:rgba(240,180,41,.14); border-color:rgba(240,180,41,.45); } .box.g { background:rgba(61,220,132,.14); border-color:rgba(61,220,132,.5); }
+  .box.cur { outline:2px solid #fff; box-shadow:0 0 14px rgba(255,255,255,.35); }
+  .arrow { align-self:center; color:var(--muted); font-size:12px; text-align:center; max-width:160px; } .arrow b { display:block; font-size:18px; color:var(--fg); }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; }
+  .tile { border:1px solid var(--line); border-radius:10px; padding:10px; } .tile .l { font-size:11px; color:var(--muted); } .tile .v { font-size:20px; font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums; } .tile .s { font-size:11px; color:var(--muted); }
+  .tbl { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { padding:5px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  th:first-child, td:first-child { text-align:left; } th { color:var(--muted); font-weight:500; } tr.me td { background:rgba(90,169,255,.08); } tr.me td:first-child { color:var(--accent); font-weight:700; }
+  .plot { width:100%; } .fine { font-size:11.5px; color:var(--muted); line-height:1.6; }
+  .check { display:grid; gap:6px; } .check label { display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border:1px solid var(--line); border-radius:8px; cursor:pointer; } .check input { margin-top:4px; }
+  .timeline { display:grid; gap:4px; font-size:12.5px; } .timeline div { display:grid; grid-template-columns:92px 1fr; gap:8px; } .timeline .d { color:var(--muted); font-variant-numeric:tabular-nums; }
+  .ev { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; } @media (max-width:640px){ .ev { grid-template-columns:1fr; } }
+  .ev > div { border-radius:10px; padding:10px 12px; border:1px solid var(--line); } .ev .k { font-size:12px; font-weight:700; } .ev .v { font-size:12.5px; color:#c9cfd8; line-height:1.7; } .ev .v b { color:#fff; }
+  .alarms { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .al { display:inline-flex; align-items:center; gap:7px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); background:#0a0c0f; font-size:12.5px; color:var(--muted); }
+  .al i { width:10px; height:10px; border-radius:50%; background:#2a2f38; } .al.on { color:#fff; border-color:rgba(240,180,41,.6); } .al.on i { background:var(--y); box-shadow:0 0 10px 1px var(--y); }
+  .al.na { opacity:.55; }
+  .ev2 { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; } @media (max-width:640px){ .ev2 { grid-template-columns:1fr; } }
+  .ev2 > div { border-radius:10px; padding:10px 12px; border:1px solid var(--line); } .ev2 .k { font-size:12px; font-weight:700; } .ev2 .v { font-size:12.5px; color:#c9cfd8; line-height:1.7; } .ev2 .v b { color:#fff; }
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html">TQQQ 분석</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="simple.html">간단지표</a><a href="banban.html">반반형</a><a href="signal.html">신호등형</a><a href="yeonjun.html">연준형</a><a href="alarm.html" class="cur">이중경보형</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="quotes.html">명언</a></nav>
+    <h1>이중경보형 매매법 <span class="tag">신호등 × 연준</span></h1>
+    <span class="date" id="today"></span>
+  </header>
+
+  <div class="panel">
+    <h2>지금 <span class="desc">한 번에 한 상품만 · 초록 QLD · 노랑(연준 긴축 중 <b>그리고</b> 나스닥 고점 이탈) QQQ · 빨강 SGOV · 종가 기준 · 15분마다 갱신</span></h2>
+    <div class="body">
+      <div class="hero">
+        <div class="now" id="now"><div class="l">불러오는 중…</div></div>
+        <div class="gauges" id="gauges"></div>
+      </div>
+      <div class="fine" id="dstat"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>규칙 <span class="desc">매일 볼 선은 S&amp;P500 200일선 하나 · 연준이 올린 뒤 6개월 동안만 나스닥 52주 고점선을 하나 더 봄 · 상품 셋 · 바뀌는 날은 1년에 한두 번</span></h2>
+    <div class="body">
+      <div class="flow" id="flow"></div>
+      <div class="steps">
+        <div class="step"><div class="h"><div class="n">1</div><b>빨강이냐 아니냐 — S&amp;P500 200일선 ±2.5% 밴드</b></div>
+          <div class="one">S&amp;P500 종가가 <b>200일선 × 0.975 아래</b>로 마감하면 그날 종가에 전부 <b>SGOV</b>(빨강). 빨강에서 <b>200일선 × 1.025 위</b>로 마감하면 그날 종가에 다시 들어갑니다(②대로 초록 또는 노랑). 밴드 안(0.975~1.025)에선 전날 색 그대로.
+            <ul>
+              <li>신호등형·연준형·반반형·신호판과 똑같은 선이라 빨강이 켜지고 꺼지는 날이 모두 같습니다</li>
+              <li>판단은 나스닥이 아니라 <b>S&amp;P500</b> 종가로 · 200일선 = 오늘 포함 최근 200거래일 종가 단순평균</li>
+            </ul>
+            <div class="today" id="r1now"></div></div>
+          <details><summary>왜 이 선 하나로 큰 하락을 피하나</summary><div class="in" id="why1"></div></details>
+        </div>
+        <div class="step"><div class="h"><div class="n">2</div><b>초록이냐 노랑이냐 — 경보 둘이 <u>같이</u> 켜졌을 때만 노랑(QQQ), 아니면 초록(QLD)</b></div>
+          <div class="one">빨강이 아닐 때, <b>경보 A</b> "연준이 최근 6개월 안에 기준금리를 올렸다"(6개월 전보다 +0.15%p 이상) <b>그리고</b> <b>경보 B</b> "나스닥100 종가가 52주 최고 종가 × 0.88 아래" — <b>둘 다</b>이면 <b>QQQ 100%</b>(노랑). 하나라도 아니면 <b>QLD 100%</b>(초록). 노랑은 나스닥100이 고점 × 0.93 위로 마감하거나(경보 B 해제) 마지막 인상에서 6개월이 지나면(경보 A 해제) 그날 종가에 QLD로.
+            <ul>
+              <li><b>경보 A</b>는 연준형과 같은 정의 — 실효 연방기금금리(EFFR) 1개월 평균이 6개월 전 1개월 평균보다 +0.15%p 이상이면 켜짐(= 그 사이 0.25%p 인상이 한 번이라도 있었음). 인상 뒤 2~3주 지나 켜지고, 마지막 인상 6개월 뒤 2~3주 안에 꺼집니다. 직접 할 때는 FOMC 인상 발표일에 바로 켜진 것으로 봐도 됩니다</li>
+              <li><b>경보 B</b>는 신호등형과 같은 정의 — 52주 최고 종가(오늘 포함 최근 252거래일) × 0.88 아래로 마감하면 켜지고, × 0.93 위로 마감하면 꺼짐. 그 사이(−7~−12%)는 전날 상태 그대로(완충 5%p)</li>
+              <li><b>연준이 올리지 않는 동안엔 경보 B를 볼 필요가 없습니다</b> — 경보 A가 꺼져 있으면 B가 켜져도 노랑이 되지 않으니까요. 그래서 40년 중 68%의 날은 매일 볼 선이 S&amp;P500 하나입니다(연준형과 같음). 연준이 올리기 시작하면 그날부터 6개월 동안 나스닥 고점선을 하나 더 봅니다</li>
+              <li>숫자는 모두 물려받은 것 — 밴드 2.5%(신호판), −7/−12%(신호등형), 6개월·+0.15%p(연준형). <b>이 매매법을 위해 새로 정한 숫자는 없습니다</b></li>
+            </ul>
+            <div class="today" id="r2now"></div></div>
+          <details><summary>왜 '둘 다 켜졌을 때만' 끄나 · 왜 2배(QLD)인가</summary><div class="in" id="why2"></div></details>
+        </div>
+      </div>
+      <details class="flat"><summary>공통 정의 · 주문 방법</summary><div class="in">
+        <ul>
+          <li><b>판단·체결</b>: 모든 규칙은 그날 종가 하나로 판단하고 그날 종가에 체결한 것으로 백테스트. 실제로는 미국 장 마감 5~10분 전(서머타임 한국 아침 4:50, 겨울 5:50) 가격을 종가로 보고 매매. 색이 바뀐 날만 전부 팔고 하나를 삽니다 — 그 밖의 날은 아무것도 안 합니다.</li>
+          <li><b>S&amp;P500 200일선</b>: 오늘 포함 최근 200거래일 종가 단순평균 · 밴드 = ×1.025 / ×0.975 (신호판·반반형·신호등형·연준형과 같은 값).</li>
+          <li><b>기준금리</b>: 뉴욕 연은이 매일 발표하는 실효 연방기금금리(EFFR, FRED DFF). 그 1개월(21거래일) 평균과 6개월 전(183일 전) 1개월 평균의 차이 ≥ 0.15%p → 경보 A.</li>
+          <li><b>52주 고점</b>: 나스닥100 지수(QQQ)의 오늘 포함 최근 252거래일 최고 종가. × 0.88 아래 마감 → 경보 B 켜짐 · × 0.93 위 마감 → 꺼짐.</li>
+          <li><b>상품</b>: QLD = 나스닥100 2배 ETF · QQQ = 나스닥100 1배 · SGOV = 현금 대용 초단기 국채(BIL·SHV도 같음). 분할·비중 없이 계좌 전체를 한 상품에.</li>
+          <li><b>경계 근처</b>: S&amp;P500이 선의 1%p 안이거나 나스닥100이 고점선의 1%p 안이면 마감 직전가와 확정 종가로 결론이 갈릴 수 있으니, 마감 뒤 확정 종가로 다시 보고 어긋났으면 다음 거래일 장 마감 직전에 바로잡습니다.</li>
+        </ul>
+      </div></details>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>수익의 근거 <span class="desc">'고점 이탈'은 두 종류 — 연준이 안 올릴 때의 이탈은 되돌림, 올릴 때의 이탈은 진짜 하락 · 40년 자료로 네 국면을 그대로 잰 것</span></h2>
+    <div class="body">
+      <div class="ev2" id="evid"></div>
+      <div class="tbl"><table id="evTbl"></table></div>
+      <div class="fine" id="evNote"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>최근 3년 그림 <span class="desc">위: S&amp;P500과 밴드 · 가운데: 나스닥100과 52주 고점선(×0.93 · ×0.88) · 아래: 기준금리와 긴축선 · 배경 = 그날의 색</span></h2>
+    <div class="body"><div id="plot3" class="plot" style="height:600px"></div>
+      <div class="fine">배경색: 초록 = QLD · 노랑 = QQQ · 빨강 = SGOV. 노랑은 가운데(고점 ×0.88 아래)와 아래(긴축선 위)가 <b>동시에</b> 켜진 구간에만 생깁니다. 선 위에 마우스를 올리면 값이 보입니다.</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>40년 성적 <span class="desc">1986-10 ~ · 신호일 종가 체결 · 2010-02 이전 QLD는 환산 · 대기 자금은 기준금리 · 수수료 제외</span></h2>
+    <div class="body">
+      <div class="tiles" id="tiles"></div>
+      <div id="plot40" class="plot" style="height:300px"></div>
+      <details open class="flat"><summary>신호등형·연준형·반반형과 나란히 — 과최적화·수익률·가성비·승률</summary><div class="in"><div class="tbl" id="cmp"></div><div id="cmpNote" style="margin-top:8px"></div></div></details>
+      <details class="flat"><summary>위기마다</summary><div class="in"><div class="tbl" id="crisis"></div></div></details>
+      <details class="flat"><summary>24번의 거래 전부 보기 (빨강에서 들어간 날 → 빨강으로 나온 날)</summary><div class="in tbl" id="trades"></div></details>
+      <details class="flat"><summary>해마다 성적 · 큰 낙폭 구간</summary><div class="in" id="yearly"></div></details>
+      <details open class="flat"><summary>과최적화 점검 — 숫자를 바꿔 봤을 때 · 하루 늦게 체결했을 때</summary><div class="in" id="overfit"></div></details>
+      <details class="flat"><summary>앞으로 20년에 대한 솔직한 기대</summary><div class="in" id="honest"></div></details>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>장 마감 직전 체크리스트 <span class="desc">매일 볼 건 하나, 연준이 올린 뒤 6개월 동안만 둘</span></h2>
+    <div class="body"><div class="check" id="checklist"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>2차 검증 <span class="desc">파이썬으로 따로 계산한 오늘 신호·40년 성적과 이 페이지를 대조 · 15분마다</span></h2>
+    <div class="body"><div id="check">불러오는 중…</div>
+      <div class="fine">자세한 항목은 <a href="simple.html" style="color:var(--accent)">간단지표 페이지</a>의 2차 검증 패널에 있습니다. 투자 자문이 아닙니다.</div></div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const day=t=>new Date(t*1000).toISOString().slice(0,10);
+const CFG={b:0.025,tIn:0.07,tOut:0.12,months:6,thr:0.15,n:21};   // 이중경보형: 밴드 ±2.5% · 고점 −7/−12% · 6개월 · +0.15%p · 1개월 평균 — 전부 물려받은 숫자
+const CFGS={b:0.025,tIn:0.07,tOut:0.12};                        // 신호등형 (비교용)
+const CFGF={b:0.025,months:6,thr:0.15,n:21};                    // 연준형 (비교용)
+const CFGB={b:0.025,tIn:0.10,tOut:0.10,tw:0.5,ts:0.25};         // 반반형 (비교용)
+const WL={T:{L:1},M:{Q:1},C:{C:1}}, WB={T:{T:0.5,S:0.5},M:{Q:1},C:{C:1}};
+const NM={T:'QLD 100%',M:'QQQ 100%',C:'SGOV 100%'}, COL={T:'초록',M:'노랑',C:'빨강'}, CC={T:'#3ddc84',M:'#f0b429',C:'#f23645'};
+let J=null,B=null,Q=null,TQ=null,FWJ=null; const TODAY={}, BT={};
+function build(){
+  const d=J.d, N=d.length, nd=J.ndx, dff=J.dff, si=d.indexOf(J.start), dt=d.map(x=>new Date(x+'T00:00:00Z'));
+  const real=k=>new Map(B.adj[k].map(r=>[day(r[0]),r[1]]));
+  const RQ=real('QQQ'), RL=real('QLD'), RS=real('SPY'), T=d.map((_,i)=> i<si||J.real[i]==null? J.syn[i] : J.real[i]);
+  const ret={T:[0],L:[0],Q:[0],C:[0],S:[0]}, sp=J.spx;
+  for(let i=1;i<N;i++){ const k=(dt[i]-dt[i-1])/864e5, r=dff[i-1]/100, x=nd[i]/nd[i-1]-1;
+    ret.T.push(T[i]/T[i-1]-1);
+    ret.L.push(i>si&&RL.has(d[i])&&RL.has(d[i-1]) ? RL.get(d[i])/RL.get(d[i-1])-1 : 2*x-r/360*k-(1.0095**(k/365)-1)-(1.01**(k/365)-1));
+    ret.Q.push(i>si&&RQ.has(d[i])&&RQ.has(d[i-1]) ? RQ.get(d[i])/RQ.get(d[i-1])-1 : x); ret.C.push(r/360*k);
+    ret.S.push(RS.has(d[i])&&RS.has(d[i-1]) ? RS.get(d[i])/RS.get(d[i-1])-1 : sp[i]/sp[i-1]-1); }
+  const hi=[]; const dq=[]; for(let i=0;i<N;i++){ while(dq.length&&nd[dq.at(-1)]<=nd[i]) dq.pop(); dq.push(i); if(dq[0]<=i-252) dq.shift(); hi.push(nd[dq[0]]); }
+  const ps=[0]; sp.forEach(v=>ps.push(ps.at(-1)+v)); const smaSP=n=>sp.map((_,i)=>i<n-1?null:(ps[i+1]-ps[i+1-n])/n), sp200=smaSP(200);
+  const pf=[0]; dff.forEach(v=>pf.push(pf.at(-1)+v)); const smaF=n=>dff.map((_,i)=>i<n-1?null:(pf[i+1]-pf[i+1-n])/n);
+  const backIdx=days=>{ const out=new Array(N); let j=0; for(let i=0;i<N;i++){ const tgt=dt[i].getTime()-days*864e5; while(j<i&&dt[j].getTime()<tgt) j++; out[i]=j; } return out; };
+  const hikeSeries=(months=CFG.months,thr=CFG.thr,n=CFG.n)=>{ const avg=smaF(n), bk=backIdx(Math.round(months*30.44)); return {avg, hk:avg.map((v,i)=>v!=null&&avg[bk[i]]!=null&&v-avg[bk[i]]>=thr), bk}; };
+  // 이중경보형 단계 (simple_check.py mk_levels_and 와 같은 규칙) · lv.top = 경보 B가 꺼진(고점 근처) 상태
+  function mkLevelsAnd(c,spn=sp200){ const {hk}=hikeSeries(c.months,c.thr,c.n); const lv=[], tp=[]; let inm=false, top=false;
+    for(let i=0;i<N;i++){ const m=spn[i]; if(m==null){ lv.push('C'); tp.push(top); continue; }
+      if(!inm){ if(sp[i]>m*(1+c.b)){ inm=true; top=false; } } else if(sp[i]<m*(1-c.b)) inm=false;
+      if(inm){ const dv=nd[i]/hi[i]-1; if(!top&&dv>=-c.tIn) top=true; else if(top&&dv<-c.tOut) top=false; }
+      tp.push(top); lv.push(!inm?'C':((hk[i]&&!top)?'M':'T')); }
+    lv.top=tp; lv.hk=hk; return lv; }
+  // 연준형 단계 (mk_levels_fed)
+  function mkLevelsFed(c,spn=sp200){ const {hk}=hikeSeries(c.months,c.thr,c.n); const lv=[]; let inm=false;
+    for(let i=0;i<N;i++){ const m=spn[i]; if(m==null){ lv.push('C'); continue; }
+      if(!inm){ if(sp[i]>m*(1+c.b)) inm=true; } else if(sp[i]<m*(1-c.b)) inm=false;
+      lv.push(!inm?'C':(hk[i]?'M':'T')); }
+    return lv; }
+  // 신호등형·반반형 단계 (mk_levels)
+  function mkLevels(c,spn=sp200){ const lv=[]; let inm=false, top=false;
+    for(let i=0;i<N;i++){ const m=spn[i]; if(m==null){ lv.push('C'); continue; } const dv=nd[i]/hi[i]-1;
+      if(!inm){ if(sp[i]>m*(1+c.b)){ inm=true; top=false; } } else if(sp[i]<m*(1-c.b)) inm=false;
+      if(!inm){ lv.push('C'); continue; }
+      if(!top&&dv>=-c.tIn) top=true; else if(top&&dv<-c.tOut) top=false;
+      lv.push(top?'T':'M'); }
+    return lv; }
+  function engine(lv,W,a,b,ts){ let cur=lv[a], h={}, v=1, pk=1, mdd=0, sw=0, pkd=d[a], w=['',''], tpk=T[a], cut=false, vs=cur!=='C'?1:0, vsd=cur!=='C'?d[a]:null; const cv=[1], tr=[], ev=[], st=[cur];
+    const setW=tw=>{ const nh={}; for(const k in tw) if(tw[k]>1e-12) nh[k]=v*tw[k]; h=nh; };
+    for(const k in W[cur]) h[k]=W[cur][k];
+    for(let i=a+1;i<=b;i++){ v=0; for(const k in h){ h[k]*=1+ret[k][i]; v+=h[k]; }
+      const t=lv[i];
+      if(t!==cur){ sw++; ev.push([i,cur,t,cut,false]); if(cur==='C'&&t!=='C'){ vs=v; vsd=d[i]; } else if(cur!=='C'&&t==='C'&&vs){ tr.push([vsd,d[i],v/vs-1]); vs=0; } cur=t; cut=false; tpk=T[i]; setW(W[t]); }
+      else if(Object.keys(W[cur]).length>1){ if(W[cur].T&&!cut&&ts!=null){ tpk=Math.max(tpk,T[i]); if(T[i]<=tpk*(1-ts)){ cut=true; sw++; ev.push([i,cur,cur,false,true]); setW({S:(h.S||0)/v,Q:(h.Q||0)/v,C:((h.T||0)+(h.C||0))/v}); } }
+        if(!cut&&d[i].slice(5,7)!==d[i-1].slice(5,7)) setW(W[cur]); }
+      if(v>pk){pk=v;pkd=d[i];} if(v/pk-1<mdd){mdd=v/pk-1;w=[pkd,d[i]];} cv.push(v); st.push(cur+(cut?'c':'')); }
+    if(vs) tr.push([vsd,d[b],v/vs-1]);
+    const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,sw:sw/y,cv,w,cur,cut,tpk,tr,ev,st}; }
+  const hold=(k,a,b)=>{ let v=1,pk=1,mdd=0; const cv=[1]; for(let i=a+1;i<=b;i++){ v*=1+ret[k][i]; pk=Math.max(pk,v); mdd=Math.min(mdd,v/pk-1); cv.push(v); } const y=(dt[b]-dt[a])/31557600000; return {v,c:(v**(1/y)-1)*100,m:mdd*100,cv}; };
+  // 하루 늦게 체결(신호 다음 날 종가) · 주 1회(해당 요일 또는 그 주의 다음 거래일)만 판단
+  const lag=(lv,n)=>{ const o=new Array(N).fill('C'); for(let i=n;i<N;i++) o[i]=lv[i-n]; return o; };
+  const weekly=(lv,wd)=>{ const o=[]; let cur='C'; for(let i=0;i<N;i++){ const w=(dt[i].getUTCDay()+6)%7, pw=i?(dt[i-1].getUTCDay()+6)%7:-1, gap=i?(dt[i]-dt[i-1])/864e5:9; if(w===wd||(w>wd&&(pw<wd||gap>7))) cur=lv[i]; o.push(cur); } return o; };
+  return {d,N,nd,sp,sp200,smaSP,hi,T,dt,ret,dff,hikeSeries,mkLevelsAnd,mkLevelsFed,mkLevels,engine,hold,lag,weekly};
+}
+const fmtPct=(x,dg=1)=>(x>=0?'+':'−')+Math.abs(x).toFixed(dg)+'%';
+const f2=v=>v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const f0=v=>Math.round(v).toLocaleString();
+function render(){
+  const D=build(), {d,N,nd,sp,sp200,hi,T,dt,ret,dff}=D;
+  const a0=Math.max(1,d.findIndex(x=>x>='1986-10-01')), H=d.findIndex(x=>x>='2006-10-01'), a10=d.findIndex(x=>x>='2010-02-11');
+  const lv=D.mkLevelsAnd(CFG), e=D.engine(lv,WL,a0,N-1,null), e1=D.engine(lv,WL,a0,H,null), e2=D.engine(lv,WL,H,N-1,null), e10=D.engine(lv,WL,a10,N-1,null);
+  const lvS=D.mkLevels(CFGS), es=D.engine(lvS,WL,a0,N-1,null), es10=D.engine(lvS,WL,a10,N-1,null), es1=D.engine(lvS,WL,a0,H,null), es2=D.engine(lvS,WL,H,N-1,null);
+  const lvF=D.mkLevelsFed(CFGF), ef=D.engine(lvF,WL,a0,N-1,null), ef10=D.engine(lvF,WL,a10,N-1,null), ef1=D.engine(lvF,WL,a0,H,null), ef2=D.engine(lvF,WL,H,N-1,null);
+  const lvB=D.mkLevels(CFGB), eb=D.engine(lvB,WB,a0,N-1,CFGB.ts), eb10=D.engine(lvB,WB,a10,N-1,CFGB.ts);
+  const {avg,hk,bk}=D.hikeSeries(), top=lv.top;
+  BT['이중경보형']={c:e.c,m:e.m,n:e.tr.length};
+  const gain=x=>x.c/Math.abs(x.m), wr=x=>x.tr.filter(t=>t[2]>0).length/x.tr.length*100;
+  // ── 지금 ──
+  const st=lv[N-1], inm=st!=='C';
+  const S=TQ.spx, spUpPct=S.idx/S.ma200-1;
+  const label=NM[st]; TODAY['이중경보형']=label;
+  const fNow=avg[N-1], fAgo=avg[bk[N-1]], fDiff=fNow-fAgo, hiking=hk[N-1], nearTop=top[N-1], hiNow=hi[N-1], dvNow=nd[N-1]/hiNow-1, lineB=hiNow*(1-CFG.tOut), lineA=hiNow*(1-CFG.tIn);
+  let release=null; if(hiking){ let k=bk[N-1]; while(k<N&&avg[k]<fNow-CFG.thr) k++; if(k<N) release=new Date(dt[k].getTime()+Math.round(CFG.months*30.44)*864e5); }
+  const relTxt=release?release.toISOString().slice(0,10):null;
+  const stateTxt= st==='C'?'빨강 — S&P500이 밴드 아래, 쉬는 중'
+    : st==='M'?'노랑 — 상승 추세지만 경보 둘이 같이 켜짐 (연준 긴축 중 + 나스닥100 고점 −12% 밖)'
+    : hiking?'초록 — 상승 추세 · 연준은 긴축 중이지만 나스닥100이 고점 근처(경보 B 꺼짐)'
+    : !nearTop?'초록 — 상승 추세 · 나스닥100이 고점 밖이지만 연준이 올리지 않는 중(경보 A 꺼짐)'
+    : '초록 — 상승 추세 · 경보 둘 다 꺼짐';
+  const why=(i,from,to)=>{ if(to==='C') return 'S&P500이 200일선 −2.5% 아래로';
+    if(from==='C') return 'S&P500이 200일선 +2.5% 위로'+(to==='M'?' (그날 경보 A·B 둘 다 켜져 있음)':'');
+    if(to==='M') return (i>0&&!hk[i-1])?'연준 인상으로 경보 A 켜짐 — 나스닥100은 이미 고점 −12% 밖':'나스닥100이 52주 고점 −12% 밖으로 (경보 B) — 연준 긴축 중';
+    return !hk[i]?'마지막 인상에서 6개월 지나 경보 A 꺼짐':'나스닥100이 52주 고점 −7% 안으로 복귀 (경보 B 꺼짐)'; };
+  const ago=n=>n===0?'오늘':n===1?'어제':`${n}거래일 전`;
+  const last=e.ev.slice(-1)[0], recent=last&&N-1-last[0]<=1;
+  let todo;
+  if(last&&N-1-last[0]===0) todo=`오늘 종가에 <b>${NM[last[1]]} → ${NM[last[2]]}</b>로 바꿉니다 (${why(last[0],last[1],last[2])}).`;
+  else todo= st==='C'?`<b>아무것도 안 함</b> — SGOV 그대로. S&amp;P500이 <b>${S.up.toLocaleString()}</b> 위로 마감하는 날 종가에 들어갑니다(그날 경보 둘이 다 켜져 있으면 QQQ, 아니면 QLD).`
+        : st==='M'?`<b>아무것도 안 함</b> — QQQ 그대로. 나스닥100이 <b>${f0(lineA)}</b>(고점 −7%) 위로 마감하거나 ${relTxt?`긴축이 풀리는 <b>${relTxt}</b>쯤`:'마지막 인상 6개월 뒤'} QLD로 · S&amp;P500이 <b>${S.lo.toLocaleString()}</b> 아래로 마감하면 SGOV로.`
+        : hiking?`<b>아무것도 안 함</b> — QLD 그대로. 연준이 긴축 중이라 고점선을 봅니다: 나스닥100이 <b>${f0(lineB)}</b>(고점 −12%) 아래로 마감하면 QQQ로 · ${relTxt?`${relTxt}쯤 긴축이 풀리면 고점선은 안 봐도 됨`:''} · S&amp;P500이 <b>${S.lo.toLocaleString()}</b> 아래로 마감하면 SGOV로.`
+        : `<b>아무것도 안 함</b> — QLD 그대로. 연준이 올리지 않는 동안은 고점선을 볼 필요 없음 · 연준이 올리면 그날부터 나스닥100 고점 −12% 선(지금 ${f0(lineB)})을 봄 · S&amp;P500이 <b>${S.lo.toLocaleString()}</b> 아래로 마감하면 SGOV로.`;
+  const nowEl=$('#now'); nowEl.style.setProperty('--c',CC[st]); if(recent) nowEl.classList.add('changed');
+  const light=`<span class="light"><i class="r ${st==='C'?'on':''}"></i><i class="y ${st==='M'?'on':''}"></i><i class="g ${st==='T'?'on':''}"></i></span>`;
+  const alarms=`<div class="alarms"><span class="al ${hiking?'on':''} ${inm?'':'na'}"><i></i>경보 A · 연준 긴축 ${hiking?'켜짐':'꺼짐'}${hiking&&relTxt?` (${relTxt}쯤 해제)`:''}</span><span class="al ${!nearTop?'on':''} ${inm?'':'na'}"><i></i>경보 B · 고점 이탈 ${!nearTop?'켜짐':'꺼짐'} (고점 대비 ${fmtPct(dvNow*100)})</span></div>`;
+  nowEl.innerHTML=`<div class="l">${d[N-1]} 종가 기준 · <span class="tag" style="background:${CC[st]}">이중경보형</span>${recent?`<span class="tag chg">${ago(N-1-last[0])} 바뀜</span>`:'<span class="tag gray">변화 없음</span>'}</div>
+    <div class="big">${light}<span style="color:${CC[st]}">${label}</span></div><div class="sub">${stateTxt}</div>${alarms}
+    <div class="todo">오늘 할 일: ${todo}</div>
+    ${last?`<div class="recent">최근 변화 ${d[last[0]]} (${ago(N-1-last[0])}): ${NM[last[1]]} → <b>${NM[last[2]]}</b> — ${why(last[0],last[1],last[2])}</div>`:''}
+    <div class="timeline" style="margin-top:8px">${e.ev.slice(-6).reverse().map(x=>`<div><span class="d">${d[x[0]]}</span><span><span style="color:${CC[x[1]]}">${COL[x[1]]}</span> → <b style="color:${CC[x[2]]}">${COL[x[2]]} ${NM[x[2]]}</b> <span class="muted">· ${why(x[0],x[1],x[2])}</span></span></div>`).join('')}</div>`;
+  // 게이지
+  const P=(v,lo,hi)=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
+  const g1=(()=>{ const lo=-8, up=8, v=spUpPct*100, toLo=(S.idx/S.lo-1)*100, toUp=(S.idx/S.up-1)*100;
+    return `<div class="g"><div class="t"><span>① S&amp;P500 ${S.idx.toLocaleString()} vs 200일선 ${S.ma200.toLocaleString()}</span><b class="${v>2.5?'ok':v<-2.5?'bad':'wr'}">${fmtPct(v)}</b></div>
+      <div class="track" style="--lo:${P(-2.5,lo,up)};--up:${P(2.5,lo,up)}"><span class="tick" style="left:${P(0,lo,up)}%"></span><span class="mark" style="left:${P(v,lo,up)}%"></span></div>
+      <div class="cap"><span>−2.5% 빨강선 ${S.lo.toLocaleString()}</span><span>200일선</span><span>+2.5% 복귀선 ${S.up.toLocaleString()}</span></div>
+      <div class="why">${inm?`투자 중 · 빨강선까지 <b>${fmtPct(toLo)}</b> 여유 (S&amp;P500이 ${S.lo.toLocaleString()} 아래로 마감하면 전부 SGOV)`:`빨강 · 복귀선까지 <b>${fmtPct(toUp)}</b> (S&amp;P500이 ${S.up.toLocaleString()} 위로 마감하면 다시 들어감)`}</div></div>`; })();
+  const fw=FWJ&&FWJ.fw&&FWJ.fw.meets&&FWJ.fw.meets[0], fwTxt=fw?` · <a href="fedwatch.html" style="color:var(--accent)">FedWatch</a> 다음 회의(${fw.date}) 인상 확률 ${fw.hike!=null?fw.hike.toFixed(0)+'%':'—'}`:'';
+  const g2=(()=>{ const lo=-1.0, up=1.0, v=fDiff;
+    const msg= !inm?`빨강이라 지금은 상품을 고르지 않음`
+      : hiking?`<b class="wr">경보 A 켜짐</b> · ${relTxt?`지금 금리가 유지되면 ${relTxt}쯤 꺼짐`:''}${fwTxt}${fw&&fw.hike>=50?' — 또 올리면 6개월 연장':''} · 켜져 있는 동안은 아래 ③ 고점선도 봅니다`
+      : `<b class="ok">경보 A 꺼짐 → 초록 확정</b> · 연준이 올리지 않는 동안은 ③ 고점선을 안 봐도 됩니다${fwTxt}`;
+    return `<div class="g"><div class="t"><span>② 기준금리 1개월 평균 ${fNow.toFixed(2)}% vs 6개월 전 ${fAgo.toFixed(2)}%</span><b class="${v>=CFG.thr?'wr':'ok'}">${(v>=0?'+':'−')+Math.abs(v).toFixed(2)}%p</b></div>
+      <div class="track hy" style="--lo:${P(-99,lo,up)};--up:${P(CFG.thr,lo,up)}"><span class="tick" style="left:${P(0,lo,up)}%"></span><span class="mark" style="left:${P(v,lo,up)}%"></span></div>
+      <div class="cap"><span>−1.0%p (인하 중)</span><span>0 · +0.15%p 긴축선</span><span>+1.0%p</span></div>
+      <div class="why">${msg}</div></div>`; })();
+  const g3=(()=>{ const lo=-25, up=3, v=dvNow*100, toB=(nd[N-1]/lineB-1)*100, toA=(nd[N-1]/lineA-1)*100;
+    const msg= !inm?`빨강이라 지금은 상품을 고르지 않음`
+      : !hiking?`<span class="muted">경보 A가 꺼져 있어 지금은 이 선이 매매를 바꾸지 않음</span> · 참고로 ${nearTop?'고점 근처(경보 B 꺼짐)':'고점 밖(경보 B 켜짐)'} — 연준이 올리면 그날부터 이 선을 봅니다`
+      : nearTop?`<b class="ok">경보 B 꺼짐 → 초록</b> · 노랑선 ${f0(lineB)}까지 <b>${fmtPct(toB)}</b> 여유 (그 아래로 마감하면 QQQ)`
+      : `<b class="wr">경보 B 켜짐 → 노랑</b> · 복귀선 ${f0(lineA)}까지 <b>${fmtPct(toA)}</b> (그 위로 마감하면 QLD)`;
+    return `<div class="g"><div class="t"><span>③ 나스닥100 ${f0(nd[N-1])} vs 52주 고점 ${f0(hiNow)}</span><b class="${nearTop?'ok':'wr'}">${fmtPct(v)}</b></div>
+      <div class="track hy" style="--lo:${P(-12,lo,up)};--up:${P(-7,lo,up)}"><span class="tick" style="left:${P(0,lo,up)}%"></span><span class="mark" style="left:${P(v,lo,up)}%"></span></div>
+      <div class="cap"><span>−12% 노랑선 ${f0(lineB)}</span><span>−7% 복귀선 ${f0(lineA)}</span><span>고점</span></div>
+      <div class="why">${msg}</div></div>`; })();
+  $('#gauges').innerHTML=g1+g2+g3;
+  { const t=J.ts?new Date(J.ts*1000):null, age=t?Math.round((Date.now()-t)/60000):null, fin=J.bar_final;
+    $('#dstat').innerHTML=`S&amp;P500 값은 실시간 파일, 색·고점·기준금리는 40년 파일(${d[N-1]} 봉 · ${fin===false?'<b class="bad">장중 실시간가 — 종가 확정 전엔 바뀔 수 있음</b>':fin===true?'<span class="ok">종가 확정</span>':'확정 여부 미기록'}${age!=null?` · ${age}분 전 갱신${age>90?' <b class="bad">— 자동 갱신 확인 필요</b>':''}`:''}). 기준금리(EFFR)는 FRED가 하루 늦게 발표하므로 경보 A 판정도 하루 늦을 수 있습니다.`; }
+  // 흐름도
+  $('#flow').innerHTML=`<div class="box r ${st==='C'?'cur':''}"><b>빨강 · SGOV</b>S&amp;P500이 밴드 아래</div>
+    <div class="arrow">S&amp;P500 200일선<br>+2.5% 위로<b>⇄</b>−2.5% 아래로 마감하면 빨강</div>
+    <div class="box g ${st==='T'?'cur':''}"><b>초록 · QLD</b>추세 위 · 경보 둘 다 켜지진 않음</div>
+    <div class="arrow">경보 A(긴축) <b style="font-size:13px">AND</b> 경보 B(고점 −12% 밖)<b>⇄</b>둘 중 하나 꺼지면 초록</div>
+    <div class="box y ${st==='M'?'cur':''}"><b>노랑 · QQQ</b>추세 위 · 긴축 중 + 고점 이탈</div>`;
+  $('#r1now').innerHTML=`오늘 기준 · 200일선 <b>${f2(S.ma200)}</b> → 복귀선 ${f2(S.ma200*1.025)} · 빨강선 ${f2(S.ma200*0.975)} · S&amp;P500 ${f2(S.idx)}(${fmtPct(spUpPct*100)}) → <b>${inm?'투자 중':'빨강'}</b>${inm?` · 빨강선까지 ${fmtPct((S.idx/(S.ma200*0.975)-1)*100)}`:` · 복귀선까지 ${fmtPct((S.idx/(S.ma200*1.025)-1)*100)}`}`;
+  $('#r2now').innerHTML=`오늘 기준 · 경보 A: 기준금리 1개월 평균 <b>${fNow.toFixed(2)}%</b> − 6개월 전 ${fAgo.toFixed(2)}% = <b>${(fDiff>=0?'+':'−')+Math.abs(fDiff).toFixed(2)}%p</b> → ${hiking?'<b style="color:var(--y)">켜짐</b>':'<b style="color:var(--g)">꺼짐</b>'}${relTxt?` (지금 금리 유지 시 ${relTxt}쯤 해제)`:''} · 경보 B: 나스닥100 <b>${f0(nd[N-1])}</b> vs 52주 고점 ${f0(hiNow)} (${fmtPct(dvNow*100)}) → ${nearTop?'<b style="color:var(--g)">꺼짐</b>':'<b style="color:var(--y)">켜짐</b>'} ⇒ ${inm?(st==='M'?'<b style="color:var(--y)">둘 다 켜짐 → 노랑(QQQ)</b>':'<b style="color:var(--g)">둘 다는 아님 → 초록(QLD)</b>'):'(지금은 빨강이라 상품은 SGOV)'}`;
+  // ── 수익의 근거: 추세 중 네 국면 (경보 A × 경보 B) + 빨강 ──
+  const stats=cond=>{ const idx=[]; for(let i=a0;i<N-1;i++) if(cond(i)) idx.push(i);
+    const rq=idx.map(i=>ret.Q[i+1]), rl=idx.map(i=>ret.L[i+1]), mu=rq.reduce((s,x)=>s+x,0)/rq.length, sd=Math.sqrt(rq.reduce((s,x)=>s+(x-mu)**2,0)/rq.length)*Math.sqrt(252)*100;
+    const g=a=>(Math.exp(a.reduce((s,x)=>s+Math.log(1+x),0)*252/a.length)-1)*100;
+    const f=[], dr=[]; for(let j=0;j<idx.length;j+=5){ const i=idx[j]; let k2=i; const tgt=new Date(dt[i].getTime()+365*864e5); while(k2<N&&dt[k2]<tgt) k2++; if(k2<N){ f.push(nd[k2]/nd[i]-1); let mn=nd[i]; for(let q=i;q<=k2;q++) mn=Math.min(mn,nd[q]); dr.push(mn/nd[i]-1); } }
+    return {n:idx.length, share:idx.length/(N-1-a0)*100, vol:sd, gq:g(rq), gl:g(rl), f1:f.reduce((s,x)=>s+x,0)/f.length*100, p20:dr.filter(x=>x<=-0.2).length/dr.length*100}; };
+  const trend=i=>lv[i]!=='C';
+  const R={aa:stats(i=>trend(i)&&hk[i]&&!top[i]), ab:stats(i=>trend(i)&&hk[i]&&top[i]), ba:stats(i=>trend(i)&&!hk[i]&&!top[i]), bb:stats(i=>trend(i)&&!hk[i]&&top[i]), r:stats(i=>!trend(i))};
+  const yel=(()=>{ const o=[]; let cur=null; for(let i=a0;i<N;i++){ if(lv[i]==='M'){ if(cur&&i===cur[1]+1) cur[1]=i; else { cur=[i,i]; o.push(cur); } } } return o.map(([a,b])=>d[a].slice(0,7)===d[b].slice(0,7)?d[a].slice(0,7):d[a].slice(0,7)+'~'+d[b].slice(2,7)); })();
+  const card=(n,c,s,pick,t)=>`<div style="border-color:${c}55"><div class="k" style="color:${c}">${n} · 40년의 ${s.share.toFixed(0)}%</div><div class="v">1년 뒤 나스닥 평균 <b>${fmtPct(s.f1,1)}</b> · 1년 안 −20% 확률 <b>${s.p20.toFixed(0)}%</b><br>QLD 복리 <b>${fmtPct(s.gl,0)}</b>/년 · QQQ <b>${fmtPct(s.gq,0)}</b>/년 · 변동성 ${s.vol.toFixed(0)}%<br>→ 이중경보형 <b>${pick}</b></div><div class="fine" style="margin-top:4px">${t}</div></div>`;
+  $('#evid').innerHTML=card('긴축 중 + 고점 이탈 (A·B 둘 다 켜짐)',CC.M,R.aa,'QQQ (노랑)',`1년 뒤 수익이 거의 없고 −20% 확률이 다른 국면의 3~4배 — 레버리지가 가장 아픈 자리. 40년 동안 노랑이 켜진 때: ${yel.join(' · ')}`)
+    +card('긴축 중이지만 고점 근처 (A만 켜짐)',CC.T,R.ab,'QLD (초록)','연준이 올려도 나스닥이 고점을 지키는 동안은 평범한 상승장(1994~95 · 2004~06 · 2017~18 · 2023~24). 연준형은 여기서 QQQ로 버티느라 수익을 깎습니다')
+    +card('연준 안 올림 + 고점 이탈 (B만 켜짐)',CC.T,R.ba,'QLD (초록)','대부분 약세장 끝의 되돌림(1992 · 2003 · 2009 · 2022초) — 1년 뒤 수익이 가장 높고 −20% 확률은 가장 낮습니다. 신호등형은 여기서 QQQ로 내려가 되돌림의 절반을 놓칩니다')
+    +card('연준 안 올림 + 고점 근처 (둘 다 꺼짐)',CC.T,R.bb,'QLD (초록)','가장 흔한 상승장 — 2배가 복리로 가장 잘 붙는 자리')
+    +card('빨강 (S&P500이 밴드 아래)',CC.C,R.r,'SGOV','변동성이 2배, 레버리지가 녹는 구간 → 현금');
+  // 큰 하락의 시작점: 그때 경보 A·B
+  const drops=[]; { let inep=false, pkI=null, start=null, low=0, lowI=0; for(let i=252;i<N;i++){ const dd=nd[i]/hi[i]-1; if(dd>=-1e-9) pkI=i; if(!inep&&dd<=-0.2){ inep=true; low=dd; start=pkI; lowI=i; } else if(inep){ if(dd<low){ low=dd; lowI=i; } if(dd>=-1e-9){ inep=false; drops.push([start,low,lowI]); } } } if(inep) drops.push([start,low,lowI]); }
+  const firstM=(s,t)=>{ for(let i=s;i<=t;i++) if(lv[i]==='M') return i; return -1; }, firstC=(s,t)=>{ for(let i=s;i<=t;i++) if(lv[i]==='C') return i; return -1; };
+  $('#evTbl').innerHTML=`<tr><th>나스닥100 −20% 넘는 하락 (1986~)</th><th>고점 날짜</th><th>깊이</th><th>고점 때 연준</th><th>이중경보형이 2배를 끈 날 (노랑 또는 빨강)</th><th>그때까지 나스닥</th></tr>${drops.map(([s,low,li])=>{ const m=firstM(s,li), c=firstC(s,li); const k=(m>=0&&(c<0||m<c))?m:c; const how=k<0?'—':(k===m?'노랑 '+d[k]:'빨강 '+d[k]); return `<tr><td>${d[s].slice(0,4)}</td><td>${d[s]}</td><td class="dn">${(low*100).toFixed(0)}%</td><td class="${hk[s]?'wr':''}">${hk[s]?'긴축 중':'아님'}</td><td>${how}</td><td class="${k>=0&&nd[k]/nd[s]-1<-0.15?'dn':''}">${k>=0?fmtPct((nd[k]/nd[s]-1)*100,0):'끄지 않음'}</td></tr>`; }).join('')}`;
+  const nHk=drops.filter(x=>hk[x[0]]).length;
+  $('#evNote').innerHTML=`왜 이 규칙이 앞으로도 통할 가능성이 큰가: ① <b>고점 이탈은 둘로 나뉩니다.</b> 연준이 올리지 않을 때의 −12% 이탈은 대개 약세장 끝의 되돌림이라 1년 뒤 평균 ${fmtPct(R.ba.f1,0)}, −20% 확률 ${R.ba.p20.toFixed(0)}%로 40년에서 가장 좋은 자리인데, 신호등형은 이걸 구별하지 못해 QQQ로 내려갑니다. 연준이 올리는 중의 −12% 이탈은 1년 뒤 ${fmtPct(R.aa.f1,0)}, −20% 확률 ${R.aa.p20.toFixed(0)}%로 가장 나쁜 자리입니다 — 긴축은 할인율을 올리고 유동성을 빼서 '싸졌으니 산다'는 되돌림 매수를 막기 때문입니다. ② <b>긴축만으로는 끄지 않습니다.</b> 긴축 중이라도 나스닥이 고점을 지키는 날이 40년의 ${R.ab.share.toFixed(0)}%인데 QLD는 거기서 연 ${fmtPct(R.ab.gl,0)}였습니다 — 연준형은 이 날들을 QQQ로 보냅니다. ③ 큰 하락 ${drops.length}번 중 ${nHk}번이 긴축 중에 시작했고, 나머지는 S&amp;P500 밴드(빨강)가 맡습니다 — 위 표의 '2배를 끈 날'이 그 결과입니다. ④ 2배(QLD)는 나스닥의 초과수익·변동성으로 계산한 복리 최적 레버리지 근처이고, 3배를 넣으면 낙폭이 −57%대로 커집니다.`;
+  // ── 최근 3년 차트 ──
+  if(window.Plotly){
+    const s3=d.findIndex(x=>x>=new Date(dt[N-1]-3*31557600000).toISOString().slice(0,10)), x3=dt.slice(s3);
+    const cc={T:'rgba(61,220,132,.13)',M:'rgba(240,180,41,.16)',C:'rgba(242,54,69,.14)'}; const shapes=[]; let b0=s3;
+    for(let k=s3+1;k<=N;k++){ if(k===N||lv[k]!==lv[b0]){ shapes.push({type:'rect',xref:'x',yref:'paper',x0:dt[b0],x1:dt[k-1],y0:0,y1:1,fillcolor:cc[lv[b0]],line:{width:0},layer:'below'}); b0=k; } }
+    Plotly.react('plot3',[
+      {x:x3,y:sp.slice(s3),name:'S&P500',line:{color:'#e6e9ee',width:1.3},xaxis:'x',yaxis:'y'},
+      {x:x3,y:sp200.slice(s3).map(v=>v&&v*1.025),name:'복귀선 +2.5%',line:{color:'#3ddc84',width:1,dash:'dot'},xaxis:'x',yaxis:'y'},
+      {x:x3,y:sp200.slice(s3),name:'200일선',line:{color:'#8a93a3',width:1},xaxis:'x',yaxis:'y'},
+      {x:x3,y:sp200.slice(s3).map(v=>v&&v*0.975),name:'빨강선 −2.5%',line:{color:'#f23645',width:1,dash:'dot'},xaxis:'x',yaxis:'y'},
+      {x:x3,y:nd.slice(s3),name:'나스닥100',line:{color:'#e6e9ee',width:1.3},xaxis:'x2',yaxis:'y2'},
+      {x:x3,y:hi.slice(s3).map(v=>v*(1-CFG.tIn)),name:'고점 −7% (경보 B 해제)',line:{color:'#3ddc84',width:1,dash:'dot'},xaxis:'x2',yaxis:'y2'},
+      {x:x3,y:hi.slice(s3).map(v=>v*(1-CFG.tOut)),name:'고점 −12% (경보 B)',line:{color:'#f0b429',width:1,dash:'dot'},xaxis:'x2',yaxis:'y2'},
+      {x:x3,y:avg.slice(s3),name:'기준금리 1개월 평균',line:{color:'#e6e9ee',width:1.5},xaxis:'x3',yaxis:'y3'},
+      {x:x3,y:x3.map((_,k)=>avg[bk[s3+k]]==null?null:avg[bk[s3+k]]+CFG.thr),name:'6개월 전 +0.15%p (경보 A)',line:{color:'#f0b429',width:1,dash:'dot'},xaxis:'x3',yaxis:'y3'},
+    ].map(o=>({...o,type:'scatter',mode:'lines'})),{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:52,r:10,t:10,b:28},legend:{orientation:'h',y:1.06},hovermode:'x unified',shapes,
+      xaxis:{gridcolor:'#262c35',anchor:'y'},yaxis:{gridcolor:'#262c35',domain:[0.70,1]},xaxis2:{gridcolor:'#262c35',anchor:'y2',matches:'x'},yaxis2:{gridcolor:'#262c35',domain:[0.36,0.66]},xaxis3:{gridcolor:'#262c35',anchor:'y3',matches:'x'},yaxis3:{gridcolor:'#262c35',domain:[0,0.30],ticksuffix:'%'}},{displayModeBar:false,responsive:true});
+    const qh=D.hold('Q',a0,N-1), lh=D.hold('L',a0,N-1), x40=dt.slice(a0);
+    Plotly.react('plot40',[{x:x40,y:e.cv,name:'이중경보형',line:{color:'#ff9f68',width:2.4}},{x:x40,y:es.cv,name:'신호등형',line:{color:'#3ddc84',width:1.3}},{x:x40,y:ef.cv,name:'연준형',line:{color:'#5aa9ff',width:1.3}},{x:x40,y:eb.cv,name:'반반형',line:{color:'#9ad0f5',width:1}},{x:x40,y:qh.cv,name:'QQQ 보유',line:{color:'#8a93a3',width:1.1}},{x:x40,y:lh.cv,name:'QLD 보유',line:{color:'#f23645',width:1.1,dash:'dot'}}].map(o=>({...o,type:'scatter',mode:'lines'})),
+      {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:10,t:10,b:28},legend:{orientation:'h',y:1.12},xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35'},hovermode:'x unified',shapes:[{type:'rect',xref:'x',yref:'paper',x0:x40[0],x1:new Date(J.start),y0:0,y1:1,fillcolor:'rgba(79,124,247,0.07)',line:{width:0},layer:'below'}]},{displayModeBar:false,responsive:true});
+  }
+  // ── 성적 타일 ──
+  const wins=e.tr.filter(t=>t[2]>0), loss=e.tr.filter(t=>t[2]<=0), avgT=a=>a.length?a.reduce((s,t)=>s+t[2],0)/a.length*100:0, qh40=D.hold('Q',a0,N-1);
+  $('#tiles').innerHTML=[['연복리',e.c.toFixed(1)+'%','40년 · 신호등형 '+es.c.toFixed(1)+'% · 연준형 '+ef.c.toFixed(1)+'% · QQQ '+qh40.c.toFixed(1)+'%'],['최대낙폭',e.m.toFixed(0)+'%',e.w[0].slice(0,7)+' → '+e.w[1].slice(0,7)+' · 신호등형 '+es.m.toFixed(0)+'% · 연준형 '+ef.m.toFixed(0)+'%'],['가성비',gain(e).toFixed(2),'연복리 ÷ 낙폭 · 신호등형 '+gain(es).toFixed(2)+' · 연준형 '+gain(ef).toFixed(2)],['승률',wr(e).toFixed(0)+'%',e.tr.length+'회 왕복 · 익 '+fmtPct(avgT(wins),0)+' / 손 '+fmtPct(avgT(loss),0)],['전반 · 후반 20년',gain(e1).toFixed(2)+' · '+gain(e2).toFixed(2),e1.c.toFixed(1)+'% / '+e2.c.toFixed(1)+'% · 신호등형 '+gain(es1).toFixed(2)+' · '+gain(es2).toFixed(2)],['TQQQ 상장 뒤 (2010~)',e10.c.toFixed(1)+'%',e10.m.toFixed(0)+'% · 신호등형 '+es10.c.toFixed(1)+'% / '+es10.m.toFixed(0)+'%'],['1달러가',e.v.toFixed(0)+'달러','신호등형 '+es.v.toFixed(0)+' · QQQ 보유 '+qh40.v.toFixed(0)+'달러'],['색 바뀐 횟수','연 '+e.sw.toFixed(1)+'회','신호등형 연 '+es.sw.toFixed(1)+'회 · 연준형 연 '+ef.sw.toFixed(1)+'회']].map(([l,v,s])=>`<div class="tile"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+  // ── 과최적화 격자 ──
+  const G=lvx=>{ const r=D.engine(lvx,WL,a0,N-1,null); return {c:r.c,m:r.m,g:gain(r),w:wr(r)}; };
+  const gridA=[]; for(const b of [0.02,0.025,0.03]) for(const [ti,to] of [[0.07,0.12],[0.05,0.10],[0.10,0.15]]) for(const mo of [3,6,12]) gridA.push(G(D.mkLevelsAnd({...CFG,b,tIn:ti,tOut:to,months:mo})));
+  const gridA2=[]; for(const b of [0.02,0.025,0.03]) for(const to of [0.10,0.12,0.15]) for(const ti of [0.05,0.07,0.10]) gridA2.push(G(D.mkLevelsAnd({...CFG,b,tIn:ti,tOut:to})));
+  const gridS=[]; for(const b of [0.02,0.025,0.03]) for(const to of [0.10,0.12,0.15]) for(const ti of [0.05,0.07,0.10]) gridS.push(G(D.mkLevels({b,tIn:ti,tOut:to})));
+  const gridF=[]; for(const b of [0.02,0.025,0.03]) for(const mo of [3,6,12]) for(const th of [0.10,0.15,0.20]) gridF.push(G(D.mkLevelsFed({b,months:mo,thr:th,n:21})));
+  const gridB=[]; for(const b of [0.02,0.025,0.03]) for(const tp of [0.08,0.10,0.12]) for(const ts of [0.20,0.25,0.30]){ const r=D.engine(D.mkLevels({b,tIn:tp,tOut:tp}),WB,a0,N-1,ts); gridB.push({c:r.c,m:r.m,g:gain(r),w:wr(r)}); }
+  const med=a=>{ const s=[...a].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; }, mn=a=>Math.min(...a), mx=a=>Math.max(...a);
+  const one=[['밴드 ±2% / ±3%',[{b:0.02},{b:0.03}]],['고점선 −5/−10% / −10/−15%',[{tIn:0.05,tOut:0.10},{tIn:0.10,tOut:0.15}]],['연준 창 3개월 / 12개월',[{months:3},{months:12}]],['긴축선 +0.10 / +0.20%p',[{thr:0.10},{thr:0.20}]]].map(([nm,vs])=>[nm,vs.map(v=>gain(D.engine(D.mkLevelsAnd({...CFG,...v}),WL,a0,N-1,null)))]);
+  const oneDrops=one.flatMap(([_,g])=>g.map(x=>(x/gain(e)-1)*100));
+  // ── 비교 ──
+  const row=(nm,x,arr,gr,extra)=>`<tr${nm==='이중경보형'?' class="me"':''}><td>${nm}</td><td>${x.c.toFixed(1)}%</td><td>${x.m.toFixed(0)}%</td><td>${gain(x).toFixed(2)}</td><td>${wr(x).toFixed(0)}% (${x.tr.length}회)</td><td>${gr.c.toFixed(1)}%</td><td>${med(arr.map(z=>z.c)).toFixed(1)}% / ${med(arr.map(z=>z.g)).toFixed(2)}</td><td>${mn(arr.map(z=>z.g)).toFixed(2)}~${mx(arr.map(z=>z.g)).toFixed(2)}</td><td>${extra}</td></tr>`;
+  $('#cmp').innerHTML=`<table><tr><th>40년</th><th>연복리</th><th>최대낙폭</th><th>가성비</th><th>승률</th><th>2010~ 연복리</th><th>이웃 27개 중앙값<br>연복리 / 가성비</th><th>이웃 가성비 범위</th><th>매매 · 지표</th></tr>
+    ${row('이중경보형',e,gridA,e10,`연 ${e.sw.toFixed(1)}회 · 상품 1개 · 선 1개 + 긴축 중에만 1개 더`)}${row('신호등형',es,gridS,es10,`연 ${es.sw.toFixed(1)}회 · 상품 1개 · 매일 보는 선 2개`)}${row('연준형',ef,gridF,ef10,`연 ${ef.sw.toFixed(1)}회 · 상품 1개 · 매일 보는 선 1개`)}${row('반반형',eb,gridB,eb10,`연 ${eb.sw.toFixed(1)}회 + 월 리밸런싱 · 상품 2개`)}</table>`;
+  const dC=e.c-es.c, dG=gain(e)-gain(es), hkShare=hk.slice(a0).filter(Boolean).length/(N-a0)*100;
+  $('#cmpNote').innerHTML=`<b>신호등형과 비교.</b> 연복리 ${e.c.toFixed(1)}% vs ${es.c.toFixed(1)}%(${fmtPct(dC,1)}p), 가성비 ${gain(e).toFixed(2)} vs ${gain(es).toFixed(2)}, 승률 ${wr(e).toFixed(0)}% vs ${wr(es).toFixed(0)}%(같은 ${e.tr.length}번의 왕복 — 빨강이 같은 선이라 들고나는 날이 같고, 차이는 그 안에서 QLD·QQQ를 고르는 방식뿐), 색 바뀜 연 ${e.sw.toFixed(1)}회 vs ${es.sw.toFixed(1)}회, 전반·후반 ${gain(e1).toFixed(2)}·${gain(e2).toFixed(2)} vs ${gain(es1).toFixed(2)}·${gain(es2).toFixed(2)}. 과최적화는 같은 구조의 이웃 27개(밴드 × 고점선)로 재면 중앙값 ${med(gridA2.map(z=>z.g)).toFixed(2)} vs ${med(gridS.map(z=>z.g)).toFixed(2)}로 이웃까지 신호등형보다 낫고, 연준 창(3·6·12개월)까지 흔든 27개의 중앙값은 ${med(gridA.map(z=>z.g)).toFixed(2)}입니다. <b>간편함은 반반입니다</b> — 지표는 셋(S&amp;P 선 · 연준 · 나스닥 고점선)으로 하나 많지만, 고점선은 연준이 올린 뒤 6개월(40년의 ${hkShare.toFixed(0)}%)에만 보면 되고 그 밖의 날은 연준형처럼 S&amp;P500 하나입니다. 색이 바뀌는 날도 신호등형보다 적습니다.<br>
+    <b>연준형과 비교.</b> 연복리 ${fmtPct(e.c-ef.c,1)}p 높고 가성비는 비슷(${gain(e).toFixed(2)} vs ${gain(ef).toFixed(2)})하지만 최대낙폭이 큽니다(${e.m.toFixed(0)}% vs ${ef.m.toFixed(0)}%) — 긴축 중이라도 고점 근처면 QLD를 들기 때문에 2000년 3~5월 급락의 첫 −12%를 2배로 맞습니다. 승률도 ${wr(e).toFixed(0)}% vs ${wr(ef).toFixed(0)}%로 낮습니다. 낙폭을 더 중시하면 연준형, 수익을 더 중시하면 이중경보형입니다.<br>
+    <b>반반형과 비교.</b> 반반형의 0.62는 TS(−25%)에 기댄 숫자라(TS만 빼면 0.45, 이웃 27개 중앙값 연 ${med(gridB.map(z=>z.c)).toFixed(1)}% · ${med(gridB.map(z=>z.g)).toFixed(2)}), 운을 걷어낸 기대치로는 이중경보형이 연복리에서 가장 앞섭니다.`;
+  // ── 위기 ──
+  const CR=[['1987 블랙먼데이','1987-08-25','1987-12-04'],['2000~02 닷컴','2000-03-24','2002-10-09'],['2008 리먼','2007-10-09','2009-03-09'],['2018 4분기','2018-09-20','2018-12-24'],['2020 코로나','2020-02-19','2020-03-23'],['2022 긴축','2022-01-03','2022-12-28']];
+  const at=s=>d.findIndex(x=>x>=s), end=s=>{ const k=d.findIndex(x=>x>s); return k<0?N-1:k-1; };
+  $('#crisis').innerHTML=`<table><tr><th>기간 (고점 → 저점)</th><th>이중경보형</th><th>신호등형</th><th>연준형</th><th>반반형</th><th>QQQ</th><th>QLD</th></tr>${CR.map(([nm,s,t])=>{ const a=at(s), b=end(t); const r=D.engine(lv,WL,a,b,null), rs=D.engine(lvS,WL,a,b,null), rf=D.engine(lvF,WL,a,b,null), rb=D.engine(lvB,WB,a,b,CFGB.ts), q=D.hold('Q',a,b), l=D.hold('L',a,b); const c=x=>`<td class="${x>=0?'up':'dn'}">${fmtPct(x,0)}</td>`; return `<tr><td>${nm}</td>${c((r.v-1)*100)}${c((rs.v-1)*100)}${c((rf.v-1)*100)}${c((rb.v-1)*100)}${c((q.v-1)*100)}${c((l.v-1)*100)}</tr>`; }).join('')}</table><div class="fine" style="margin-top:6px">기간은 지수 고점에서 저점까지. 그 시작일에 이미 들고 있던 색으로 출발해서 규칙대로 움직인 결과입니다. 1987·2000·2018년은 긴축 중이었지만 나스닥이 고점 근처여서 이중경보형은 QLD로 첫 하락을 맞았고(신호등형과 같음), 연준형은 QQQ로 맞았습니다. 2008·2020년은 S&amp;P500 밴드가 먼저 빨강을 켰습니다.</div>`;
+  // ── 거래 ──
+  $('#trades').innerHTML=`<table><tr><th>#</th><th>들어간 날</th><th>나온 날</th><th>기간</th><th>계좌 변화</th><th>신호등형</th></tr>${e.tr.map((t,k)=>{ const a=new Date(t[0]), b=new Date(t[1]); const m=Math.round((b-a)/2629800000), ts=es.tr[k]; return `<tr><td>${k+1}</td><td>${t[0]}</td><td>${t[1]}${t[1]===d[N-1]?' (진행 중)':''}</td><td>${m}개월</td><td class="${t[2]>0?'up':'dn'}">${fmtPct(t[2]*100)}</td><td class="${ts&&ts[2]>0?'up':'dn'}">${ts?fmtPct(ts[2]*100):'—'}</td></tr>`; }).join('')}</table><div class="fine" style="margin-top:6px">한 번의 거래 = 빨강에서 들어가 빨강으로 나올 때까지. 그 사이 초록 ↔ 노랑 전환은 같은 거래 안의 움직임으로 봅니다. 신호등형과 들고나는 날이 같으므로 거래별 차이가 곧 QLD·QQQ 선택의 차이입니다.</div>`;
+  // ── 해마다 ──
+  const yrs={}; for(let i=a0;i<N;i++){ const y=d[i].slice(0,4); if(!yrs[y]) yrs[y]={a:i}; yrs[y].b=i; }
+  const yrows=Object.keys(yrs).map(y=>{ const {a,b}=yrs[y]; const f=cv=>cv[b-a0]/cv[Math.max(0,a-a0-1)]-1; return [y,f(e.cv)*100,f(es.cv)*100,f(ef.cv)*100,f(qh40.cv)*100]; });
+  const dds=(()=>{ const cv=e.cv, out=[]; let pk=0, cur=null; for(let k=0;k<cv.length;k++){ if(cv[k]>=cv[pk]){ if(cur&&cur.r<-0.2) out.push(cur); pk=k; cur=null; } else { const r=cv[k]/cv[pk]-1; if(!cur||r<cur.r) cur={r,from:d[a0+pk],to:d[a0+k]}; } } if(cur&&cur.r<-0.2) out.push(cur); return out.sort((x,y)=>x.r-y.r).slice(0,6); })();
+  const lossY=yrows.filter(r=>r[1]<0).length, beat=yrows.filter(r=>r[1]>r[2]).length, beatF=yrows.filter(r=>r[1]>r[3]).length;
+  $('#yearly').innerHTML=`<div class="tbl"><table><tr><th>해</th>${yrows.map(r=>`<th>${r[0].slice(2)}</th>`).join('')}</tr><tr><td>이중경보형</td>${yrows.map(r=>`<td class="${r[1]>=0?'up':'dn'}">${r[1].toFixed(0)}</td>`).join('')}</tr><tr><td>신호등형</td>${yrows.map(r=>`<td class="${r[2]>=0?'up':'dn'}">${r[2].toFixed(0)}</td>`).join('')}</tr><tr><td>연준형</td>${yrows.map(r=>`<td class="${r[3]>=0?'up':'dn'}">${r[3].toFixed(0)}</td>`).join('')}</tr><tr><td>QQQ</td>${yrows.map(r=>`<td class="${r[4]>=0?'up':'dn'}">${r[4].toFixed(0)}</td>`).join('')}</tr></table></div>
+    <div style="margin-top:8px">손실 난 해 ${lossY}번 / ${yrows.length}년 · 신호등형보다 나은 해 ${beat}번 · 연준형보다 나은 해 ${beatF}번 · <b>−20% 넘는 낙폭 구간</b> (고점 → 저점): ${dds.map(x=>`${x.from.slice(0,7)} → ${x.to.slice(0,7)} <b class="dn">${(x.r*100).toFixed(0)}%</b>`).join(' · ')}</div>`;
+  // ── 과최적화 · 체결 타이밍 ──
+  const gA=gridA.map(z=>z.g), pct45=gridA.filter(z=>z.g>=0.45).length;
+  const timing=(lvx,W,ts)=>{ const l1=D.engine(D.lag(lvx,1),W,a0,N-1,ts), wk=[0,1,2,3,4].map(wd=>gain(D.engine(D.weekly(lvx,wd),W,a0,N-1,ts))); return {l1,wk}; };
+  const tA=timing(lv,WL,null), tS=timing(lvS,WL,null), tF=timing(lvF,WL,null);
+  const tcell=t=>`${gain(t.l1).toFixed(2)} (${t.l1.c.toFixed(1)}% · ${t.l1.m.toFixed(0)}%)`;
+  const a88=d.findIndex(x=>x>='1988-01-01'), lagCost=lvx=>gain(D.engine(lvx,WL,a88,N-1,null))-gain(D.engine(D.lag(lvx,1),WL,a88,N-1,null));
+  $('#overfit').innerHTML=`<div class="tbl"><table><tr><th>바꾼 숫자</th><th>가성비</th><th>기준(${gain(e).toFixed(2)}) 대비</th></tr>${one.map(([nm,g])=>`<tr><td>${nm}</td><td>${g.map(x=>x.toFixed(2)).join(' / ')}</td><td>${g.map(x=>{ const p=(x/gain(e)-1)*100; return `<span class="${p<-15?'bad':''}">${fmtPct(p,0)}</span>`; }).join(' / ')}</td></tr>`).join('')}
+    <tr><td>200일선 대신 150일선 / 250일선</td><td>${[150,250].map(n=>{ const r=D.engine(D.mkLevelsAnd(CFG,D.smaSP(n)),WL,a0,N-1,null); return gain(r).toFixed(2)+' ('+r.c.toFixed(1)+'% · '+r.m.toFixed(0)+'%)'; }).join(' / ')}</td><td>200일선은 추세 판별의 표준 · 150일선은 낙폭이 커짐</td></tr>
+    <tr><td>1개월 평균 대신 10일 / 2개월 평균</td><td>${[10,42].map(n=>{ const r=D.engine(D.mkLevelsAnd({...CFG,n}),WL,a0,N-1,null); return gain(r).toFixed(2)+' ('+r.c.toFixed(1)+'% · '+r.m.toFixed(0)+'%)'; }).join(' / ')}</td><td>실효금리 잡음을 걸러내는 길이</td></tr></table></div>
+    <div style="margin-top:8px">숫자 네 쌍(밴드 2.5% · 고점 −7/−12% · 6개월 · +0.15%p)을 한 칸씩 바꿨을 때 최악 ${fmtPct(mn(oneDrops),0)}, 중앙값 ${fmtPct(med(oneDrops),0)}. 밴드 × 고점선 × 연준 창을 모두 조합한 이웃 27개의 가성비는 ${mn(gA).toFixed(2)}~${mx(gA).toFixed(2)}, 중앙값 ${med(gA).toFixed(2)}, 0.45 이상이 ${pct45}개입니다. 전반 20년 ${gain(e1).toFixed(2)} · 후반 20년 ${gain(e2).toFixed(2)}. 밴드 ±3%는 ${one[0][1][1].toFixed(2)}로 기준보다 높지만 신호판·반반형·신호등형·연준형과 같은 2.5%를 그대로 둡니다 — 이 매매법을 위해 고른 숫자가 하나도 없다는 점이 과최적화에 대한 가장 큰 방어입니다.<br>
+    약점을 솔직히 적으면: 밴드 2%는 ${one[0][1][0].toFixed(2)}, 연준 창 3개월은 ${one[2][1][0].toFixed(2)}로 떨어집니다 — 밴드가 좁으면 들락날락이 늘고, 3개월 창은 인상 사이가 벌어지면 긴축 중에도 경보 A가 꺼지기 때문입니다. 고점선은 −5/−10이든 −10/−15든 ${one[1][1][0].toFixed(2)}·${one[1][1][1].toFixed(2)}로 평평합니다.</div>
+    <div class="tbl" style="margin-top:10px"><table><tr><th>체결 타이밍 (매매실수 시험)</th><th>이중경보형</th><th>신호등형</th><th>연준형</th></tr>
+      <tr><td>규칙대로 — 신호일 종가</td><td><b>${gain(e).toFixed(2)}</b> (${e.c.toFixed(1)}% · ${e.m.toFixed(0)}%)</td><td>${gain(es).toFixed(2)} (${es.c.toFixed(1)}% · ${es.m.toFixed(0)}%)</td><td>${gain(ef).toFixed(2)} (${ef.c.toFixed(1)}% · ${ef.m.toFixed(0)}%)</td></tr>
+      <tr><td>하루 늦게 — 신호 다음 날 종가에 체결</td><td>${tcell(tA)}</td><td>${tcell(tS)}</td><td>${tcell(tF)}</td></tr>
+      <tr><td>주 1회만 판단 (월·화·수·목·금)</td><td>${tA.wk.map(x=>x.toFixed(2)).join(' · ')}</td><td>${tS.wk.map(x=>x.toFixed(2)).join(' · ')}</td><td>${tF.wk.map(x=>x.toFixed(2)).join(' · ')}</td></tr></table></div>
+    <div class="fine" style="margin-top:6px">하루 늦게 체결하면 이중경보형·신호등형은 1987년 10월 19일(하루 −20%)을 QLD로 맞아 그해 낙폭이 −58%로 커집니다 — 연준형은 그때 긴축 중이라 QQQ였습니다. 1988년 이후만 보면 하루 지연의 비용은 가성비 ${lagCost(lv).toFixed(2)}(이중경보형) · ${lagCost(lvS).toFixed(2)}(신호등형) · ${lagCost(lvF).toFixed(2)}(연준형)입니다. <b>규칙은 반드시 신호일 장 마감 직전에 체결</b>해야 하고, 주 1회 판단으로 바꾸면 세 매매법 모두 성적이 흔들리므로(요일에 따라 ${mn(tA.wk).toFixed(2)}~${mx(tA.wk).toFixed(2)}) 매일 보는 규칙을 지켜야 합니다.</div>`;
+  $('#honest').innerHTML=`믿을 만한 부분: 수익의 출처가 "큰 약세장은 S&amp;P500 추세로 피하고, 2배는 '연준 긴축 + 고점 이탈'이 겹칠 때만 끈다"는 구조이고, 전반 20년(${gain(e1).toFixed(2)})과 후반 20년(${gain(e2).toFixed(2)}) 모두 통했으며, 숫자를 하나도 새로 정하지 않았습니다. 상품을 통째로 갈아타는 방식이라 비중·리밸런싱·손절선에서 생기는 실수가 없고, 연준이 올리지 않는 동안(40년의 ${(100-hkShare).toFixed(0)}%)은 볼 선이 하나뿐입니다.<br>
+    못 피하는 것: ① 긴축 중이라도 고점 근처면 QLD이므로 2000년 3월·1987년 10월처럼 <b>고점에서 바로 무너지는 급락의 첫 −12%는 2배로 맞습니다</b>(최대낙폭 −45%가 그것 — 연준형은 −40%). ② 연준이 올리지 않는데 나스닥만 무너지는 하락(1990년 −40%, 2022년 1~3월 — 인상이 3월에 시작)은 S&amp;P500 빨강이 켜질 때까지 QLD입니다. ③ 연준이 천천히 오래 올리는데 나스닥이 고점 근처에서 횡보하면(2004~06) 2년 반 동안 −41%의 긴 조정을 QLD로 견뎌야 했습니다. ④ 2023년 1~4월처럼 긴축 중 고점 밖에서 되돌림이 크게 나오면 QQQ로 보내 수익을 놓칩니다. ⑤ 하루 늦은 체결이 1987년 같은 하루 폭락과 겹치면 낙폭이 −58%가 됩니다 — 신호일 종가 체결은 선택이 아니라 규칙입니다. ⑥ 2008년 이후 "연준 긴축 = 주식 약세"의 힘이 약해졌다는 연구도 있어, 후반 20년 성적(${e2.c.toFixed(1)}% · ${e2.m.toFixed(0)}%)을 기준으로 기대하는 게 안전합니다. 몇 년에 한 번은 −30~−45% 구간이 오고, 그걸 견뎌야 40년 숫자가 내 것이 됩니다.`;
+  // ── 체크리스트 ──
+  $('#checklist').innerHTML=[
+    [`S&amp;P500 종가가 <b>${S.lo.toLocaleString()}</b>(빨강선) 위인가? ${inm?'':'(빨강이면: <b>'+S.up.toLocaleString()+'</b> 복귀선 위로 올라왔는가?)'}`, inm?'아니오면 → 오늘 종가에 전부 SGOV':'예면 → 오늘 종가에 들어감 (경보 둘이 다 켜져 있으면 QQQ, 아니면 QLD)'],
+    [`경보 A — 연준이 최근 6개월 안에 기준금리를 올렸나? (지금 ${hiking?'<b class="wr">예 — 켜짐</b>':'<b class="ok">아니오 — 꺼짐</b>'}${relTxt?' · 지금 금리 유지 시 '+relTxt+'쯤 해제':''})`, inm?(hiking?'예면 → 아래 3번 고점선을 본다':'아니오면 → QLD. 3번은 볼 필요 없음 · FOMC에서 인상이 나오면 그날부터 3번을 본다'):'빨강이 끝나는 날만 보면 됨'],
+    [`경보 B — (경보 A가 켜져 있을 때만) 나스닥100 종가 <b>${f0(nd[N-1])}</b>가 52주 고점 ×0.88 = <b>${f0(lineB)}</b> 아래인가? (지금 고점 대비 ${fmtPct(dvNow*100)} · ${nearTop?'<b class="ok">꺼짐</b>':'<b class="wr">켜짐</b>'})`, inm?(st==='M'?`노랑(QQQ) 중 · 종가가 ×0.93 = ${f0(lineA)} 위로 올라오거나 경보 A가 꺼지면 → QLD`:hiking?`예면 → 오늘 종가에 QQQ · 아니오면 QLD 그대로`:'경보 A가 꺼져 있으니 오늘은 안 봐도 됨'):'빨강이 끝나는 날만 보면 됨'],
+  ].map(([q,a],k)=>`<label><input type="checkbox"><span><b>${k+1}.</b> ${q}<br><span class="muted" style="font-size:12px">${a}</span></span></label>`).join('');
+  $('#why1').innerHTML=`200일선은 큰 흐름이 상승인지 하락인지 가르는 가장 오래된 기준이고, 1987·2000·2008·2020·2022년 큰 하락은 모두 S&amp;P500이 이 선을 먼저 또는 함께 깼습니다. 선 "딱 그 자리"로 사고팔면 선 근처에서 하루 걸러 뒤집히니 ±2.5% 완충을 둡니다. 40년 동안 빨강이 켜진 날은 전체의 ${R.r.share.toFixed(0)}%인데, 그 기간 나스닥100의 변동성은 ${R.r.vol.toFixed(0)}%(초록의 두 배)이고 QLD는 연 ${fmtPct(R.r.gl,0)}로 녹았습니다. 빨강으로 들어가고 나온 횟수는 40년에 ${e.tr.length}번, 승률 ${wr(e).toFixed(0)}%.`;
+  $('#why2').innerHTML=`신호등형은 고점 −12% 이탈마다 2배를 끄고, 연준형은 긴축 중엔 늘 끕니다. 둘 다 '진짜 위험'보다 넓게 끕니다. 40년 자료에서 추세가 살아 있는 날을 넷으로 나누면 — <b>긴축 중 + 고점 이탈</b>만 1년 뒤 ${fmtPct(R.aa.f1,0)} · −20% 확률 ${R.aa.p20.toFixed(0)}%로 나쁘고, <b>긴축 중이지만 고점 근처</b>(${fmtPct(R.ab.f1,0)} · ${R.ab.p20.toFixed(0)}%)와 <b>고점 이탈이지만 긴축 아님</b>(${fmtPct(R.ba.f1,0)} · ${R.ba.p20.toFixed(0)}%)은 평범하거나 오히려 좋은 자리입니다. 고점 이탈이 위험해지는 건 연준이 유동성을 죄어 '싸졌으니 산다'는 되돌림 매수를 막을 때이고, 긴축이 위험해지는 건 시장이 그걸 못 견디고 고점에서 미끄러지기 시작할 때입니다 — 둘이 겹칠 때만 끄면 끄는 날이 40년의 ${R.aa.share.toFixed(0)}%로 줄고(신호등형 노랑 ${(R.aa.share+R.ba.share).toFixed(0)}% · 연준형 노랑 ${(R.aa.share+R.ab.share).toFixed(0)}%), 그 날들의 QLD는 연 ${fmtPct(R.aa.gl,0)}였습니다.<br>
+    2배(QLD)인 이유: 나스닥의 장기 초과수익과 변동성으로 계산한 '복리가 가장 빨리 붙는 레버리지'가 약 2배입니다. 3배(TQQQ)를 넣으면 최대낙폭이 −57%대가 되고, 1배(QQQ만)면 연 15%에 −36%입니다. 상품 하나(QLD)로 끝나 비중 계산이 없습니다.`;
+  verify2();
+}
+async function verify2(){
+  const el=$('#check'); let C; try{ C=await (await fetch('simple_check.json?'+Math.floor(Date.now()/300000))).json(); }catch(e){ el.innerHTML='<span class="muted">검증 파일 준비 중</span>'; return; }
+  const nm='이중경보형', sg=C.signals&&C.signals[nm], bt=C.bt&&C.bt[nm], mine=TODAY[nm], nz=x=>String(x||'').replace(/ 100%/g,''), ok1=sg&&nz(sg.text)===nz(mine), ok2=bt&&BT[nm]&&Math.abs(bt.c-BT[nm].c)<=0.06&&Math.abs(bt.m-BT[nm].m)<=0.06&&bt.n===BT[nm].n;
+  if(!sg&&!bt){ el.innerHTML='<span class="muted">파이썬 검증에 이중경보형이 아직 없음 — 다음 15분 갱신 때 생깁니다</span>'; return; }
+  const bad=(C.checks||[]).filter(c=>!c.ok&&c.name!=='경계 근처 지표'), at=C.at?new Date(C.at):null, age=at?Math.round((Date.now()-at)/60000):null;
+  el.innerHTML=`${ok1&&ok2?'<b class="ok">✓ 일치</b>':'<b class="bad">⚠ 불일치</b>'} — 오늘 신호: 이 페이지 <b>${mine}</b> / 파이썬 <b>${sg?sg.text:'—'}</b> ${ok1?'<span class="ok">같음</span>':'<span class="bad">다름</span>'} · 40년: ${BT[nm]?BT[nm].c.toFixed(2)+'% · '+BT[nm].m.toFixed(2)+'%':'—'} / ${bt?bt.c.toFixed(2)+'% · '+bt.m.toFixed(2)+'%':'—'} ${ok2?'<span class="ok">같음</span>':'<span class="bad">다름</span>'}<br>
+    <span class="muted" style="font-size:12px">${C.at_kst||''} KST 검증${age!=null?` (${age}분 전)`:''}${age!=null&&age>90?' <b class="bad">— 검증이 멈춤</b>':''} · 데이터 점검 ${(C.checks||[]).length}개 중 ${bad.length?'<b class="wr">주의 '+bad.map(c=>c.name).join(' · ')+'</b>':'<span class="ok">전부 OK</span>'}</span>`;
+}
+const PLOTLY_SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js'];
+const loadScript=src=>new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+(async()=>{
+  const q='?'+Math.floor(Date.now()/600000), get=u=>fetch(u+q).then(r=>r.ok?r.json():null).catch(()=>null);
+  const dataP=Promise.all([get('tq40.json'),get('bt_data.json'),get('tqqq_data.json'),get('tq.json'),get('fedwatch.json')]).then(([a,b,c,t,f])=>{J=a;B=b;Q=c;TQ=t;FWJ=f;});
+  for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
+  await dataP;
+  try{ if(J&&B&&Q&&TQ) render(); else throw new Error('데이터 준비 중'); }catch(e){ $('#now').innerHTML='<div class="l">오류: '+(e&&e.message||e)+'</div>'; console.error(e); }
+})();
+</script>
+</body></html>
