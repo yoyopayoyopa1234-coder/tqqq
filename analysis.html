@@ -39,6 +39,7 @@
   @media (max-width:599px){ #plot-d { height:360px; } #plot-b { height:280px; } #plot-c { height:480px; } }
   /* 휴대폰: 그래프를 화면의 1.5배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:150%; } }
+  #dragBtn.on { border-color:#9ad0f5; color:#9ad0f5; }
 </style>
 </head>
 <body>
@@ -50,6 +51,7 @@
     <span class="date" id="today"></span>
     <span class="right">
       <button class="btn rg" data-r="40" type="button">40년</button><button class="btn rg" data-r="recent" type="button">2015~</button>
+      <button class="btn on" id="dragBtn" type="button" title="그래프를 끌었을 때 하는 일">드래그: 확대</button>
       <button class="btn" id="refresh" type="button">새로고침</button>
     </span>
   </header>
@@ -123,15 +125,18 @@ function vixfix(rows, pd=22, bbl=20, mult=2, lb=50, ph=0.85){
 
 /* ── 그리기 ── */
 const C = { grid:'#262c35', txt:'#c9cfd8', up:'#089981', dn:'#f23645' };
+// 드래그 동작: 'zoom' = 끌어서 고른 구간 확대(두 번 탭/더블클릭 = 원래대로), 이동 = PC는 끌어서 이동 · 휴대폰은 옆으로 밀기
+let DM = 'zoom';
+const DM_MOVE = () => window.innerWidth < 600 ? false : 'pan';
 const PH = (pc, mob) => window.innerWidth < 600 ? mob : pc;   // 그래프 높이: PC / 휴대폰
 const base = h => ({ paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:C.txt,size:11}, height:h,
-  margin:{l:8,r:56,t:10,b:28}, showlegend:false, hovermode:'x unified', dragmode: window.innerWidth < 600 ? false : 'pan', xaxis:{rangeslider:{visible:false}, gridcolor:C.grid} });
+  margin:{l:8,r:56,t:10,b:28}, showlegend:false, hovermode:'x unified', dragmode: DM, xaxis:{rangeslider:{visible:false}, gridcolor:C.grid} });
 const ax = o => ({ gridcolor:C.grid, zeroline:false, side:'right', tickfont:{size:10}, ...o });
 const candle = r => ({ type:'candlestick', x:r.map(d=>d.t), open:r.map(d=>d.o), high:r.map(d=>d.h), low:r.map(d=>d.l), close:r.map(d=>d.c),
   increasing:{line:{color:C.up},fillcolor:C.up}, decreasing:{line:{color:C.dn},fillcolor:C.dn}, name:'TQQQ' });
 const line = (x,y,color,name,extra={}) => ({ x, y, name, mode:'lines', line:{color,width:1.4}, ...extra });
 const hline = (y,yref,color,dash='dot') => ({type:'line',xref:'paper',x0:0,x1:1,yref,y0:y,y1:y,line:{color,width:1,dash}});
-const cfg = { responsive:true, displaylogo:false, scrollZoom:true, modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d'] };
+const cfg = { responsive:true, displaylogo:false, scrollZoom:true, doubleClick:'reset', displayModeBar:true, modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d','toImage'] };
 const pct = (a,b) => { const p=(a/b-1)*100; return `<span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toFixed(2)}%</span>`; };
 const fmt = v => v.toLocaleString('en-US',{maximumFractionDigits:2});
 
@@ -266,6 +271,15 @@ const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement(
 <script>
 // 휴대폰: 넓힌 그래프는 최근 쪽(오른쪽 끝)부터 보이게
 (function(){ let n=0; const go=()=>{ document.querySelectorAll('.plotbox').forEach(b=>{ if(b.scrollWidth>b.clientWidth && !b.dataset.moved){ b.scrollLeft=b.scrollWidth; b.dataset.moved=1; } }); if(++n<20) setTimeout(go,500); }; setTimeout(go,800); })();
+</script>
+<script>
+// 드래그 버튼: 확대 ↔ 이동
+document.getElementById('dragBtn').addEventListener('click', e => {
+  DM = DM === 'zoom' ? DM_MOVE() : 'zoom';
+  e.currentTarget.textContent = DM === 'zoom' ? '드래그: 확대' : '드래그: 이동';
+  e.currentTarget.classList.toggle('on', DM === 'zoom');
+  document.querySelectorAll('.plot').forEach(p => { if (p.data && window.Plotly) Plotly.relayout(p, { dragmode: DM }); });
+});
 </script>
 </body>
 </html>
