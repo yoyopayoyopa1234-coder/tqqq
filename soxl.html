@@ -34,8 +34,8 @@
   .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  #plot-d { height:440px; } #plot-b, #plot-btc { height:340px; } #plot-c { height:580px; }
-  @media (max-width:599px){ #plot-d { height:360px; } #plot-b, #plot-btc { height:280px; } #plot-c { height:480px; } }
+  #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:920px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:780px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 </style>
@@ -126,7 +126,7 @@ function chartD(){
   const ma5=sma(c,5), ma218=sma(c,218), s200=sma(c,200), env=ma218.map(v=>v==null?null:v*1.07), disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
   const st = disp[i]>=160?' <span class="hot">과열</span>':disp[i]<=50?' <span class="on">과매도</span>':'';
   $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 5일선 ${fmt(ma5[i])} · 218일선 ${fmt(ma218[i])} (${c[i]>ma218[i]?'위':'아래'}, ${pct(c[i],ma218[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
-  const L = base(PH(440,360)); L.yaxis=ax({domain:[0.36,1]}); L.yaxis2=ax({domain:[0,0.30]});
+  const L = base(PH(720,600)); L.yaxis=ax({domain:[0.36,1]}); L.yaxis2=ax({domain:[0,0.30]});
   const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)];
   L.shapes=[hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
   L.annotations=[[160,'#f23645'],[50,'#2962ff']].map(([y,col])=>({xref:'paper',x:0,yref:'y2',y,text:String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
@@ -142,7 +142,7 @@ function chartD(){
 function bars3(r){ const out=[]; for(let e=r.length;e>0;e-=3){ const s=Math.max(0,e-3), g=r.slice(s,e); out.unshift({t:g[0].t,o:g[0].o,h:Math.max(...g.map(x=>x.h)),l:Math.min(...g.map(x=>x.l)),c:g.at(-1).c}); } return out; }
 function chartB(){
   const r = bars3(ohlc('SOXL_1d')), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
-  const L = base(PH(340,280)); L.yaxis=ax({}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
+  const L = base(PH(560,460)); L.yaxis=ax({}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
   const back = Math.max(0, x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)];
   const tr=[candle(r)];
   const M2 = DATA && DATA.m2 && DATA.m2.rows && DATA.m2.rows.length ? DATA.m2 : null;
@@ -168,7 +168,7 @@ function chartC(){
   $('#sum-c').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(b.up[i])} / ${fmt(b.mid[i])} / ${fmt(b.lo[i])} (%b ${pb.toFixed(2)}) · RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}`;
   const s = Math.max(0, x.findIndex(t=>t.getFullYear()>=2015));
   const visH = [...r.slice(s).map(d=>d.h), ...b.up.slice(s).filter(v=>v!=null)], visL=[...r.slice(s).map(d=>d.l), ...b.lo.slice(s).filter(v=>v!=null)];
-  const L = base(PH(580,480)); L.yaxis=ax({domain:[0.48,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
+  const L = base(PH(920,780)); L.yaxis=ax({domain:[0.48,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
   L.yaxis2=ax({domain:[0.25,0.44], range:[0,100]}); L.yaxis3=ax({domain:[0,0.21]});
   L.xaxis.range=[x[s], new Date(x[i].getTime()+60*86400000)];
   L.shapes=[ {type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:30,y1:70,fillcolor:'rgba(120,110,230,0.10)',line:{width:0}},

@@ -40,7 +40,7 @@
   .chip.hit { border-color:rgba(90,212,69,.5); color:var(--in); background:rgba(90,212,69,.1); }
   .chip.next { border-color:rgba(240,180,41,.6); color:var(--accent); }
   .up { color:#089981; } .dn { color:#f23645; } .wr { color:var(--warn); }
-  .plot { width:100%; height:420px; }
+  .plot { width:100%; height:680px; }
   .tbl { overflow-x:auto; }
   table { width:100%; border-collapse:collapse; font-size:12.5px; }
   th, td { padding:5px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -168,7 +168,7 @@ function chart(R, key){
     const i0 = x.findIndex(d=>d>=R.cycle.entry_date);
     shapes.push({type:'line',xref:'x',x0:x[Math.max(0,i0)],x1:x[x.length-1],yref:'y2',y0:R.cycle.ts_line,y1:R.cycle.ts_line,line:{color:'#f0a030',width:1,dash:'dash'}});
   }
-  Plotly.react('plot-'+key, tr, {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:10},height:420,
+  Plotly.react('plot-'+key, tr, {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:10},height:680,
     margin:{l:6,r:50,t:6,b:24},showlegend:false,hovermode:'x unified',dragmode:'pan',
     xaxis:{gridcolor:'#262c35',range:[x[Math.max(0,x.length-380)],x[x.length-1]],rangebreaks:[{bounds:['sat','mon']}]},
     yaxis:{domain:[0.42,1],gridcolor:'#262c35',side:'right'},yaxis2:{domain:[0,0.36],gridcolor:'#262c35',side:'right',title:{text:'TQQQ',font:{size:10}}},
@@ -193,14 +193,14 @@ function bt40(B){
     </div>
     <div class="tbl"><table><thead><tr><th>기간</th><th>CAGR</th><th>MDD</th><th>가성비</th><th>세후</th><th>TQQQ 보유</th><th>QQQ 보유</th><th>S&amp;P500</th></tr></thead><tbody>${rows}</tbody></table></div>
     <div class="zone">보유 비교는 CAGR / MDD · 신호판 최대 낙폭 구간: ${B.dd.map(x=>`<b class="dn">${pc(x.dd)}</b> ${x.peak.slice(0,7)}→${x.low.slice(0,7)}`).join(' · ')}</div>
-    <div class="plot" id="plot-bt40" style="height:340px"></div>
+    <div class="plot" id="plot-bt40" style="height:540px"></div>
     <div class="fine">신호일 종가에 체결, 3분할은 신호일부터 3거래일. SPYM은 2010년부터 SPY 배당 포함, 그 전은 S&amp;P500 지수(배당 제외). SGOV는 미국 기준금리(연방기금금리)로 계산. 세후는 해마다 실현 이익에 22%(기본공제 무시). 신호 다음날 종가에 체결하면 40년 ${pc(B.next_day[0])} / ${pc(B.next_day[1])}입니다(1987년 블랙먼데이 하루 차이가 큼). 환산 TQQQ는 실제 상품이 아니므로 2010년 전 수치는 참고용입니다.</div>`;
 }
 function btChart(){
   const B=TQ&&TQ.bt40; if(!window.Plotly||!B) return; const C=B.chart, x=C.d;
   const L=(y,name,color,w)=>({x,y,name,mode:'lines',line:{color,width:w},hovertemplate:'%{y:,.1f}배'});
   Plotly.react('plot-bt40',[L(C.v2,'신호판 V2','#5ad445',2),L(C.tqqq,'TQQQ 보유','#f0b429',1.2),L(C.qqq,'QQQ 보유','#2962ff',1.2),L(C.spx,'S&P500','#8a93a3',1.2)],
-    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:10},height:340,margin:{l:6,r:50,t:6,b:24},
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:10},height:540,margin:{l:6,r:50,t:6,b:24},
      legend:{orientation:'h',x:0,y:1.08,font:{size:11}},hovermode:'x unified',dragmode:'pan',
      xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35',side:'right'},
      shapes:[{type:'rect',xref:'x',x0:x[0],x1:'2010-02',yref:'paper',y0:0,y1:1,fillcolor:'rgba(138,147,163,.07)',line:{width:0},layer:'below'}],
