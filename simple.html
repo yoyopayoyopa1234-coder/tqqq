@@ -323,12 +323,14 @@ function backtest(){
   const chg_s=t=>`<div class="note" style="color:#f23645;margin-top:3px">최근 변화 ${t}</div>`;
   const agoTxt=n=>n===0?'오늘':n===1?'어제':`${n}거래일 전`;
   const chg=(i,fromTxt,toTxt,reason)=>`<div class="note" style="color:#f23645;margin-top:3px">최근 변화 ${d[i]} (${agoTxt(N-1-i)}): ${fromTxt} → <b>${toTxt}</b> — ${reason}</div>`;
+  // 월 리밸런싱 날짜 (엔진 규칙: 매달 첫 미국 거래일 종가 · 두 상품 상태이고 TS 아닐 때) — 주말·1월 1일·노동절만 제외, 그 밖의 휴장은 다음 거래일
+  const RBN=(()=>{ const t=dt[N-1], today=N>1&&d[N-1].slice(0,7)!==d[N-2].slice(0,7); const nx=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,1)); while(nx.getUTCDay()===0||nx.getUTCDay()===6||(nx.getUTCMonth()===0&&nx.getUTCDate()===1)||(nx.getUTCMonth()===8&&nx.getUTCDay()===1&&nx.getUTCDate()<=7)) nx.setUTCDate(nx.getUTCDate()+1); return {today,nxD:nx.toISOString().slice(5,10).replace('-','/'),wd:'일월화수목금토'[nx.getUTCDay()]}; })();
   for(const [id,nm,eng,lv,lab,cfg,tsv=0.25] of PK){
     const e=eng(Math.max(1,d.findIndex(x=>x>='1986-10-01')),N-1,false), st=lv[N-1], dv=nd[N-1]/hi[N-1]-1, L=lab[st]||'SGOV', hasT=Array.isArray(L), cutNow=hasT&&e.cut&&e.cur===st;
     const txt= hasT ? (cutNow?L[1]:L[0]) : L; TODAY[nm]=txt;
     const last=(e.ev||[]).slice(-1)[0], fL=last&&label(lab,last[1],last[3]), tL=last&&label(lab,last[2],last[4]), chgTxt=last?chg(last[0],fL,tL,why(cfg,last[0],last[1],last[2],last[4]).replace(/−25%/g,'−'+pct(tsv)+'%')+(fL===tL?' · 비중은 그대로, TS 기준 고점만 새로 셈':'')):'';
     const el=document.getElementById(id), recent=last&&N-1-last[0]<=1; if(el&&recent) el.classList.add('changed');
-    if(el) el.innerHTML=`<div class="l">${nm}${el.classList.contains('main')?'<span class="tag">주력</span>':''}${recent?`<span class="tag chg">${N-1-last[0]===0?'오늘':'어제'} 바뀜</span>`:''}</div><div class="v" style="font-size:${el.classList.contains('main')?(txt.length>6?18:24):(txt.length>6?15:20)}px">${txt}</div><div class="note">${d[N-1]} 나스닥100 종가 기준 · 52주 고점 대비 ${(dv*100).toFixed(1)}%${hasT&&e.cur===st?(cutNow?' · TS 발동됨 — 구간이 바뀌거나 탈출 뒤 다시 들어올 때까지 TQQQ 없음':` · TS선 TQQQ ${(e.tpk*(1-tsv)).toFixed(2)}`):''}</div>${chgTxt}`; }
+    if(el) el.innerHTML=`<div class="l">${nm}${el.classList.contains('main')?'<span class="tag">주력</span>':''}${recent?`<span class="tag chg">${N-1-last[0]===0?'오늘':'어제'} 바뀜</span>`:''}</div><div class="v" style="font-size:${el.classList.contains('main')?(txt.length>6?18:24):(txt.length>6?15:20)}px">${txt}</div><div class="note">${d[N-1]} 나스닥100 종가 기준 · 52주 고점 대비 ${(dv*100).toFixed(1)}%${hasT&&e.cur===st?(cutNow?' · TS 발동됨 — 구간이 바뀌거나 탈출 뒤 다시 들어올 때까지 TQQQ 없음':` · TS선 TQQQ ${(e.tpk*(1-tsv)).toFixed(2)}`+(Object.keys(WLL).length&&cfg&&!cfg.fed&&!cfg.and?(RBN.today&&!(last&&N-1-last[0]===0)?' · <b class="bad">오늘 종가 리밸런싱</b>':` · 리밸런싱 ${RBN.nxD}(${RBN.wd})`):'')):''}</div>${chgTxt}`; }
   // 분산형 카드: 세 구좌의 상태와 합산 비중
   { const e=engineD(Math.max(1,d.findIndex(x=>x>='1986-10-01')),N-1,false), subs=e.subs, SUB=[['−8%','−20%'],['−10%','−25%'],['−12%','−30%']];
     let wT=0,wS=0,wC=0; const lines=[]; let lastEv=null, lastK=-1;
