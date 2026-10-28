@@ -67,57 +67,6 @@ def mk_levels(D, cfg):
         else: lv.append("M")
     return lv
 
-def mk_levels_fed(D, b=0.025, months=6, thr=0.15, n=21):
-    """연준형 단계: S&P 밴드 아래 C(빨강) · 투자 중 연준 긴축(실효금리 n일 평균이 months개월 전보다 thr 이상 높음)이면 M(QQQ) · 아니면 T(QLD)"""
-    from datetime import timedelta
-    d, N, sp, sp200, dt, dff = D["d"], D["N"], D["sp"], D["sp200"], D["dt"], D["dff"]
-    avg = [None] * N; s = 0.0
-    for i, v in enumerate(dff):
-        s += v
-        if i >= n: s -= dff[i - n]
-        if i >= n - 1: avg[i] = s / n
-    import bisect as _b
-    lv = []; inm = False
-    for i in range(N):
-        m = sp200[i]
-        if m is None: lv.append("C"); continue
-        if not inm:
-            if sp[i] > m * (1 + b): inm = True
-        elif sp[i] < m * (1 - b): inm = False
-        j = max(0, _b.bisect_left(dt, dt[i] - timedelta(days=round(months * 30.44))))
-        hiking = avg[i] is not None and avg[j] is not None and avg[i] - avg[j] >= thr
-        lv.append("C" if not inm else ("M" if hiking else "T"))
-    return lv
-
-
-def mk_levels_and(D, b=0.025, tIn=0.07, tOut=0.12, months=6, thr=0.15, n=21):
-    """이중경보형 단계: S&P 밴드 아래 C(빨강) · 투자 중 [연준 긴축 AND 나스닥100이 52주 고점 −12% 밖(−7% 안으로 오면 해제)]이면 M(QQQ) · 아니면 T(QLD)
-    = 신호등형의 노랑 규칙에 연준형의 긴축 조건을 AND로 겹친 것 (alarm.html 과 같은 계산)"""
-    from datetime import timedelta
-    import bisect as _b
-    d, N, sp, sp200, dt, dff, nd, hi = D["d"], D["N"], D["sp"], D["sp200"], D["dt"], D["dff"], D["nd"], D["hi"]
-    avg = [None] * N; s = 0.0
-    for i, v in enumerate(dff):
-        s += v
-        if i >= n: s -= dff[i - n]
-        if i >= n - 1: avg[i] = s / n
-    lv = []; inm = False; top = False
-    for i in range(N):
-        m = sp200[i]
-        if m is None: lv.append("C"); continue
-        if not inm:
-            if sp[i] > m * (1 + b): inm = True; top = False
-        elif sp[i] < m * (1 - b): inm = False
-        if inm:
-            dv = nd[i] / hi[i] - 1
-            if not top and dv >= -tIn: top = True
-            elif top and dv < -tOut: top = False
-        j = max(0, _b.bisect_left(dt, dt[i] - timedelta(days=round(months * 30.44))))
-        hiking = avg[i] is not None and avg[j] is not None and avg[i] - avg[j] >= thr
-        lv.append("C" if not inm else ("M" if (hiking and not top) else "T"))
-    return lv
-
-
 def engine(D, lv, W, a, b, ts=0.25):
     """비중 혼합 엔진 (simple.html engineH 와 같은 규칙): 단계 바뀔 때 비중 설정, 월초 재조정, TQQQ 몫 TS."""
     d, T, ret, dt = D["d"], D["T"], D["ret"], D["dt"]
@@ -167,9 +116,6 @@ STRATS = {
               {"T": ["TQQQ", "SGOV (TS)"], "M1": "QLD", "M2": "QQQ", "C": "SGOV"}),
     "고점형": (dict(eIn=INF, eOut=INF, tIn=0.10, tOut=0.10, oh=INF, confirm=1, bIn=0.03, bOut=0.03), {"T": {"T": 0.5, "S": 0.5}, "M": {"T": 0.5, "S": 0.5}, "X": {"Q": 1}, "C": {"C": 1}}, 0.25,
               {"T": ["TQQQ 50% + SPYM 50%", "SPYM 50% + SGOV 50%"], "M": ["TQQQ 50% + SPYM 50%", "SPYM 50% + SGOV 50%"], "C": "SGOV"}),
-    # 신호등형: 밴드 ±2.5% · 나스닥100 52주 고점 −7% 안이면 QLD(초록) · −12% 밖이면 QQQ(노랑) · 밴드 아래 SGOV(빨강) · TS·리밸런싱 없음
-    "신호등형": (dict(eIn=INF, eOut=INF, tIn=0.07, tOut=0.12, oh=INF, confirm=1, bIn=0.025, bOut=0.025), {"T": {"L": 1}, "M": {"Q": 1}, "X": {"Q": 1}, "C": {"C": 1}}, None,
-              {"T": "QLD", "M": "QQQ", "C": "SGOV"}),
     # 최고점형: 고점형 뼈대 + 밴드 ±3.5% + TS −15%
     "최고점형": (dict(eIn=INF, eOut=INF, tIn=0.10, tOut=0.10, oh=INF, confirm=1, bIn=0.035, bOut=0.035), {"T": {"T": 0.5, "S": 0.5}, "M": {"T": 0.5, "S": 0.5}, "X": {"Q": 1}, "C": {"C": 1}}, 0.15,
               {"T": ["TQQQ 50% + SPYM 50%", "SPYM 50% + SGOV 50%"], "M": ["TQQQ 50% + SPYM 50%", "SPYM 50% + SGOV 50%"], "C": "SGOV"}),
@@ -217,14 +163,6 @@ def main():
         signals[nm] = dict(text=text, level=st, cut=bool(cutnow), ts_line=round(e["tpk"] * (1 - ts), 2) if (ts and isinstance(L, list) and not cutnow) else None)
         trs = e["tr"]; win = sum(1 for x in trs if x > 0) / len(trs) * 100 if trs else 0
         bt[nm] = dict(c=round(e["c"], 2), m=round(e["m"], 2), n=len(trs), win=round(win, 1), mdd_from=e["w"][0], mdd_to=e["w"][1])
-    # 연준형: 밴드 ±2.5% · 연준 긴축 중(실효금리 1개월 평균이 6개월 전보다 +0.15%p 이상)이면 QQQ · 아니면 QLD · 밴드 아래 SGOV (yeonjun.html)
-    lvF = mk_levels_fed(D); WF = {"T": {"L": 1}, "M": {"Q": 1}, "C": {"C": 1}}; eF = engine(D, lvF, WF, a0, N - 1, None); stF = lvF[-1]
-    signals["연준형"] = dict(text={"T": "QLD", "M": "QQQ", "C": "SGOV"}[stF], level=stF, cut=False, ts_line=None)
-    trs = eF["tr"]; bt["연준형"] = dict(c=round(eF["c"], 2), m=round(eF["m"], 2), n=len(trs), win=round(sum(1 for x in trs if x > 0) / len(trs) * 100, 1) if trs else 0, mdd_from=eF["w"][0], mdd_to=eF["w"][1])
-    # 이중경보형: 밴드 ±2.5% · [연준 긴축 중 AND 나스닥100 52주 고점 −12% 밖]일 때만 QQQ · 아니면 QLD · 밴드 아래 SGOV (alarm.html)
-    lvA = mk_levels_and(D); eA = engine(D, lvA, WF, a0, N - 1, None); stA = lvA[-1]
-    signals["이중경보형"] = dict(text={"T": "QLD", "M": "QQQ", "C": "SGOV"}[stA], level=stA, cut=False, ts_line=None)
-    trs = eA["tr"]; bt["이중경보형"] = dict(c=round(eA["c"], 2), m=round(eA["m"], 2), n=len(trs), win=round(sum(1 for x in trs if x > 0) / len(trs) * 100, 1) if trs else 0, mdd_from=eA["w"][0], mdd_to=eA["w"][1])
     # 분산형: 세 구좌(구간 −8/−10/−12% · TS −20/−25/−30%) 독립 운용 후 합산
     WD = {"T": {"T": 0.9, "S": 0.1}, "M": {"T": 0.7, "S": 0.3}, "X": {"Q": 1}, "C": {"C": 1}}; subs = []
     for top, ts in ((0.08, 0.20), (0.10, 0.25), (0.12, 0.30)):
@@ -252,11 +190,11 @@ def main():
 
     # ── 경계 근처 (오늘 밤 작은 움직임으로 신호가 바뀔 수 있는 것) ──
     near = []
-    for th, who in ((-0.05, "복합형·고급형 신고가 구간 진입선"), (-0.07, "과열형 구간선 / 신호등형·이중경보형 초록선"), (-0.10, "절충형·반반형·상시형·삼단형 구간선 / 고점형·최고점형 TS 해제선 / 복합형 구간 해제선 / 복합형·고급형 진입선"),
-                    (-0.12, "고급형 구간 해제선 / 신호등형·이중경보형 노랑선"), (-0.15, "복합형·고급형 탈출선 / 삼단형 QLD→QQQ 선")):
+    for th, who in ((-0.05, "복합형·고급형 신고가 구간 진입선"), (-0.07, "과열형 구간선"), (-0.10, "절충형·반반형·상시형·삼단형 구간선 / 고점형·최고점형 TS 해제선 / 복합형 구간 해제선 / 복합형·고급형 진입선"),
+                    (-0.12, "고급형 구간 해제선"), (-0.15, "복합형·고급형 탈출선 / 삼단형 QLD→QQQ 선")):
         gap = (dv - th) * 100
         if abs(gap) < 1.0: near.append(f"QQQ 52주 고점 대비 {dv*100:.1f}% — {who}({th*100:.0f}%)까지 {gap:+.1f}%p")
-    for th, who in ((0.025, "절충형·반반형·신호등형·연준형·이중경보형·삼단형·신호판 진입선(+2.5%)"), (-0.025, "절충형·반반형·신호등형·연준형·이중경보형·삼단형·신호판 탈출선(−2.5%)"), (0.03, "과열형·상시형·고점형 진입선(+3%)"), (-0.03, "과열형·상시형·고점형 탈출선(−3%)"), (0.035, "최고점형 진입선(+3.5%)"), (-0.035, "최고점형 탈출선(−3.5%)"), (0.0, "종합형·복합형·고급형 200일선")):
+    for th, who in ((0.025, "절충형·반반형·삼단형·신호판 진입선(+2.5%)"), (-0.025, "절충형·반반형·삼단형·신호판 탈출선(−2.5%)"), (0.03, "과열형·상시형·고점형 진입선(+3%)"), (-0.03, "과열형·상시형·고점형 탈출선(−3%)"), (0.035, "최고점형 진입선(+3.5%)"), (-0.035, "최고점형 탈출선(−3.5%)"), (0.0, "종합형·복합형·고급형 200일선")):
         gap = (spm - th) * 100
         if abs(gap) < 0.7: near.append(f"S&P500이 200일선 대비 {spm*100:+.2f}% — {who}까지 {gap:+.2f}%p")
     if abs(dis - 0.15) * 100 < 1.0: near.append(f"QQQ가 200일선 대비 {dis*100:+.1f}% — 과열선(+15%)까지 {(dis-0.15)*100:+.1f}%p")
