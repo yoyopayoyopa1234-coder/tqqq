@@ -22,7 +22,7 @@ ROOT = os.path.join(os.path.dirname(__file__), "..")
 OUT = os.path.join(ROOT, "fedwatch.json")
 KST = timezone(timedelta(hours=9))
 # FOMC 결정일(미국 날짜, 발표 = 한국 다음 날 새벽 3~4시). 2027년은 연준 일정 기준 — 바뀌면 여기만 고치면 됨
-FOMC = ["2026-10-28", "2026-12-09", "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-16", "2027-07-28", "2027-09-22", "2027-10-27", "2027-12-08"]
+FOMC = ["2026-10-28", "2026-12-09", "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-09", "2027-07-28", "2027-09-15", "2027-10-27", "2027-12-08"]  # CME FedWatch 표와 같은 날짜
 DIAG = []
 
 
@@ -316,6 +316,86 @@ def estimate(items, now):
     return res, figs
 
 
+# ── FedWatch 재현: 연방기금 선물 가격 → 회의별 금리 구간 확률 (CME 계산법) ──
+MC = "FGHJKMNQUVXZ"
+
+
+def yahoo_price(sym):
+    try:
+        j = json.loads(get(f"https://query1.finance.yahoo.com/v8/finance/chart/{quote(sym)}?range=5d&interval=1d"))
+        m = j["chart"]["result"][0]["meta"]; p = m.get("regularMarketPrice")
+        return (float(p), m.get("regularMarketTime")) if p else (None, None)
+    except Exception as e:
+        note("선물 실패", sym, type(e).__name__, str(e)[:60]); return None, None
+
+
+def effr_now():
+    """실효 연방기금금리(EFFR)와 목표 구간 — 뉴욕 연은 API, 안 되면 FRED"""
+    try:
+        j = json.loads(get("https://markets.newyorkfed.org/api/rates/unsecured/effr/last/1.json"))
+        r = j["refRates"][0]
+        return float(r["percentRate"]), float(r.get("targetRateFrom") or 0), float(r.get("targetRateTo") or 0), r["effectiveDate"]
+    except Exception as e:
+        note("뉴욕연은 EFFR 실패", type(e).__name__, str(e)[:60])
+    try:
+        rows = [l.split(",") for l in get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF").strip().splitlines()[1:]]
+        rows = [r for r in rows if r[1] not in (".", "")]
+        v = float(rows[-1][1]); lo = int(v / 0.25) * 0.25
+        return v, lo, lo + 0.25, rows[-1][0]
+    except Exception as e:
+        note("FRED EFFR 실패", type(e).__name__, str(e)[:60]); return None, None, None, None
+
+
+def fedwatch_calc(now, old):
+    from datetime import date
+    us = (now - timedelta(hours=5)).date()
+    meets = [x for x in FOMC if x >= us.isoformat()]
+    if not meets: return None
+    last = date.fromisoformat(meets[-1]); months = []
+    y, m = us.year, us.month
+    while (y, m) <= (last.year, last.month + 1 if last.month < 12 else last.month):
+        months.append((y, m)); y, m = (y + (m == 12), m % 12 + 1)
+    fut = []
+    for (y, m) in months:
+        sym = f"ZQ{MC[m - 1]}{y % 100:02d}.CBT"
+        p, t = yahoo_price(sym)
+        fut.append(dict(code=f"ZQ{MC[m - 1]}{y % 10}", month=f"{y}-{m:02d}", price=p, rate=None if p is None else round(100 - p, 4), t=t))
+    got = sum(1 for f in fut if f["price"] is not None)
+    if got < 2:
+        note("선물 가격 부족", got); return old.get("fw")
+    effr, lo, hi, edate = effr_now()
+    if effr is None: return old.get("fw")
+    R = {f["month"]: f["rate"] for f in fut if f["rate"] is not None}
+    mm = {x[:7] for x in FOMC}
+    import calendar
+    res = []; dist = {0: 1.0}; prev_end = effr
+    for ds in meets:
+        d = date.fromisoformat(ds); mk = ds[:7]
+        pk = f"{d.year - (d.month == 1)}-{(d.month - 2) % 12 + 1:02d}"; nk = f"{d.year + (d.month == 12)}-{d.month % 12 + 1:02d}"
+        # 회의 전 금리: 앞 달에 회의가 없고 선물이 있으면 그 달 평균, 아니면 직전 회의 뒤 금리
+        start = R[pk] if (pk not in mm and pk in R and ds != meets[0]) else prev_end
+        N = calendar.monthrange(d.year, d.month)[1]
+        if nk not in mm and nk in R: end = R[nk]
+        elif mk in R and N - d.day > 0: end = (R[mk] * N - start * d.day) / (N - d.day)
+        else: break
+        steps = (end - start) / 0.25
+        k = int(steps // 1); f = steps - k
+        nd = {}
+        for lv, pr in dist.items():
+            nd[lv + k] = nd.get(lv + k, 0) + pr * (1 - f)
+            nd[lv + k + 1] = nd.get(lv + k + 1, 0) + pr * f
+        dist = {a: b for a, b in nd.items() if b > 1e-6}
+        tot = sum(dist.values()); dist = {a: b / tot for a, b in dist.items()}
+        probs = {f"{round((lo + 0.25 * a) * 100)}": round(b * 100, 2) for a, b in sorted(dist.items())}
+        res.append(dict(date=ds, start=round(start, 4), end=round(end, 4), probs=probs,
+                        hike=round(sum(b for a, b in dist.items() if a > 0) * 100, 2), hold=round(dist.get(0, 0) * 100, 2),
+                        cut=round(sum(b for a, b in dist.items() if a < 0) * 100, 2),
+                        exp=round(lo + 0.125 + 0.25 * sum(a * b for a, b in dist.items()), 4)))
+        prev_end = end
+    note("FedWatch 재현", effr, lo, hi, [(r["date"], r["hike"], r["hold"]) for r in res[:3]], "선물", got, "/", len(fut))
+    return dict(asof=now.isoformat(timespec="minutes"), effr=effr, effr_date=edate, lo=lo, hi=hi, futures=fut, meets=res)
+
+
 def main():
     now = datetime.now(timezone.utc)
     try: old = json.load(open(OUT))
@@ -350,10 +430,13 @@ def main():
         if now - f["ts"] <= timedelta(hours=72): bysrc[f["skind"]] = bysrc.get(f["skind"], 0) + 1
     ser = lambda x: {**{k: v for k, v in x.items() if k not in ("ts", "qs", "q")}, "ts": x["ts"].isoformat(timespec="minutes")}
     iso = lambda v: v.isoformat(timespec="minutes") if isinstance(v, datetime) else v
+    try: fw = fedwatch_calc(now, old)
+    except Exception as e: fw = old.get("fw"); note("FedWatch 재현 실패", type(e).__name__, str(e)[:120])
     snap = dict(t=now.isoformat(timespec="minutes"), n24=cnt["n24"], fw24=cnt["fw24"], c24=cnt["c24"],
+                f=[[m["date"], m["hike"], m["hold"], m["cut"], m["exp"]] for m in (fw or {}).get("meets", [])[:4]],
                 m=[[m["date"], m["hike_est"], m["hold"], m["cut"]] for m in meets])
     hist = [h for h in old.get("hist", []) if "m" in h and datetime.fromisoformat(h["t"]) >= now - timedelta(days=30)] + [snap]
-    out = dict(ts=int(now.timestamp()), meets=[{k: iso(v) for k, v in m.items()} for m in meets],
+    out = dict(ts=int(now.timestamp()), fw=fw, meets=[{k: iso(v) for k, v in m.items()} for m in meets],
                figs=[{k: iso(v) for k, v in f.items()} for f in sorted(figs, key=lambda f: f["ts"], reverse=True)[:60]],
                counts=cnt, fig_src=bysrc, news=[ser(x) for x in news[:50]], comm=[ser(x) for x in comm[:30]], diag=DIAG, hist=hist[-3000:])
     json.dump(out, open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))
