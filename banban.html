@@ -165,7 +165,7 @@
           <details><summary>TS는 급락 방어가 아니라 "한 걸음 앞선 탈출"</summary><div class="in">
             TQQQ −25%는 QQQ로 치면 −8~9%입니다. 그래서 TS가 걸리는 날 QQQ는 대개 고점 대비 −9% 근처이고, 며칠 뒤 −10%선을 깨면서 어차피 QQQ 100%로 바뀝니다. TS는 그 며칠을 앞당겨 TQQQ 몫의 −7% 정도를 아끼는 장치이고, 40년 동안 이런 컷이 수십 번 쌓여 연복리 몇 %p 차이를 만듭니다.<br>
             단점: TS로 나간 뒤 QQQ가 −10% 아래로 안 가고 그대로 신고가를 내면, 구간이 안 바뀌어서 TQQQ 없이 SPYM 50% + SGOV 50%로 랠리를 구경하게 됩니다(2026년 7월에 고급형이 그랬습니다). 반반형은 구간 판정을 매일 다시 하므로 QQQ가 잠깐이라도 −10% 아래로 갔다 오면 리셋됩니다.<br>
-            숫자 민감도: TS를 −20%로 하면 0.61, −30%로 하면 0.45(−30%면 QQQ −10%와 같은 자리라 TS가 의미를 잃음). 구간선을 −8%/−12%로 바꾸면 0.46/0.49 — 이 규칙이 제일 약한 부분이라 페이지 하단 '과최적화 점검'에 적어뒀습니다.
+            숫자 민감도: TS를 −20%로 하면 0.61, −30%로 하면 0.45(−30%면 QQQ −10%와 같은 자리라 TS가 의미를 잃음). 구간선을 −8%/−12%로 바꾸면 0.46/0.49 — 이 규칙에서 숫자에 가장 민감한 부분입니다.
           </div></details>
         </div>
         <div class="step"><div class="h"><div class="n">4</div><b>리밸런싱 — 매달 첫 거래일에 50 : 50으로</b></div>
@@ -205,29 +205,11 @@
     <div class="body">
       <div class="tiles" id="tiles"></div>
       <div id="plot40" class="plot" style="height:300px"></div>
-      <details open><summary>24번의 거래 전부 보기 (들어간 날 → 나온 날 · 그 사이 계좌 변화)</summary><div class="in tbl" id="trades"></div></details>
-      <details open><summary>해마다 성적 · 큰 낙폭 구간</summary><div class="in" id="yearly"></div></details>
-      <details open><summary>과최적화 점검 — 숫자를 한 칸씩 바꿔 봤을 때</summary><div class="in">
-        <div class="tbl"><table><tr><th>바꾼 숫자</th><th>가성비</th><th>기준(0.62) 대비</th></tr>
-          <tr><td>밴드 ±2% / ±3%</td><td>0.58 / 0.62</td><td>−6% / +1%</td></tr>
-          <tr><td>신고가 구간 −8% / −12%</td><td>0.46 / 0.49</td><td class="bad">−26% / −21%</td></tr>
-          <tr><td>TQQQ 40% / 60%</td><td>0.62 / 0.60</td><td>+1% / −2%</td></tr>
-          <tr><td>TS −20% / −30%</td><td>0.61 / 0.45</td><td>−2% / <span class="bad">−27%</span></td></tr>
-          <tr><td>TS 없음</td><td>0.45</td><td class="bad">−27%</td></tr>
-          <tr><td>월 리밸런싱 없음</td><td>0.56</td><td>−9%</td></tr>
-        </table></div>
-        <div style="margin-top:8px">한 칸 바꿨을 때 최악 −27%, 중앙값 −4%, 전반 20년 0.63 · 후반 20년 0.61 → 과최적화 점수 <b>31 / 100 (낮음)</b>. 약점은 둘: 신고가 구간선(−10%)과 TS(−25%)가 서로 맞물려 있어 둘 중 하나만 틀어도 떨어진다는 것, 그리고 더 잘게 보면 구간선을 −9%로만 바꿔도 0.44가 된다는 것(1998년 6월처럼 −9~−10% 사이를 오갈 때 구간이 바뀌며 TS 고점이 리셋되는 탓). 이 부분엔 운이 섞여 있다고 보는 게 맞습니다. 같은 뼈대에서 TQQQ를 60%로 늘린 절충형은 0.60 · 24.7% · −41%입니다. TQQQ 비중은 이 표에서 가장 덜 민감한 숫자라(40~60% 모두 0.60~0.62), 50%라는 선택 자체엔 끼워 맞춘 게 거의 없습니다.</div>
-      </div></details>
       <details><summary>앞으로 20년에 대한 솔직한 기대</summary><div class="in">
         믿을 만한 부분: 수익의 출처가 "큰 약세장은 S&amp;P500 추세로 피하고, 레버리지는 지수가 고점 근처일 때만"이라는 구조이고, 전반 20년(1986~2006)과 후반 20년(2006~2026)이 0.63 · 0.61로 거의 같으며, 2000년대(닷컴·금융위기) 10년도 +6.5%였습니다. 절충형보다 연복리는 1.8%p 낮지만 큰 낙폭이 모두 3~5%p씩 작아서, 20년 동안 "끝까지 따라 하기" 쉬운 쪽입니다.<br>
         못 피하는 것: ① 2000년 3~5월처럼 S&amp;P500은 버티는데 나스닥만 먼저 무너지는 하락(−37%). ② 200일선 근처를 오래 오가는 횡보장 — 2004~05년 −34%, 2015~16년 −28%는 사고팔기를 반복하며 생겼고, 이 매매법 가족은 이 손실을 분산할 방법이 없습니다(줄이려면 TQQQ 비중을 낮추는 수밖에). ③ 금리가 높으면 TQQQ 조달 비용이 커져 같은 지수 움직임에도 수익이 줄어듭니다. 몇 년에 한 번은 −30%대 구간이 오고, 그걸 견뎌야 40년 숫자가 내 것이 됩니다.
       </div></details>
     </div>
-  </div>
-
-  <div class="panel">
-    <h2>장 마감 직전 체크리스트 <span class="desc">세 가지만 확인하면 끝 · 숫자는 위 게이지와 같음</span></h2>
-    <div class="body"><div class="check" id="checklist"></div></div>
   </div>
 
   <div class="panel">
@@ -398,20 +380,6 @@ function render(){
   const wins=e.tr.filter(t=>t[2]>0), loss=e.tr.filter(t=>t[2]<=0), avg=a=>a.length?a.reduce((s,t)=>s+t[2],0)/a.length*100:0;
   const qh40=D.hold('Q',a0,N-1);
   $('#tiles').innerHTML=[['연복리',e.c.toFixed(1)+'%','40년 · QQQ 보유 '+qh40.c.toFixed(1)+'%'],['최대낙폭',e.m.toFixed(0)+'%',e.w[0].slice(0,7)+' → '+e.w[1].slice(0,7)],['가성비',(e.c/Math.abs(e.m)).toFixed(2),'연복리 ÷ 낙폭 · 신호판 0.54'],['세후 가성비',(et.c/Math.abs(et.m)).toFixed(2),et.c.toFixed(1)+'% · '+et.m.toFixed(0)+'% (양도세 22%)'],['승률',(wins.length/e.tr.length*100).toFixed(0)+'%',e.tr.length+'회 왕복 · 익 '+fmtPct(avg(wins),0)+' / 손 '+fmtPct(avg(loss),0)],['전반 · 후반 20년',(e1.c/Math.abs(e1.m)).toFixed(2)+' · '+(e2.c/Math.abs(e2.m)).toFixed(2),e1.c.toFixed(1)+'% / '+e2.c.toFixed(1)+'%'],['1달러가',e.v.toFixed(0)+'달러','QQQ 보유 '+(1*Math.exp(Math.log(qh40.cv.at(-1)))).toFixed(0)+'달러'],['매매 횟수','연 '+e.sw.toFixed(1)+'회','진입·탈출·구간 변경·TS 합계']].map(([l,v,s])=>`<div class="tile"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
-  $('#trades').innerHTML=`<table><tr><th>#</th><th>들어간 날</th><th>나온 날</th><th>기간</th><th>계좌 변화</th></tr>${e.tr.map((t,k)=>{ const a=new Date(t[0]), b=new Date(t[1]); const m=Math.round((b-a)/2629800000); return `<tr><td>${k+1}</td><td>${t[0]}</td><td>${t[1]}${t[1]===d[N-1]?' (진행 중)':''}</td><td>${m}개월</td><td class="${t[2]>0?'up':'dn'}">${fmtPct(t[2]*100)}</td></tr>`; }).join('')}</table><div class="fine" style="margin-top:6px">한 번의 거래 = S&amp;P500 밴드 위로 들어가 아래로 나올 때까지. 그 사이 QQQ ↔ TQQQ 50% 전환과 TS는 같은 거래 안의 움직임으로 봅니다.</div>`;
-  // 해마다
-  const yrs={}; for(let i=a0;i<N;i++){ const y=d[i].slice(0,4); if(!yrs[y]) yrs[y]={a:i}; yrs[y].b=i; }
-  const yrows=Object.keys(yrs).map(y=>{ const {a,b}=yrs[y]; const r=e.cv[b-a0]/e.cv[Math.max(0,a-a0-1)]-1, rq=qh40.cv[b-a0]/qh40.cv[Math.max(0,a-a0-1)]-1; return [y,r*100,rq*100]; });
-  const dds=(()=>{ const cv=e.cv, out=[]; let pk=0, cur=null; for(let k=0;k<cv.length;k++){ if(cv[k]>=cv[pk]){ if(cur&&cur.r<-0.2) out.push(cur); pk=k; cur=null; } else { const r=cv[k]/cv[pk]-1; if(!cur||r<cur.r) cur={r,from:d[a0+pk],to:d[a0+k]}; } } if(cur&&cur.r<-0.2) out.push(cur); return out.sort((x,y)=>x.r-y.r).slice(0,6); })();
-  $('#yearly').innerHTML=`<div class="tbl"><table><tr><th>해</th>${yrows.map(r=>`<th>${r[0].slice(2)}</th>`).join('')}</tr><tr><td>반반형</td>${yrows.map(r=>`<td class="${r[1]>=0?'up':'dn'}">${r[1].toFixed(0)}</td>`).join('')}</tr><tr><td>QQQ</td>${yrows.map(r=>`<td class="${r[2]>=0?'up':'dn'}">${r[2].toFixed(0)}</td>`).join('')}</tr></table></div>
-    <div style="margin-top:8px"><b>−20% 넘는 낙폭 구간</b> (고점 → 저점): ${dds.map(x=>`${x.from.slice(0,7)} → ${x.to.slice(0,7)} <b class="dn">${(x.r*100).toFixed(0)}%</b>`).join(' · ')}</div>`;
-  // ── 체크리스트 ──
-  $('#checklist').innerHTML=[
-    [`S&amp;P500 종가가 <b>${S.lo.toLocaleString()}</b>(탈출선) 위인가? ${inm?'':'(대기 중이면: <b>'+S.up.toLocaleString()+'</b> 진입선 위로 올라왔는가?)'}`, inm?'아니오면 → 오늘 종가에 전부 SGOV':'예면 → 오늘 종가에 투자 시작(아래 ②대로)'],
-    [`QQQ 종가가 <b>${(qhi*0.9).toFixed(2)}</b>(52주 고점 −10%) 위인가?`, '위면 TQQQ 50% + SPYM 50% · 아래면 QQQ 100% — 어제와 달라졌으면 오늘 종가에 바꿈'],
-    [`TQQQ 종가가 <b>${inm&&st==='T'?tsLine.toFixed(2):'—'}</b>(TS선) 위인가?`, inm&&st==='T'?(cutNow?'이미 발동됨 — 구간이 바뀔 때까지 TQQQ 없음':'이하로 마감하면 TQQQ만 전부 SGOV로'):'신고가 구간이 아니면 볼 필요 없음'],
-    ['오늘이 이달 첫 거래일인가?', '신고가 구간이고 TS 발동 중이 아니면 50 : 50으로 다시 맞춤'],
-  ].map(([q,a],k)=>`<label><input type="checkbox"><span><b>${k+1}.</b> ${q}<br><span class="muted" style="font-size:12px">${a}</span></span></label>`).join('');
   // ── 규칙 안의 "오늘 기준" 숫자 ──
   { const f2=v=>v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     $('#r1now').innerHTML=`오늘 기준 · 200일선 <b>${f2(S.ma200)}</b> → 진입선 ${f2(S.ma200*1.025)} · 탈출선 ${f2(S.ma200*0.975)} · S&amp;P500 ${f2(S.idx)}(${fmtPct(spUpPct*100)}) → <b>${inm?'투자 중':'대기 중'}</b>${inm?` · 탈출선까지 ${fmtPct((S.idx/(S.ma200*0.975)-1)*100)}`:` · 진입선까지 ${fmtPct((S.idx/(S.ma200*1.025)-1)*100)}`}`;
