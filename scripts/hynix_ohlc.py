@@ -30,7 +30,12 @@ def main():
             try:
                 out["ohlc"][f"{key}_{iv}"] = yahoo(sym, iv, rng); print(key, iv, len(out["ohlc"][f"{key}_{iv}"]))
             except Exception as e:
-                print("FAIL", key, iv, e)
+                print("FAIL", key, iv, e); out.setdefault("err", []).append(f"{iv}: {str(e)[:200]}")
+                if key == "SPX":   # ^GSPC 긴 기간이 막히면 기본 기간으로 한 번 더
+                    try:
+                        out["ohlc"][f"{key}_{iv}"] = yahoo(sym, iv, None if iv != "1mo" else "20y"); print(key, iv, "fallback", len(out["ohlc"][f"{key}_{iv}"]))
+                    except Exception as e2:
+                        out["err"].append(f"{iv} fallback: {str(e2)[:200]}")
         for iv in ("1wk", "1mo"):
             k = f"{key}_{iv}"
             if k in out["ohlc"]:
@@ -39,6 +44,7 @@ def main():
             json.dump(out, open(fn, "w"), separators=(",", ":"))
         else:
             print(key, "일부 시세 실패 — 기존 파일 유지")
+            if key == "SPX": json.dump({"updated": out["updated"], "err": out.get("err", []), "ohlc": out["ohlc"]}, open(fn, "w"), separators=(",", ":"))
 
 if __name__ == "__main__":
     main()
