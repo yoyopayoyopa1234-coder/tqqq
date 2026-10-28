@@ -36,8 +36,8 @@
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
   #plot-d { height:440px; } #plot-b, #plot-btc { height:340px; } #plot-c { height:580px; }
   @media (max-width:599px){ #plot-d { height:360px; } #plot-b, #plot-btc { height:280px; } #plot-c { height:480px; } }
-  /* 휴대폰: 그래프를 화면의 1.5배 너비로 — 옆으로 밀어서 봄 */
-  @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:150%; } }
+  /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
+  @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
   #dragBtn.on { border-color:#9ad0f5; color:#9ad0f5; }
 </style>
 </head>
