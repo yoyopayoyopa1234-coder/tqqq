@@ -35,6 +35,17 @@
   .rb { margin-top:10px; padding:10px 12px; border-radius:8px; background:rgba(79,209,197,.07); border:1px solid rgba(79,209,197,.35); font-size:13px; line-height:1.6; }
   .rb.due { border-color:var(--hot); background:rgba(242,54,69,.08); animation:pulse 1.6s ease-out infinite; }
   .rb .h { display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; } .rb .h b { font-size:14px; }
+  .rb .cd { display:flex; align-items:baseline; gap:10px; margin:8px 0 4px; flex-wrap:wrap; }
+  .rb .cd .n { font-size:28px; font-weight:800; font-variant-numeric:tabular-nums; color:#4fd1c5; letter-spacing:.5px; text-shadow:0 0 14px rgba(79,209,197,.45); }
+  .rb.due .cd .n { color:var(--hot); text-shadow:0 0 16px rgba(242,54,69,.6); animation:blink 1.2s ease-in-out infinite; }
+  .rb .cd .u { font-size:12px; color:var(--muted); }
+  .rb .prog { position:relative; height:8px; border-radius:4px; background:rgba(255,255,255,.07); overflow:hidden; }
+  .rb .prog i { position:absolute; left:0; top:0; bottom:0; border-radius:4px; background:linear-gradient(90deg,rgba(79,209,197,.35),#4fd1c5); box-shadow:0 0 10px rgba(79,209,197,.6); transition:width 1s linear; }
+  .rb .prog i::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent); animation:shine 2.4s linear infinite; }
+  @keyframes shine { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+  .rb.due .prog i { background:linear-gradient(90deg,rgba(242,54,69,.4),var(--hot)); box-shadow:0 0 12px rgba(242,54,69,.7); }
+  .rb .ic { display:inline-block; animation:spin 4s linear infinite; } .rb.due .ic { animation-duration:1.2s; }
+  @keyframes spin { to { transform:rotate(360deg); } }
   /* 게이지 */
   .gauges { display:grid; gap:12px; }
   .g { display:grid; gap:4px; }
@@ -303,13 +314,30 @@ function render(){
          : st==='M'?'<b>아무것도 안 함</b> — QQQ 100% 유지. QQQ가 52주 고점 −10% 안으로 돌아오는 날 TQQQ 50% + SPYM 50%로.'
          : cutNow?'<b>아무것도 안 함</b> — SPYM 50% + SGOV 50% 유지(TS 발동 중). QQQ가 −10% 밖으로 갔다가 다시 들어오거나, 밴드 탈출 뒤 재진입할 때 TQQQ를 다시 삽니다.'
          : `<b>아무것도 안 함</b> — TQQQ 50% + SPYM 50% 유지. 다음 리밸런싱은 <b>${RB.nxD}(${RB.wd})</b> 종가${RB.days<=3?' (<b>곧</b>)':''} — 그날까지는 비중이 벌어져도 그대로 둡니다.`; }
-  const rbBox=RB?`<div class="rb ${RB.today?'due':''}" id="rb"><div class="h"><b>리밸런싱 ${RB.today?'<span class="tag chg">오늘 종가</span>':`다음 <b>${RB.nxD}(${RB.wd})</b> 종가 · ${RB.days}일 뒤`}</b><span class="muted">매달 첫 미국 거래일(1일이 주말·휴장이면 다음 거래일) · 신고가 구간에서 TS 아닐 때만 · 그 밖의 날은 비중이 벌어져도 그대로</span></div></div>`:'';
+  const rbBox=RB?`<div class="rb ${RB.today?'due':''}" id="rb"><div class="h"><b><span class="ic">⟳</span> 리밸런싱 ${RB.today?'<span class="tag chg">오늘 종가</span>':`다음 <b>${RB.nxD}(${RB.wd})</b> 종가`}</b><span class="muted">TQQQ 50 : SPYM 50으로</span></div>
+      <div class="cd"><span class="n" id="rbN">--</span><span class="u" id="rbU"></span></div>
+      <div class="prog"><i id="rbP" style="width:0%"></i></div>
+      <div class="cap" style="margin-top:3px"><span id="rbL">지난 리밸런싱</span><span id="rbR">${RB.today?'오늘':RB.nxD}</span></div>
+      <div class="muted" style="font-size:11.5px;margin-top:4px">매달 첫 미국 거래일(1일이 주말·휴장이면 다음 거래일) · 신고가 구간에서 TS 아닐 때만 · 그 밖의 날은 비중이 벌어져도 그대로</div></div>`:'';
   const nowEl=$('#now'); if(recent) nowEl.classList.add('changed');
   nowEl.innerHTML=`<div class="l">${d[N-1]} 종가 기준 · <span class="tag">반반형</span>${recent?`<span class="tag chg">${ago(N-1-last[0])} 바뀜</span>`:'<span class="tag gray">변화 없음</span>'}</div>
     <div class="big">${label}</div><div class="sub">${stateTxt}</div>
     <div class="todo">오늘 할 일: ${todo}</div>${rbBox}
     ${last?`<div class="recent">최근 변화 ${d[last[0]]} (${ago(N-1-last[0])}): ${lab(last[1],last[3])} → <b>${lab(last[2],last[4])}</b> — ${why(last[0],last[1],last[2],last[4])}</div>`:''}
     <div class="timeline" style="margin-top:8px">${e.ev.slice(-6).reverse().map(x=>`<div><span class="d">${d[x[0]]}</span><span>${lab(x[1],x[3])} → ${lab(x[2],x[4])} <span class="muted">· ${why(x[0],x[1],x[2],x[4])}</span></span></div>`).join('')}</div>`;
+  if(RB){ // 실시간 카운트다운: 목표 = 리밸런싱일 미국 장 마감(16:00 ET), 시작 = 이번 달 첫 거래일 마감
+    const nthSun=(y,m,n)=>{ const t=new Date(Date.UTC(y,m,1)); t.setUTCDate(1+((7-t.getUTCDay())%7)+7*(n-1)); return t.getTime(); };
+    const closeUTC=ds=>{ const [y,m,dd]=ds.split('-').map(Number), t=Date.UTC(y,m-1,dd), dst=t>=nthSun(y,2,2)&&t<nthSun(y,10,1); return Date.UTC(y,m-1,dd,dst?20:21); };
+    let ms0=N-1; for(let i=N-1;i>0;i--) if(d[i].slice(0,7)!==d[i-1].slice(0,7)){ ms0=i; break; }
+    const tgt=RB.today?closeUTC(d[N-1]):closeUTC(RB.nxD), from=RB.today?closeUTC(d[N-1])-30*864e5:closeUTC(d[ms0]);
+    $('#rbL').textContent=RB.today?'':'지난 리밸런싱 '+d[ms0].slice(5);
+    const kst=t=>new Date(t+9*36e5).toISOString().slice(5,16).replace('T',' ').replace('-','/');
+    const tick=()=>{ const el=$('#rbN'); if(!el) return; let ms=tgt-Date.now(); const done=ms<=0; ms=Math.max(0,ms);
+      const D_=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5), m=Math.floor(ms%36e5/6e4), sc=Math.floor(ms%6e4/1e3), z=x=>String(x).padStart(2,'0');
+      el.textContent=done?'마감 — 확정 종가 확인':(D_>0?`D-${D_} `:'')+`${z(h)}:${z(m)}:${z(sc)}`;
+      $('#rbU').textContent=done?'':`한국 ${kst(tgt)} 미국 장 마감까지 · 마감 5~10분 전에 주문`;
+      $('#rbP').style.width=Math.min(100,Math.max(0,(Date.now()-from)/(tgt-from)*100)).toFixed(2)+'%'; };
+    tick(); clearInterval(window.__rbT); window.__rbT=setInterval(tick,1000); }
   // ── 게이지 ──
   const P=(v,lo,hi)=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
   const g1=(()=>{ const lo=-8, up=8, v=spUpPct*100; const toLo=(S.idx/S.lo-1)*100, toUp=(S.idx/S.up-1)*100;
