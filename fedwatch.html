@@ -1,42 +1,68 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FedWatch 인용값</title>
+<title>FedWatch</title>
 <style>
-  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#ff8c42; color-scheme:dark; }
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#ff8c42; color-scheme:dark;
+    --hike:#ff9f68; --hold:#8a93a3; --cut:#5ec8f2; --live:#3ddc84; }
   * { box-sizing:border-box; }
   html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
-  .wrap { padding:12px 12px 48px; max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  .wrap { padding:12px 12px 48px; max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
   header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
   h1 { font-size:20px; margin:0; } .date { color:var(--muted); font-size:12px; }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
   .panel > h2 { margin:0; padding:10px 14px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; border-bottom:1px solid var(--line); }
   .panel > h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
   .body { padding:14px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.7; }
   .muted { color:var(--muted); } .fine { font-size:11.5px; color:var(--muted); line-height:1.6; }
-  .meets { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; } @media (max-width:760px){ .meets { grid-template-columns:1fr; } }
-  .mt { border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
-  .mt.first { border-color:#ff9f68; box-shadow:0 0 22px -10px #ff9f68; background:linear-gradient(180deg,rgba(255,159,104,.08),transparent); }
-  .mt .k { font-size:12px; color:var(--muted); } .mt .big { font-size:34px; font-weight:800; color:#ff9f68; line-height:1.2; margin:4px 0 2px; font-variant-numeric:tabular-nums; }
-  .mt .big small { font-size:14px; font-weight:600; color:var(--muted); margin-left:4px; }
-  .mt .s { font-size:12.5px; color:#c9cfd8; line-height:1.6; } .mt .src { font-size:11.5px; color:var(--muted); margin-top:4px; }
-  .seg { display:flex; height:8px; border-radius:4px; overflow:hidden; margin:8px 0 6px; background:rgba(255,255,255,.06); } .seg i { display:block; height:100%; }
-  .cut { color:#9ad0f5; } .hold { color:#c9cfd8; } .hike { color:#ff9f68; }
-  .fwc { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; } @media (max-width:640px){ .fwc { grid-template-columns:1fr; } }
-  .fwc > div { border:1px solid var(--line); border-radius:10px; padding:10px 12px; } .fwc .k { font-size:11.5px; color:var(--muted); } .fwc .v { font-size:21px; font-weight:800; font-variant-numeric:tabular-nums; } .fwc .s { font-size:12px; color:var(--muted); }
+  .live { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--live); font-weight:700; }
+  .live i { width:8px; height:8px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(61,220,132,.7); animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(61,220,132,.6)} 70%{box-shadow:0 0 0 9px rgba(61,220,132,0)} 100%{box-shadow:0 0 0 0 rgba(61,220,132,0)} }
+  .stale .live { color:#f0b429; } .stale .live i { background:#f0b429; animation:none; }
+  /* 히어로 */
+  .hero { position:relative; border-radius:16px; padding:18px 18px 16px; border:1px solid rgba(255,159,104,.35);
+    background:radial-gradient(120% 140% at 0% 0%, rgba(255,159,104,.16), transparent 55%), radial-gradient(100% 120% at 100% 100%, rgba(94,200,242,.12), transparent 60%), var(--panel); overflow:hidden; }
+  .hero .top { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; justify-content:space-between; }
+  .hero .meet { font-size:13px; color:#c9cfd8; } .hero .meet b { color:#fff; font-size:15px; }
+  .cd { display:flex; gap:6px; align-items:flex-end; font-variant-numeric:tabular-nums; }
+  .cd div { background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:8px; padding:4px 8px; text-align:center; min-width:46px; }
+  .cd b { display:block; font-size:20px; line-height:1.1; } .cd span { font-size:10px; color:var(--muted); }
+  .hero .main { display:grid; grid-template-columns:auto 1fr; gap:6px 22px; align-items:end; margin-top:14px; } @media (max-width:640px){ .hero .main { grid-template-columns:1fr; } }
+  .bigp .k { font-size:12px; color:var(--muted); } .bigp .v { font-size:56px; font-weight:900; line-height:1; letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+  .bigp .v small { font-size:22px; font-weight:800; margin-left:2px; }
+  .chg { display:inline-flex; gap:6px; margin-top:8px; flex-wrap:wrap; } .chg span { font-size:11.5px; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  .up { color:#ff9f68; } .dn { color:#5ec8f2; } .flat { color:var(--muted); }
+  .bar3 { display:flex; height:22px; border-radius:11px; overflow:hidden; background:rgba(255,255,255,.05); }
+  .bar3 i { display:flex; align-items:center; justify-content:center; height:100%; font-style:normal; font-size:11px; font-weight:800; color:#0f1216; width:0; transition:width 1.1s cubic-bezier(.2,.8,.2,1); white-space:nowrap; overflow:hidden; }
+  .legend3 { display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; margin-top:6px; } .legend3 b { font-variant-numeric:tabular-nums; }
+  .hero .exp { font-size:12.5px; color:#c9cfd8; margin-top:8px; }
+  .minis { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; } @media (max-width:640px){ .minis { grid-template-columns:1fr; } }
+  .mini { border:1px solid var(--line); border-radius:12px; padding:10px 12px; background:rgba(255,255,255,.02); }
+  .mini .k { font-size:12px; color:var(--muted); } .mini .v { font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; } .mini .s { font-size:12px; color:#c9cfd8; }
+  .mini .bar3 { height:8px; margin:6px 0 4px; } .mini .bar3 i { font-size:0; }
+  /* CME 표 */
   .tbl { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   table { width:100%; border-collapse:collapse; font-size:12.5px; }
   th, td { padding:6px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; font-variant-numeric:tabular-nums; }
   th { color:var(--muted); font-weight:500; white-space:nowrap; } td.r, th.r { text-align:right; white-space:nowrap; }
+  table.fut td, table.fut th { text-align:center; } table.fut td { font-weight:700; }
+  table.mx { border-collapse:separate; border-spacing:2px; } table.mx th { text-align:center; font-size:11.5px; line-height:1.3; }
+  table.mx td { text-align:center; border:0; border-radius:6px; padding:7px 4px; font-weight:600; min-width:54px; white-space:nowrap; transition:background .6s; }
+  table.mx td.md { text-align:left; color:#c9cfd8; font-weight:500; min-width:84px; } table.mx th.curr { color:#fff; }
+  table.mx td.z { color:#4b5361; font-weight:400; }
   .news { display:grid; gap:2px; } .news a { color:var(--fg); text-decoration:none; } .news a:hover { text-decoration:underline; }
   .news .row { display:grid; grid-template-columns:78px 1fr; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; line-height:1.5; } .news .tm { color:var(--muted); font-variant-numeric:tabular-nums; } .news .src { color:var(--muted); font-size:11.5px; }
   .tag { display:inline-block; padding:0 6px; border-radius:4px; font-size:11px; margin-left:4px; border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
-  .tag.hike { color:#ff9f68; border-color:rgba(255,159,104,.4); } .tag.hold { color:#c9cfd8; } .tag.cut { color:#9ad0f5; border-color:rgba(154,208,245,.4); }
+  .tag.hike { color:var(--hike); } .tag.cut { color:var(--cut); }
+  .snip { color:var(--muted); font-size:11.5px; margin-top:2px; }
+  .fwc { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; } @media (max-width:640px){ .fwc { grid-template-columns:1fr; } }
+  .fwc > div { border:1px solid var(--line); border-radius:10px; padding:10px 12px; } .fwc .k { font-size:11.5px; color:var(--muted); } .fwc .v { font-size:21px; font-weight:800; font-variant-numeric:tabular-nums; } .fwc .s { font-size:12px; color:var(--muted); }
   details { font-size:13px; line-height:1.7; color:#c9cfd8; }
   details summary { cursor:pointer; color:var(--accent); font-size:12.5px; list-style:none; display:inline-flex; align-items:center; gap:6px; padding:2px 9px; border:1px solid rgba(255,140,66,.35); border-radius:999px; user-select:none; }
   details summary::-webkit-details-marker { display:none; } details summary::before { content:'＋'; font-weight:700; } details[open] summary::before { content:'－'; } details[open] summary { background:rgba(255,140,66,.1); }
   details .in { margin-top:6px; padding:9px 11px; border-left:3px solid rgba(255,140,66,.5); background:rgba(255,255,255,.03); border-radius:0 8px 8px 0; }
-  .snip { color:var(--muted); font-size:11.5px; margin-top:2px; }
+  .fade { animation:fade .6s ease both; } @keyframes fade { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  .flash { animation:flash 1.2s ease; } @keyframes flash { 0%{background:rgba(255,159,104,.35)} 100%{background:transparent} }
 </style>
 </head><body>
 <div class="wrap">
@@ -46,44 +72,48 @@
     <span class="date" id="today"></span>
   </header>
 
+  <div class="hero" id="hero"><div class="muted">불러오는 중…</div></div>
+  <div class="minis" id="minis"></div>
+
   <div class="panel">
-    <h2>금리 인상 확률 — FedWatch 기준 (인용값) <span class="desc">CME 화면은 직접 못 봐서, 뉴스·검색·커뮤니티에 인용된 FedWatch 숫자를 모아 회의별 가운데값 · 15분마다</span></h2>
+    <h2>CME FedWatch 표 (재현) <span class="desc">연방기금 선물 가격으로 CME와 같은 방법으로 계산한 회의별 목표금리 구간 확률 · 가장 높은 칸은 하늘색</span></h2>
     <div class="body">
-      <div class="meets" id="meets"><div class="muted">불러오는 중…</div></div>
-      <div id="histWrap" style="display:none"><div class="fine">인상 확률(인용값) 추이 — 15분마다 쌓임</div><div id="hist" style="height:220px"></div></div>
-      <div class="fine" id="srcNote"></div>
+      <div class="tbl"><table class="fut" id="fut"></table></div>
+      <div class="tbl"><table class="mx" id="mx"></table></div>
+      <div class="fine" id="mxNote"></div>
     </div>
   </div>
 
   <div class="panel">
-    <h2>인용된 숫자 <span class="desc">어디서 · 언제 · 어느 회의 · 몇 %</span></h2>
-    <div class="body"><div class="tbl"><table id="figs"></table></div></div>
+    <h2>금리 경로 <span class="desc">회의마다 예상되는 목표금리(확률 가중) · 막대 = 지금보다 높을 확률</span></h2>
+    <div class="body"><div id="path" style="height:260px"></div>
+      <div id="histWrap" style="display:none"><div class="fine">인상 확률 추이 — 15분마다 쌓임</div><div id="hist" style="height:200px"></div></div></div>
   </div>
 
   <div class="panel">
-    <h2>언급 수 <span class="desc">'FedWatch·페드워치'와 금리 확률 기사·글이 평소보다 몰리나</span></h2>
+    <h2>교차 확인 — 뉴스·커뮤니티가 인용한 FedWatch <span class="desc">계산값과 언론·커뮤니티에 돈 숫자 비교</span></h2>
+    <div class="body">
+      <div class="tbl"><table id="cross"></table></div>
+      <details><summary>인용된 숫자 원문</summary><div class="in"><div class="tbl"><table id="figs"></table></div></div></details>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>언급 수 · 반응 <span class="desc">'FedWatch·페드워치' 기사와 글이 평소보다 몰리나</span></h2>
     <div class="body">
       <div class="fwc" id="cards"></div>
-      <div class="tbl"><table id="byq"></table></div>
-      <div class="fine">평소 = 최근 7일 하루 평균. FOMC 주간에는 원래 늘어납니다. 같은 기사가 여러 매체에 실리면 한 번만 셉니다.</div>
+      <details><summary>검색어별 기사 수</summary><div class="in"><div class="tbl"><table id="byq"></table></div></div></details>
+      <details open><summary>커뮤니티 (디시 · 에펨)</summary><div class="in"><div class="news" id="comm"></div></div></details>
+      <details><summary>뉴스</summary><div class="in"><div class="news" id="news"></div></div></details>
     </div>
   </div>
 
   <div class="panel">
-    <h2>반응 <span class="desc">최근 뉴스 · 커뮤니티 글</span></h2>
+    <h2>어떻게 구하나</h2>
     <div class="body">
-      <details open><summary>커뮤니티 (디시 · 에펨 'FedWatch·페드워치' 글)</summary><div class="in"><div class="news" id="comm"></div></div></details>
-      <details open><summary>뉴스</summary><div class="in"><div class="news" id="news"></div></div></details>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>어떻게 구하나 · 한계</h2>
-    <div class="body">
-      <div>① Google 뉴스·Bing 뉴스·네이버·다음 뉴스 검색, DuckDuckGo·Google 검색, 디시인사이드 통합검색, 에펨코리아(검색엔진 경유)에서 'FedWatch·페드워치' 글을 15분마다 모읍니다.<br>
-      ② 글 속에서 '확률·odds·FedWatch' 가까이 있는 퍼센트를 인상/동결/인하로 나누고, 앞에 적힌 달(‘12월 회의’, ‘this month’, ‘December hike’)로 어느 회의인지 정합니다. 달이 없으면 그 글이 나온 때의 다음 회의로 봅니다.<br>
-      ③ 회의마다 최근 24시간(없으면 3일, 7일) 숫자의 가운데값을 보여 줍니다. 인상 숫자가 없고 동결만 있으면 '≈ 100 − 동결 − 인하'로 표시합니다.</div>
-      <div class="fine">한계: CME가 실시간으로 바꾸는 숫자를 몇 시간 늦게 인용한 값입니다. 자동으로 문장을 읽어서 가끔 다른 숫자(다른 회의·다른 시점)가 섞일 수 있어 가운데값을 씁니다 — 아래 '인용된 숫자'에서 원문을 확인하세요. 에펨코리아는 직접 자동 수집을 막고 있어서, 검색엔진(Bing·DuckDuckGo)에 색인된 에펨 글의 제목·요약만 가져옵니다 — 색인이 늦어 몇 시간~하루 늦을 수 있습니다.</div>
+      <div><b>표·큰 숫자</b>: CME 사이트는 직접 못 열어서, 같은 원재료인 연방기금 30일 선물(ZQ) 가격을 받아 CME FedWatch와 같은 방법으로 계산합니다. 100 − 가격 = 그 달 평균 금리 → 회의가 있는 달은 회의 전·후 날짜 비율로 '회의 직후 금리'를 풀고(다음 달에 회의가 없으면 그 달 선물을 그대로) → 0.25%p 한 번으로 나눠 확률 → 회의를 차례로 이어 붙여 구간별 확률을 냅니다. 2026-10-28 화면 캡처 값과 비교하면 ±0.5%p 안으로 맞습니다(출발 금리 반올림 차이).</div>
+      <div><b>교차 확인</b>: 뉴스(Google·Bing·네이버·다음), 검색(DuckDuckGo), 커뮤니티(디시, 에펨은 검색엔진 경유)에 인용된 FedWatch 숫자의 가운데값.</div>
+      <div class="fine">선물 가격은 Yahoo 지연 시세(10~20분), 출발 금리는 뉴욕 연은이 발표한 전날 실효금리(EFFR)입니다. 15분마다 다시 계산하며, 페이지를 열어 두면 자동으로 새 값을 불러옵니다. 투자 판단은 본인 몫입니다.</div>
       <div class="fine" id="ts"></div>
     </div>
   </div>
@@ -95,49 +125,98 @@ const kst=t=>{ const d=new Date(new Date(t).getTime()+9*36e5); return `${d.getUT
 const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KN={cut:'인하',hold:'동결',hike:'인상'};
 const md=ds=>`${+ds.slice(5,7)}/${+ds.slice(8,10)}`;
-const dleft=ds=>{ const a=new Date(Date.parse(ds+'T18:00:00Z')+9*36e5), k=new Date(Date.now()+9*36e5);
-  const n=Math.round((Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate())-Date.UTC(k.getUTCFullYear(),k.getUTCMonth(),k.getUTCDate()))/864e5);
-  return `발표 한국 ${a.getUTCMonth()+1}/${a.getUTCDate()} 새벽 · ${n<=0?'오늘':'D-'+n}`; };
-const WIN={24:'최근 24시간',72:'최근 3일',168:'최근 7일'};
-let FW=null;
+const f1=v=>v==null?'—':(+v).toFixed(1);
+// FOMC 발표 시각: 미국 동부 오후 2시 (서머타임: 3월 둘째 일요일 ~ 11월 첫째 일요일)
+function nthSunday(y,m,n){ const d=new Date(Date.UTC(y,m,1)); const add=(7-d.getUTCDay())%7; return Date.UTC(y,m,1+add+7*(n-1)); }
+function announceUTC(ds){ const [y,m,d]=ds.split('-').map(Number); const t=Date.UTC(y,m-1,d); const dst=t>=nthSunday(y,2,2)&&t<nthSunday(y,10,1); return Date.UTC(y,m-1,d,dst?18:19); }
+const rangeLbl=bp=>`${(bp/100).toFixed(2)}–${((+bp+25)/100).toFixed(2)}%`;
+let FW=null, prevHike=null;
+
+function deltaBadge(now, past, lbl){ if(now==null||past==null) return ''; const d=now-past; const c=Math.abs(d)<0.05?'flat':d>0?'up':'dn'; return `<span class="${c}">${lbl} ${d>0?'▲':d<0?'▼':'·'} ${Math.abs(d).toFixed(1)}%p</span>`; }
+function histAt(hoursAgo, ds){ const H=(FW.hist||[]).filter(h=>h.f&&h.f.length); const target=Date.now()-hoursAgo*36e5; let best=null;
+  for(const h of H){ const t=Date.parse(h.t); if(t<=target && (!best||t>Date.parse(best.t))) best=h; }
+  if(!best) return null; const r=best.f.find(x=>x[0]===ds); return r?r[1]:null; }
+
 function render(){
-  const M=FW.meets||[], cnt=FW.counts||{};
-  $('#meets').innerHTML=M.map((m,ix)=>{
-    const h=m.hike_est, hold=m.hold, cut=m.cut;
-    const sh=h??0, sc=cut??0, so=hold??Math.max(0,100-sh-sc);
-    return `<div class="mt${ix===0?' first':''}"><div class="k">${ix===0?'다음':'그다음'} FOMC · ${md(m.date)} <span class="muted">(${dleft(m.date)})</span></div>
-      <div class="k" style="margin-top:6px">금리 인상 확률</div>
-      <div class="big">${h==null?'—':(m.derived?'≈':'')+h+'%'}${h!=null&&m.derived?'<small>100−동결</small>':''}</div>
-      ${h!=null||hold!=null?`<div class="seg"><i style="width:${sc}%;background:#9ad0f5"></i><i style="width:${so}%;background:#5b6472"></i><i style="width:${sh}%;background:#ff9f68"></i></div>`:''}
-      <div class="s"><span class="hike">인상 ${m.hike!=null?m.hike+'%':'—'}</span> · <span class="hold">동결 ${hold!=null?hold+'%':'—'}</span> · <span class="cut">인하 ${cut!=null?cut+'%':'—'}</span></div>
-      <div class="src">${m.window?`${WIN[m.window]} 인용 ${m.hike_n+m.hold_n+m.cut_n}개의 가운데값 · 마지막 ${kst(m.latest)}${(m.hike_n+m.hold_n+m.cut_n)<3?' · <b style="color:#f0b429">인용이 적어 참고만</b>':''}`:'최근 7일 인용된 숫자 없음'}</div></div>`; }).join('')||'<div class="muted">자료 준비 중</div>';
-  const fs=FW.fig_src||{}, SN={news:'뉴스',search:'검색',comm:'커뮤니티'};
-  $('#srcNote').innerHTML=`최근 3일 숫자 출처: ${Object.keys(fs).length?Object.entries(fs).map(([k,v])=>`${SN[k]||k} ${v}개`).join(' · '):'없음'}. 가운데값이라 숫자 한두 개가 틀려도 크게 흔들리지 않지만, 인용이 적을 땐 아래 원문을 직접 확인하세요.`;
-  // 인용된 숫자
-  const F=FW.figs||[];
-  $('#figs').innerHTML='<tr><th>시각</th><th>회의</th><th>숫자</th><th>출처 · 문장</th></tr>'+(F.length?F.slice(0,40).map(f=>`<tr><td class="r">${kst(f.ts)}</td><td>${md(f.meet)}${f.sure?'':' <span class="muted">(추정)</span>'}</td><td class="${f.kind}" style="white-space:nowrap;font-weight:700">${KN[f.kind]} ${f.v}%</td><td><a href="${esc(f.link)}" target="_blank" rel="noopener" style="color:var(--fg)">${esc((f.title||'').replace(/\s+-\s+[^-]+$/,'').slice(0,110))}</a> <span class="muted">${esc(f.src)}</span>${f.text&&f.text!==f.title?`<div class="snip">${esc(f.text.slice(0,160))}…</div>`:''}</td></tr>`).join(''):'<tr><td colspan="4" class="muted">최근 7일 인용된 숫자 없음</td></tr>');
+  const F=FW.fw, M=(F&&F.meets)||[];
+  if(!M.length){ $('#hero').innerHTML='<div class="muted">선물 가격을 아직 받지 못했습니다 — 15분 안에 다시 계산합니다.</div>'; }
+  else{
+    const m=M[0], mHike=m.hike, cls=mHike>=50?'up':m.cut>=50?'dn':'';
+    const lead=[['인상',m.hike,'var(--hike)'],['동결',m.hold,'var(--hold)'],['인하',m.cut,'var(--cut)']].sort((a,b)=>b[1]-a[1])[0];
+    $('#hero').innerHTML=`<div class="top"><div class="meet">다음 FOMC <b>${m.date}</b> <span class="muted">· 한국 ${kst(announceUTC(m.date))} 발표</span></div>
+        <div class="cd" id="cd"></div></div>
+      <div class="main"><div class="bigp"><div class="k">금리 인상 확률</div><div class="v" style="color:var(--hike)"><span id="bigNum">0</span><small>%</small></div>
+          <div class="chg">${deltaBadge(mHike,histAt(1,m.date),'1시간')}${deltaBadge(mHike,histAt(24,m.date),'하루')}${deltaBadge(mHike,histAt(24*7,m.date),'일주일')}</div></div>
+        <div><div class="bar3"><i style="background:var(--cut)" data-w="${m.cut}">${m.cut>=8?'인하 '+f1(m.cut)+'%':''}</i><i style="background:var(--hold)" data-w="${m.hold}">${m.hold>=8?'동결 '+f1(m.hold)+'%':''}</i><i style="background:var(--hike)" data-w="${m.hike}">${m.hike>=8?'인상 '+f1(m.hike)+'%':''}</i></div>
+          <div class="legend3"><span style="color:var(--cut)">● 인하 <b>${f1(m.cut)}%</b></span><span style="color:#c9cfd8">● 동결 <b>${f1(m.hold)}%</b></span><span style="color:var(--hike)">● 인상 <b>${f1(m.hike)}%</b></span></div>
+          <div class="exp">시장이 가장 크게 보는 쪽: <b style="color:${lead[2]}">${lead[0]} ${f1(lead[1])}%</b> · 회의 뒤 예상 금리 <b>${(+m.exp).toFixed(2)}%</b> <span class="muted">(지금 실효금리 ${F.effr}% · 목표 ${F.lo.toFixed(2)}–${F.hi.toFixed(2)}%)</span></div></div></div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px" id="liveRow"></div>`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#hero .bar3 i').forEach(i=>i.style.width=i.dataset.w+'%')));
+    countUp($('#bigNum'), prevHike??0, mHike); prevHike=mHike;
+    $('#minis').innerHTML=M.slice(1,4).map(x=>`<div class="mini fade"><div class="k">${x.date} <span class="muted">· ${kst(announceUTC(x.date)).split(' ')[0]} 발표</span></div>
+       <div class="v" style="color:${x.hike>=50?'var(--hike)':x.cut>=50?'var(--cut)':'#c9cfd8'}">인상 ${f1(x.hike)}%</div>
+       <div class="bar3"><i style="background:var(--cut);width:${x.cut}%"></i><i style="background:var(--hold);width:${x.hold}%"></i><i style="background:var(--hike);width:${x.hike}%"></i></div>
+       <div class="s">동결 ${f1(x.hold)}% · 인하 ${f1(x.cut)}% · 예상 금리 ${(+x.exp).toFixed(2)}% <span class="muted">${deltaBadge(x.hike,histAt(24,x.date),'하루')}</span></div></div>`).join('');
+    // 선물 가격
+    const fu=(F.futures||[]).filter(f=>f.price!=null).slice(0,8);
+    $('#fut').innerHTML=`<tr><th colspan="${fu.length}">FED FUND FUTURES (지연 시세)</th></tr><tr>${fu.map(f=>`<th>${f.code}</th>`).join('')}</tr><tr>${fu.map(f=>`<td>${f.price.toFixed(4)}</td>`).join('')}</tr><tr>${fu.map(f=>`<td class="fine" style="font-weight:400">${f.rate.toFixed(3)}%</td>`).join('')}</tr>`;
+    // 확률 표
+    const cols=[...new Set(M.flatMap(x=>Object.keys(x.probs).filter(k=>x.probs[k]>=0.05)))].map(Number).sort((a,b)=>a-b);
+    const cur=Math.round(F.lo*100);
+    const cell=(p,isMax)=>{ if(p==null||p<0.05) return `<td class="z">0.0%</td>`; const a=Math.min(1,p/100);
+      return isMax?`<td style="background:rgba(94,200,242,${.25+.55*a});color:#fff">${p.toFixed(1)}%</td>`:`<td style="background:rgba(240,180,41,${.07+.35*a});color:#f3e2b3">${p.toFixed(1)}%</td>`; };
+    $('#mx').innerHTML=`<tr><th>회의</th>${cols.map(c=>`<th class="${c===cur?'curr':''}">${(c/100).toFixed(2)}<br>${((c+25)/100).toFixed(2)}${c===cur?'<br><span style="color:var(--live)">지금</span>':''}</th>`).join('')}</tr>`+
+      M.map(x=>{ const mx=Math.max(...Object.values(x.probs)); return `<tr><td class="md">${x.date}</td>${cols.map(c=>{ const p=x.probs[String(c)]; return cell(p, p!=null&&p===mx); }).join('')}</tr>`; }).join('');
+    $('#mxNote').innerHTML=`구간 = 목표금리 범위(%). '지금' = 현재 목표 ${F.lo.toFixed(2)}–${F.hi.toFixed(2)}%. 계산 ${kst(F.asof)} · 출발 실효금리 ${F.effr}% (${F.effr_date}). 먼 회의일수록 앞 회의 예상이 쌓여 불확실합니다.`;
+    drawPath(M,F);
+  }
+  // 교차 확인
+  const Q=FW.meets||[];
+  $('#cross').innerHTML='<tr><th>회의</th><th class="r">선물 계산 인상</th><th class="r">뉴스·커뮤니티 인용 인상</th><th class="r">차이</th><th>인용</th></tr>'+M.slice(0,3).map(x=>{ const q=Q.find(y=>y.date===x.date); const qv=q?q.hike_est:null; const d=qv!=null?qv-x.hike:null;
+    return `<tr><td>${x.date}</td><td class="r" style="color:var(--hike)">${f1(x.hike)}%</td><td class="r">${qv!=null?(q.derived?'≈':'')+f1(qv)+'%':'—'}</td><td class="r ${d==null?'':Math.abs(d)<=5?'flat':'up'}">${d==null?'—':(d>0?'+':'')+d.toFixed(1)+'%p'}</td><td class="muted">${q&&q.window?`${q.hike_n+q.hold_n+q.cut_n}개 · 마지막 ${kst(q.latest)}`:'없음'}</td></tr>`; }).join('');
+  const FG=FW.figs||[];
+  $('#figs').innerHTML='<tr><th>시각</th><th>회의</th><th>숫자</th><th>출처 · 문장</th></tr>'+(FG.length?FG.slice(0,40).map(f=>`<tr><td class="r">${kst(f.ts)}</td><td>${md(f.meet)}</td><td class="${f.kind==='hike'?'up':f.kind==='cut'?'dn':''}" style="white-space:nowrap;font-weight:700">${KN[f.kind]} ${f.v}%</td><td><a href="${esc(f.link)}" target="_blank" rel="noopener" style="color:var(--fg)">${esc((f.title||'').replace(/\s+-\s+[^-]+$/,'').slice(0,100))}</a> <span class="muted">${esc(f.src)}</span>${f.text&&f.text!==f.title?`<div class="snip">${esc(f.text.slice(0,150))}…</div>`:''}</td></tr>`).join(''):'<tr><td colspan="4" class="muted">없음</td></tr>');
   // 언급 수
-  const heat=(h,d7)=>d7?h/(d7/7):null, hc=r=>r>=2?'#ff9f68':'#c9cfd8', hs=(h,d7)=>{ const r=heat(h,d7); return r?`평소의 <b style="color:${hc(r)}">${r.toFixed(1)}배</b> · 7일 ${d7}건`:`7일 ${d7??0}건`; };
+  const cnt=FW.counts||{}, heat=(h,d7)=>d7?h/(d7/7):null, hs=(h,d7)=>{ const r=heat(h,d7); return r?`평소의 <b class="${r>=2?'up':''}">${r.toFixed(1)}배</b> · 7일 ${d7}건`:`7일 ${d7??0}건`; };
   $('#cards').innerHTML=`<div><div class="k">'FedWatch·페드워치' 뉴스 (24시간)</div><div class="v">${cnt.fw24??'—'}건</div><div class="s">${hs(cnt.fw24,cnt.fw7d)}</div></div>
     <div><div class="k">금리 확률 뉴스 전체 (24시간)</div><div class="v">${cnt.n24??'—'}건</div><div class="s">${hs(cnt.n24,cnt.n7d)}</div></div>
     <div><div class="k">커뮤니티 글 (24시간)</div><div class="v">${cnt.c24??'—'}건</div><div class="s">${hs(cnt.c24,cnt.c7d)}</div></div>`;
-  const QN={'FedWatch':'FedWatch','FedWatch rate hike probability':'FedWatch rate hike probability','"rate cut" odds Fed':'rate cut odds','fed funds futures':'fed funds futures','페드워치':'페드워치','금리 인상 확률 연준':'금리 인상 확률 연준','금리 인하 확률 연준':'금리 인하 확률 연준'};
-  $('#byq').innerHTML='<tr><th>검색어 (Google 뉴스)</th><th class="r">24시간</th><th class="r">7일</th><th class="r">평소 대비</th></tr>'+Object.entries(cnt.byq||{}).map(([q,v])=>{ const r=heat(v.h24,v.d7); return `<tr><td>${esc(QN[q]||q)}</td><td class="r">${v.h24}</td><td class="r">${v.d7}</td><td class="r" style="color:${r>=2?'#ff9f68':'inherit'}">${r?r.toFixed(1)+'배':'—'}</td></tr>`; }).join('');
-  // 반응
+  $('#byq').innerHTML='<tr><th>검색어 (Google 뉴스)</th><th class="r">24시간</th><th class="r">7일</th><th class="r">평소 대비</th></tr>'+Object.entries(cnt.byq||{}).map(([q,v])=>{ const r=heat(v.h24,v.d7); return `<tr><td>${esc(q)}</td><td class="r">${v.h24}</td><td class="r">${v.d7}</td><td class="r ${r>=2?'up':''}">${r?r.toFixed(1)+'배':'—'}</td></tr>`; }).join('');
   const row=(x,title)=>`<div class="row"><div class="tm">${kst(x.ts)}</div><div><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(title)}</a> <span class="src">${esc(x.src)}</span>${(x.probs||[]).map(p=>`<span class="tag ${p[0]}">${KN[p[0]]} ${p[1]}%</span>`).join('')}${x.text&&x.text!==x.title?`<div class="snip">${esc(x.text.slice(0,150))}…</div>`:''}</div></div>`;
-  $('#comm').innerHTML=(FW.comm||[]).slice(0,12).map(c=>row(c,c.title||c.text.slice(0,60))).join('')||'<span class="muted">최근 7일 글 없음</span>';
+  $('#comm').innerHTML=(FW.comm||[]).slice(0,10).map(c=>row(c,c.title||c.text.slice(0,60))).join('')||'<span class="muted">최근 7일 글 없음</span>';
   const rel=/fed|fomc|rate|연준|금리|페드워치|treasury|yield|powell|warsh/i;
   $('#news').innerHTML=(FW.news||[]).filter(n=>rel.test(n.title)).slice(0,20).map(n=>row(n,n.title.replace(/\s+-\s+[^-]+$/,''))).join('')||'<span class="muted">기사 없음</span>';
-  $('#ts').innerHTML=`15분마다 다시 모음 · 마지막 ${kst(FW.ts*1000)} (한국 시각) · 페이지를 열어 두면 15분마다 새로 불러옵니다.${FW.ts*1000<Date.now()-90*60e3?' <b style="color:#ff9f68">· 1시간 넘게 갱신이 없음 — 수집이 막혔을 수 있음</b>':''}`;
+  tick();
   drawHist();
+}
+function countUp(el, from, to){ const t0=performance.now(), dur=900; const step=t=>{ const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3); el.textContent=(from+(to-from)*e).toFixed(1); if(k<1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+function tick(){
+  const F=FW&&FW.fw; const M=(F&&F.meets)||[];
+  if(M.length&&$('#cd')){ let ms=announceUTC(M[0].date)-Date.now(); const done=ms<=0; ms=Math.max(0,ms);
+    const d=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5), m=Math.floor(ms%36e5/6e4), s=Math.floor(ms%6e4/1e3);
+    $('#cd').innerHTML=done?'<div><b>발표됨</b><span>다음 갱신 때 반영</span></div>':[[d,'일'],[h,'시간'],[m,'분'],[s,'초']].map(([v,u])=>`<div><b>${String(v).padStart(2,'0')}</b><span>${u}</span></div>`).join(''); }
+  if(FW&&$('#liveRow')){ const age=(Date.now()-FW.ts*1000)/6e4, nxt=Math.max(0,15-age%15);
+    $('#hero').classList.toggle('stale', age>60);
+    $('#liveRow').innerHTML=`<span class="live"><i></i>${age>60?'갱신 지연':'LIVE'}</span><span class="fine">${Math.floor(age)}분 전 계산 · 다음 계산까지 약 ${Math.ceil(nxt)}분 · 선물 지연 시세</span>`; }
+}
+setInterval(tick,1000);
+function drawPath(M,F){
+  if(!window.Plotly) return;
+  const x=M.map(m=>m.date);
+  Plotly.react('path',[
+    {type:'bar',x,y:M.map(m=>m.hike),name:'인상 확률',yaxis:'y2',marker:{color:'rgba(255,159,104,.28)'},hovertemplate:'인상 %{y:.1f}%<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',x,y:M.map(m=>m.exp),name:'예상 금리',line:{color:'#ff9f68',width:2.5,shape:'spline'},marker:{size:8,color:'#ff9f68',line:{color:'#0f1216',width:2}},hovertemplate:'%{x} 예상 %{y:.2f}%<extra></extra>'}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:44,t:10,b:30},showlegend:false,hovermode:'x unified',
+     xaxis:{gridcolor:'#262c35',type:'category'},yaxis:{gridcolor:'#262c35',ticksuffix:'%',tickformat:'.2f'},yaxis2:{overlaying:'y',side:'right',range:[0,100],ticksuffix:'%',showgrid:false},
+     shapes:[{type:'rect',xref:'paper',x0:0,x1:1,y0:F.lo,y1:F.hi,fillcolor:'rgba(61,220,132,.07)',line:{width:0}}],
+     annotations:[{xref:'paper',x:0.01,y:F.hi,yanchor:'bottom',xanchor:'left',text:'지금 목표 구간',showarrow:false,font:{size:10,color:'#3ddc84'}}]},{displayModeBar:false,responsive:true});
 }
 function drawHist(){
   if(!window.Plotly) return;
-  const H=(FW.hist||[]).filter(h=>h.m&&h.m.length); if(H.length<8) return;
-  const meets=[...new Set(H.flatMap(h=>h.m.map(x=>x[0])))].filter(ds=>(FW.meets||[]).some(m=>m.date===ds));
-  const C=['#ff9f68','#f0b429','#9ad0f5'];
+  const H=(FW.hist||[]).filter(h=>h.f&&h.f.length); if(H.length<6) return;
+  const ds=((FW.fw&&FW.fw.meets)||[]).slice(0,3).map(m=>m.date), C=['#ff9f68','#f0b429','#5ec8f2'];
   $('#histWrap').style.display='';
-  Plotly.react('hist',meets.map((ds,i)=>({type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>{ const r=h.m.find(x=>x[0]===ds); return r?r[1]:null; }),name:md(ds)+' 회의 인상',connectgaps:true,line:{color:C[i%3],width:1.8,shape:'hv'},hovertemplate:'%{y}%<extra>'+md(ds)+'</extra>'})),
+  Plotly.react('hist',ds.map((d,i)=>({type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>{ const r=h.f.find(x=>x[0]===d); return r?r[1]:null; }),name:md(d)+' 인상',connectgaps:true,line:{color:C[i],width:1.8},hovertemplate:'%{y:.1f}%<extra>'+md(d)+'</extra>'})),
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:40,r:10,t:10,b:30},legend:{orientation:'h',y:1.15},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',range:[0,100],ticksuffix:'%'}},{displayModeBar:false,responsive:true});
 }
 const load=()=>fetch('fedwatch.json?'+Math.floor(Date.now()/60000)).then(r=>r.ok?r.json():null).catch(()=>null);
@@ -147,8 +226,9 @@ const loadScript=src=>new Promise((ok,no)=>{ const s=document.createElement('scr
   const p=load();
   for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
   FW=await p;
-  try{ if(FW&&FW.meets) render(); else $('#meets').innerHTML='<div class="muted">자료 준비 중 — 15분 안에 첫 수집이 끝납니다.</div>'; }catch(e){ console.error(e); $('#meets').innerHTML='<div class="muted">표시 오류: '+esc(e.message)+'</div>'; }
-  setInterval(async()=>{ const n=await load(); if(n&&n.meets&&(!FW||n.ts!==FW.ts)){ FW=n; try{ render(); }catch(e){ console.error(e); } } },15*60e3);
+  try{ if(FW) render(); else $('#hero').innerHTML='<div class="muted">자료 준비 중 — 15분 안에 첫 수집이 끝납니다.</div>'; }catch(e){ console.error(e); $('#hero').innerHTML='<div class="muted">표시 오류: '+esc(e.message)+'</div>'; }
+  // 1분마다 새 계산이 올라왔는지 확인 → 바뀌면 숫자가 굴러가며 바뀜
+  setInterval(async()=>{ const n=await load(); if(n&&(!FW||n.ts!==FW.ts)){ FW=n; try{ render(); $('#hero').classList.add('flash'); setTimeout(()=>$('#hero').classList.remove('flash'),1300); }catch(e){ console.error(e); } } },60e3);
 })();
 </script>
 </body></html>
