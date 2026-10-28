@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>절세 플랜</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#9ad0f5; --g:#3ddc84; --y:#f0b429; --r:#f23645; --p:#c39bff; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 48px; max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  h1 { font-size:20px; margin:0; } .date { color:var(--muted); font-size:12px; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .panel > h2 { margin:0; padding:10px 14px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; border-bottom:1px solid var(--line); }
+  .panel > h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .body { padding:14px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.7; }
+  .muted { color:var(--muted); } .fine { font-size:11.5px; color:var(--muted); line-height:1.6; }
+  .ok { color:var(--g); } .bad { color:var(--r); } .wr { color:var(--y); }
+  a { color:var(--accent); }
+  .hero { border-radius:12px; padding:16px 18px; border:1px solid rgba(195,155,255,.5); background:linear-gradient(135deg,rgba(195,155,255,.12),rgba(154,208,245,.06)); position:relative; overflow:hidden; }
+  .hero::after { content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%); animation:sweep 5s ease-in-out infinite; }
+  @keyframes sweep { 0%{transform:translateX(-100%)} 60%,100%{transform:translateX(100%)} }
+  .hero .a { font-size:20px; font-weight:800; line-height:1.45; margin:4px 0 6px; } .hero .s { color:#c9cfd8; font-size:13.5px; }
+  /* 계좌 3개 */
+  .acc { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; } @media (max-width:760px){ .acc { grid-template-columns:1fr; } }
+  .acc > div { border:1px solid var(--line); border-top:4px solid var(--c); border-radius:10px; padding:12px 14px; background:rgba(255,255,255,.02); }
+  .acc h3 { margin:0 0 4px; font-size:15px; color:var(--c); } .acc .role { font-size:12px; color:var(--muted); margin-bottom:6px; }
+  .acc ul { margin:0; padding-left:18px; font-size:12.8px; } .acc li { margin:3px 0; }
+  /* 흐름 */
+  .flow { display:grid; gap:8px; }
+  .st { display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:start; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.02); }
+  .st .n { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#0f1216; background:var(--c); }
+  .st b.t { font-size:14.5px; } .st .d { font-size:13px; color:#c9cfd8; margin-top:3px; }
+  .st.no { border-color:rgba(242,54,69,.45); background:rgba(242,54,69,.06); }
+  .tag { display:inline-block; font-size:10.5px; padding:0 8px; line-height:18px; border-radius:999px; background:var(--c); color:#0f1216; font-weight:700; margin-left:6px; vertical-align:middle; }
+  /* 게이지 */
+  .gauge { position:relative; height:16px; border-radius:8px; background:linear-gradient(90deg,rgba(242,54,69,.55) 0 25%,rgba(240,180,41,.35) 25% 50%,rgba(61,220,132,.25) 50% 100%); margin:26px 0 22px; }
+  .gauge .pin { position:absolute; top:-24px; transform:translateX(-50%); font-size:11.5px; white-space:nowrap; text-align:center; transition:left 1.6s cubic-bezier(.2,.9,.2,1); }
+  .gauge .pin::after { content:''; display:block; margin:2px auto 0; width:3px; height:26px; background:#fff; border-radius:2px; box-shadow:0 0 10px #fff; }
+  .gauge .tk { position:absolute; bottom:-18px; transform:translateX(-50%); font-size:10.5px; color:var(--muted); white-space:nowrap; }
+  .big { font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; }
+  /* 계산기 */
+  .calc { display:grid; grid-template-columns:repeat(4,1fr); gap:8px 12px; } @media (max-width:760px){ .calc { grid-template-columns:repeat(2,1fr); } }
+  .calc label { font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:3px; }
+  .calc input, .calc select { padding:6px 8px; border-radius:6px; border:1px solid var(--line); background:#0a0c0f; color:var(--fg); font-size:13px; font-family:inherit; }
+  .tbl { overflow-x:auto; } table { width:100%; border-collapse:collapse; font-size:12.8px; }
+  th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  th:first-child, td:first-child { text-align:left; white-space:normal; } th { color:var(--muted); font-weight:500; }
+  @media (max-width:640px){ #cTbl td:last-child, #cTbl th:last-child { display:none; } th:first-child, td:first-child { min-width:150px; } }
+  tr.best td { background:rgba(61,220,132,.08); } tr.best td:first-child { color:var(--g); font-weight:700; }
+  .bar { height:8px; border-radius:4px; background:var(--c); box-shadow:0 0 8px var(--c); transition:width 1s cubic-bezier(.2,.9,.2,1); }
+  .check { display:grid; gap:6px; } .check div { padding:8px 12px; border-left:3px solid var(--c,var(--accent)); background:rgba(255,255,255,.03); border-radius:0 8px 8px 0; font-size:13px; }
+  ul.src { margin:0; padding-left:18px; font-size:12.5px; } ul.src li { margin:3px 0; }
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="analysis.html">TQQQ 분석</a><a href="spx.html">S&amp;P500</a><a href="mstr.html">MSTR</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="tax.html" class="cur">절세</a><a href="principles.html">투자의 정석</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="soxl.html">SOXL</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <h1>절세 플랜</h1><span class="date">ISA + 연금저축으로 S&amp;P500 거치 → 저점에 30%를 MSTR·TQQQ로 · 세금까지 챙기는 순서</span>
+  </header>
+
+  <div class="hero">
+    <div class="muted" style="font-size:13px">핵심 한 줄</div>
+    <div class="a">돈을 <b style="color:var(--p)">계좌 밖으로 빼기 전에, 계좌 안에서 갈아탈 수 있는지</b>부터 본다.</div>
+    <div class="s">ISA 안에서 S&amp;P500 → 나스닥100 2배로 바꾸면 세금 혜택이 그대로 남습니다. MSTR·TQQQ(미국 상장)는 ISA·연금에서 못 사니, 꼭 그걸 사야 할 때만 <b>ISA 원금 이내</b>로 빼서 직투 계좌로 옮깁니다. 연금저축의 세액공제 받은 돈은 건드리지 않습니다.</div>
+  </div>
+
+  <div class="panel">
+    <h2>계좌 3개의 역할 <span class="desc">무엇을 어디에 담나</span></h2>
+    <div class="body"><div class="acc">
+      <div style="--c:#3ddc84"><h3>① 연금저축(펀드)</h3><div class="role">노후 금고 · 절대 안 깨는 돈</div><ul>
+        <li>연 <b>600만 원</b>까지 세액공제(IRP 합산 900만) — 총급여 5,500만 이하 <b>16.5%</b>, 초과 <b>13.2%</b> 돌려받음</li>
+        <li>국내 상장 S&amp;P500 ETF로 장기 보유 · 과세이연 → 55세 이후 연금으로 받으면 3.3~5.5%</li>
+        <li><b>레버리지·인버스 ETF 매수 불가</b> → 저점 매매용으로 못 씀</li>
+        <li>세액공제 <b>안 받은</b> 추가 납입분만 언제든 세금 없이 인출 가능 · 공제받은 원금과 수익을 55세 전에 빼면 <b class="bad">16.5% 기타소득세</b></li>
+      </ul></div>
+      <div style="--c:#c39bff"><h3>② 중개형 ISA</h3><div class="role">거치 + 저점 탄약 · 이 플랜의 주력</div><ul>
+        <li>연 2,000만 원·총 1억 원 납입 · 3년 이상 유지</li>
+        <li>순이익 200만 원(서민형 400만 원) 비과세, 초과분 <b>9.9% 분리과세</b> · 계좌 안 손익 통산</li>
+        <li><b>국내 상장 레버리지 ETF 매수 가능</b>(예: 미국나스닥100레버리지(합성) 2배) → 계좌 안에서 갈아타기</li>
+        <li>3년 전이라도 <b>넣은 원금 이내</b> 중도인출은 해지 아님 · 단 뺀 만큼 한도는 다시 안 생김</li>
+      </ul></div>
+      <div style="--c:#f0b429"><h3>③ 해외주식 직투 계좌</h3><div class="role">MSTR · TQQQ · 3배 · 개별주</div><ul>
+        <li>ISA·연금에서 못 사는 미국 상장 종목은 여기서만</li>
+        <li>매매차익 연 <b>250만 원 공제 후 22%</b> 양도소득세 · 같은 해 해외주식끼리 손익 통산</li>
+        <li>분류과세라 금융소득종합과세·건보료와 무관</li>
+        <li>레버리지 ETF는 증권사 사전교육 등 요건이 있을 수 있음 — 미리 확인</li>
+      </ul></div>
+    </div></div>
+  </div>
+
+  <div class="panel">
+    <h2>지금 S&amp;P500 위치 <span class="desc">저점 기준 = 위기대출 페이지와 같은 "가장 최근 최고가 −30%" · 15분마다 갱신</span></h2>
+    <div class="body">
+      <div style="display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline"><span class="big" id="ddNow">—</span><span class="muted" id="ddTxt">불러오는 중…</span></div>
+      <div class="gauge" id="gauge"></div>
+      <div id="ddMsg"></div>
+      <div class="fine" id="ddStat"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>저점이 왔을 때 — 30% 옮기는 순서 <span class="desc">위에서부터 · 아래로 갈수록 세금이 비쌈</span></h2>
+    <div class="body"><div class="flow">
+      <div class="st" style="--c:#3ddc84"><div class="n">1</div><div><b class="t">ISA 안에서 갈아타기</b><span class="tag">세금 0 · 혜택 유지</span><div class="d">ISA의 S&amp;P500 ETF 30%를 팔고, 같은 ISA에서 <b>국내 상장 나스닥100 2배</b>를 삽니다. 돈이 계좌 밖으로 안 나가니 해지·한도 문제가 없고, 수익은 나중에 ISA 전체 순이익으로 200/400만 비과세 + 9.9%. 손실이 나도 S&amp;P 쪽 이익과 통산됩니다. <b>3배·MSTR은 이 방법으로 못 삽니다.</b></div></div></div>
+      <div class="st" style="--c:#c39bff"><div class="n">2</div><div><b class="t">MSTR·TQQQ가 꼭 필요하면 — ISA 원금 이내 중도인출 → 직투</b><span class="tag">인출 시 세금 0</span><div class="d">ISA S&amp;P500을 판 돈을 <b>넣은 원금 범위 안에서</b> 빼서 직투 계좌로 옮깁니다(국내 ETF 결제는 매도 후 2영업일). 인출 순간 세금은 없지만 ① 뺀 금액만큼 ISA 한도가 다시 안 생기고 ② 그 돈의 이후 수익은 ISA 밖이라 250만 공제 후 22%입니다. 원금보다 많이 빼면 3년 전엔 해지로 보고 감면세액을 추징합니다.</div></div></div>
+      <div class="st" style="--c:#9ad0f5"><div class="n">3</div><div><b class="t">연금저축의 "세액공제 안 받은" 추가 납입분</b><span class="tag">원금은 세금 0</span><div class="d">공제 한도(600만)를 넘겨 넣은 돈은 원금 범위에서 세금 없이 뺄 수 있습니다. 다만 그 돈의 수익 부분이나 공제받은 돈이 섞여 나가지 않게 증권사에 "과세 제외 금액" 기준으로 인출해야 합니다.</div></div></div>
+      <div class="st no" style="--c:#f23645"><div class="n">✕</div><div><b class="t">하지 말 것</b><div class="d">연금저축의 세액공제 받은 원금·수익을 55세 전에 빼는 것(16.5%), IRP 해지(법정 사유 외 인출 불가), 의무기간 3년 전 ISA 원금 초과 인출(해지 간주 → 추징), 생활비·전세금을 이 계좌들에 넣어 두는 것.</div></div></div>
+    </div>
+    <div class="fine">ISA·연금 원금 이내 인출 시 납입한도는 복원되지 않는 것이 일반적인 안내입니다. 실행 전에 거래 증권사 약관으로 꼭 확인하세요.</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>세금 계산기 <span class="desc">같은 수익을 어느 계좌에서 냈느냐에 따라 · 숫자만 바꿔 보세요</span></h2>
+    <div class="body">
+      <div class="calc">
+        <label>투자 원금 (만원)<input id="cP" type="number" value="2000" min="0" step="100"></label>
+        <label>수익률 (%)<input id="cR" type="number" value="40" step="5"></label>
+        <label>ISA 유형<select id="cT"><option value="200">일반형 (비과세 200만)</option><option value="400">서민형 (총급여 5,000만 이하 · 400만)</option></select></label>
+        <label>총급여<select id="cS"><option value="0.165">5,500만 이하 (공제 16.5%)</option><option value="0.132">5,500만 초과 (13.2%)</option></select></label>
+      </div>
+      <div class="tbl"><table id="cTbl"></table></div>
+      <div class="fine">단순화한 계산입니다: 한 번에 팔아 실현했다고 가정 · 환율·수수료·배당 무시 · 연금은 55세 이후 연 1,500만 원 이하 수령(3.3~5.5%, 여기선 5.5%로 보수 계산)이고 세액공제 환급을 따로 표시 · 일반계좌 국내 상장 해외 ETF는 배당소득 15.4%(금융소득 2,000만 원 넘으면 종합과세·건보료 영향). 실제 세액은 개인 상황에 따라 다릅니다.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>30% 옮긴 돈 — ISA 안 2배 vs 직투 TQQQ·MSTR <span class="desc">세금만 비교 (수익률 자체는 상품마다 다름)</span></h2>
+    <div class="body">
+      <div class="calc">
+        <label>옮기는 금액 (만원)<input id="sA" type="number" value="600" step="50"></label>
+        <label>그 돈의 수익률 (%)<input id="sR" type="number" value="100" step="10"></label>
+        <label>ISA 안 다른 순이익 (만원)<input id="sO" type="number" value="300" step="50"></label>
+        <label>ISA 비과세 한도<select id="sT"><option value="200">200만 (일반형)</option><option value="400">400만 (서민형)</option></select></label>
+      </div>
+      <div class="tbl"><table id="sTbl"></table></div>
+      <div id="sNote" class="fine"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>1~2년 안에 저점이 안 오면? <span class="desc">40년 자료로 본 현실</span></h2>
+    <div class="body">
+      <div id="noLow"></div>
+      <div class="check">
+        <div style="--c:#3ddc84">저점이 안 오면 <b>그냥 S&amp;P500 거치가 정답</b>입니다 — 기다리느라 현금으로 들고 있지 않습니다. 거치한 S&amp;P500이 곧 탄약입니다.</div>
+        <div style="--c:#9ad0f5">ISA는 3년 의무기간이 지나면 해지 → 60일 안에 연금저축으로 옮겨 <b>옮긴 금액의 10%(최대 300만 원)를 추가로 세액공제 대상</b>에 넣을 수 있습니다. 환급액은 300만 × 13.2~16.5% = <b>약 40~50만 원</b>입니다("300만 원을 돌려준다"는 글은 틀린 설명).</div>
+        <div style="--c:#f0b429">"저점에 30%"는 한 번 정한 기준(−30%)을 지킬 때만 의미가 있습니다. 2008년처럼 −30%에서 들어가도 −50%까지 더 빠질 수 있으니, 직투로 옮긴 돈은 <b>3년 이상 못 써도 되는 돈</b>이어야 합니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>함정 체크리스트</h2>
+    <div class="body"><div class="check">
+      <div style="--c:#f23645"><b>ISA 2026년 개편(연 4,000만·비과세 500만 등)</b>은 발표·보도는 있었지만 2026년 9월 기준 시행 여부가 자료마다 다릅니다. 지금 계획은 현행 200만/400만·9.9%로 세우고, 바뀌면 그때 늘리면 됩니다.</div>
+      <div style="--c:#f0b429">국내 상장 해외 ETF를 <b>일반계좌</b>에서 사고팔면 매매차익이 배당소득(15.4%)이라 금융소득 2,000만 원·건보료 계산에 들어갑니다. ISA·연금 안에서는 들어가지 않습니다.</div>
+      <div style="--c:#f0b429">연금저축은 레버리지·인버스 ETF를 못 사고, IRP는 위험자산 70% 한도가 있습니다. TDF를 안전자산 30%에 채우는 방법은 정부가 손볼 수 있다는 보도가 있었습니다.</div>
+      <div style="--c:#9ad0f5">연금 수령 때 연 1,500만 원(사적연금 합계)을 넘으면 전액을 16.5% 분리과세 또는 종합과세 중 골라야 합니다. 세액공제 안 받은 원금은 연금소득세 대상이 아닙니다.</div>
+      <div style="--c:#9ad0f5">레버리지 2배(국내)와 TQQQ(3배)는 매일 수익률을 배수로 따라가서, 횡보·하락이 길면 지수보다 훨씬 많이 녹습니다. 이 사이트 <a href="loan.html">위기대출</a>·<a href="banban.html">반반형</a> 페이지의 낙폭 숫자를 먼저 보세요.</div>
+    </div>
+    <div class="fine" style="margin-top:8px">세법은 자주 바뀌고 개인 소득·가입 형태에 따라 결과가 다릅니다. 이 페이지는 공개 자료를 정리한 참고용이며 세무·투자 자문이 아닙니다.</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>참고</h2>
+    <div class="body"><ul class="src">
+      <li><a href="https://asiatop.co.kr/savings/isa-disadvantages-principal-withdrawal/" target="_blank" rel="noopener">ISA 3년 전 원금 초과 인출 = 해지 간주 (조세특례제한법 제91조의18 제8항 해설)</a></li>
+      <li><a href="https://bullstory.io/blog/isa-계좌-미국주식-투자-완전정리-직접-매수-불가-etf로-세금-아끼는-법-2026" target="_blank" rel="noopener">ISA에서 미국 상장 종목 직접 매수 불가 · 2026 개편은 시행 전 (2026-09 업데이트)</a></li>
+      <li><a href="https://maily.so/pensionletter/posts/27d012e5" target="_blank" rel="noopener">연금저축·IRP에서 투자 불가한 ETF (레버리지·인버스·선물)</a></li>
+      <li><a href="https://newthinb.com/%EA%B5%AD%EB%82%B4-%EC%83%81%EC%9E%A5-%EB%82%98%EC%8A%A4%EB%8B%A5-2%EB%B0%B0-%EB%A0%88%EB%B2%84%EB%A6%AC%EC%A7%80-etf-%EB%B9%84%EA%B5%90-isa%EA%B3%84%EC%A2%8C%EB%A1%9C-%ED%95%B4%EB%B3%BC%EA%B9%8C/" target="_blank" rel="noopener">국내 상장 나스닥100 2배 레버리지 ETF (TIGER·KODEX 미국나스닥100레버리지(합성))</a></li>
+      <li>에펨코리아 '직장인 투자법' 4-1·4-2·8·14·23편, 블라인드 절세계좌·건보료 글 (사용자 제공 자료)</li>
+    </ul></div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const won=v=>(Math.round(v)).toLocaleString()+'만';
+// ── S&P500 위치 ──
+(async()=>{ try{
+  const J=await (await fetch('tq40.json?'+Math.floor(Date.now()/600000))).json(); let TQ=null; try{ TQ=await (await fetch('tq.json?'+Math.floor(Date.now()/600000))).json(); }catch(e){}
+  const d=J.d, sp=J.spx.slice(); if(TQ&&TQ.spx&&TQ.spx.idx) sp[sp.length-1]=TQ.spx.idx;
+  let ath=0, athD=''; for(let i=0;i<sp.length;i++){ if(sp[i]>=ath){ ath=sp[i]; athD=d[i]; } }
+  const now=sp[sp.length-1], dd=now/ath-1, line30=ath*0.7, line20=ath*0.8;
+  $('#ddNow').innerHTML=`<span style="color:${dd<=-0.3?'var(--r)':dd<=-0.2?'var(--y)':'var(--g)'}">${(dd*100).toFixed(1)}%</span>`;
+  $('#ddTxt').innerHTML=`S&amp;P500 ${now.toLocaleString(undefined,{maximumFractionDigits:0})} · 최근 최고가 ${ath.toLocaleString(undefined,{maximumFractionDigits:0})} (${athD}) · <b>−30% 선 ${line30.toLocaleString(undefined,{maximumFractionDigits:0})}</b>`;
+  const P=v=>Math.max(0,Math.min(100,(v+0.6)/0.6*100));
+  $('#gauge').innerHTML=`<span class="pin" id="gp" style="left:100%"><b>지금 ${(dd*100).toFixed(1)}%</b></span>`+[[-0.6,'−60%'],[-0.45,'−45%'],[-0.3,'−30% 저점선'],[-0.2,'−20%'],[-0.1,'−10%'],[0,'최고가']].map(([v,t])=>`<span class="tk" style="left:${P(v)}%">${t}</span>`).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ $('#gp').style.left=P(dd)+'%'; }));
+  $('#ddMsg').innerHTML= dd<=-0.3?`<div class="check"><div style="--c:#f23645"><b>저점선(−30%) 아래</b> — 위 순서대로 30% 옮기는 구간입니다. 1번(ISA 안 2배)부터.</div></div>`
+    : `<div class="check"><div style="--c:#3ddc84"><b>아직 저점 아님</b> — 저점선까지 <b>${((1-line30/now)*100).toFixed(1)}%</b> 더 빠져야 합니다. 지금은 S&amp;P500 거치 그대로.</div></div>`;
+  // 40년 통계: 고점 근처(−5% 이내)에서 출발해 1·2년 안에 −20%/−30%에 닿을 확률
+  const a0=d.findIndex(x=>x>='1987-01-01'); let m=0; const DD=sp.map(v=>{ m=Math.max(m,v); return v/m-1; });
+  const prob=(th,H)=>{ let n=0,h=0; for(let i=a0;i<sp.length-H;i+=5){ if(DD[i]<=-0.05) continue; n++; let hit=false; for(let k=i;k<=i+H;k++) if(DD[k]<=th){ hit=true; break; } if(hit) h++; } return h/n*100; };
+  const p30_1=prob(-0.3,252), p30_2=prob(-0.3,504), p20_2=prob(-0.2,504);
+  $('#ddStat').textContent=`1987년 이후 S&P500이 고점 근처(−5% 이내)일 때 시작해서 1년 안에 −30%에 닿은 경우 ${p30_1.toFixed(0)}%, 2년 안 ${p30_2.toFixed(0)}% (−20%는 2년 안 ${p20_2.toFixed(0)}%). −30%에 처음 닿은 날: 1987-10 · 2001-09 · 2008-10 · 2020-03 — 네 번 모두 3년 뒤 플러스였지만 2008년은 거기서 −36%까지 더 빠졌습니다.`;
+  $('#noLow').innerHTML=`<div style="font-size:14px">고점 근처에서 시작하면 <b>2년 안에 −30% 저점이 올 확률은 약 ${p30_2.toFixed(0)}%</b>입니다. 열에 여덟은 저점 없이 지나갑니다.</div>`;
+}catch(e){ $('#ddTxt').textContent='자료 준비 중'; } })();
+// ── 세금 계산기 1 ──
+function calc1(){ const P=+$('#cP').value||0, R=(+$('#cR').value||0)/100, ex=+$('#cT').value, cr=+$('#cS').value, g=P*R;
+  const rows=[
+    ['일반계좌 · 국내 상장 S&amp;P500 ETF', g>0?g*0.154:0, '수익 전체 15.4% (배당소득 · 금융소득 2천만 합산)'],
+    ['직투 · VOO 같은 미국 상장 ETF', Math.max(0,g-250)*0.22, '250만 공제 후 22% (분류과세)'],
+    ['ISA', Math.max(0,g-ex)*0.099, `${ex}만 비과세 후 9.9% 분리과세`],
+    ['연금저축 (55세 이후 연금 수령)', g>0?g*0.055:0, `수익에 5.5% (공제받은 원금 몫도 수령 시 과세) · 대신 납입 시 연 최대 ${won(600*cr)} 환급`]];
+  const max=Math.max(...rows.map(r=>r[1]),1), best=Math.min(...rows.map(r=>r[1]));
+  $('#cTbl').innerHTML=`<tr><th>어디서 냈나</th><th>수익 ${won(g)}에 대한 세금</th><th>세후 수익</th><th style="width:28%"></th></tr>`+rows.map(r=>`<tr class="${r[1]===best?'best':''}"><td>${r[0]}<div class="fine">${r[2]}</div></td><td>${won(r[1])}</td><td>${won(g-r[1])}</td><td><div class="bar" style="--c:${r[1]===best?'#3ddc84':'#f0b429'};width:${(r[1]/max*100).toFixed(1)}%"></div></td></tr>`).join(''); }
+['#cP','#cR','#cT','#cS'].forEach(s=>$(s).addEventListener('input',calc1)); calc1();
+// ── 세금 계산기 2: 옮긴 돈 ──
+function calc2(){ const A=+$('#sA').value||0, R=(+$('#sR').value||0)/100, O=+$('#sO').value||0, ex=+$('#sT').value, g=A*R;
+  const isaBefore=Math.max(0,O-ex)*0.099, isaAfter=Math.max(0,O+g-ex)*0.099, isaTax=isaAfter-isaBefore, dTax=Math.max(0,g-250)*0.22;
+  const best=Math.min(isaTax,dTax);
+  $('#sTbl').innerHTML=`<tr><th>옮긴 ${won(A)}이 ${(R*100).toFixed(0)}% 벌면 (${won(g)})</th><th>이 수익 때문에 늘어나는 세금</th><th>세후</th></tr>
+    <tr class="${isaTax===best?'best':''}"><td>① ISA 안에서 국내 나스닥100 2배로 갈아탐<div class="fine">ISA 다른 순이익 ${won(O)}과 합쳐 ${ex}만 비과세 · 초과 9.9%</div></td><td>${won(isaTax)}</td><td>${won(g-isaTax)}</td></tr>
+    <tr class="${dTax===best?'best':''}"><td>② ISA에서 빼서 직투 TQQQ·MSTR<div class="fine">그해 다른 해외주식 이익이 없다고 보고 250만 공제 후 22%</div></td><td>${won(dTax)}</td><td>${won(g-dTax)}</td></tr>`;
+  $('#sNote').innerHTML=`세금만 보면 ${isaTax<=dTax?'<b>ISA 안 갈아타기가 '+won(dTax-isaTax)+' 덜 냅니다.</b>':'<b>직투가 '+won(isaTax-dTax)+' 덜 냅니다</b>(수익이 작아 250만 공제 안에 들어가는 경우).'} 손실이 나면 ①은 ISA 안 S&amp;P 이익과 상계돼 세금이 줄지만, ②는 그해 해외주식 이익과만 상계됩니다. 상품이 다르다는 점(2배 vs 3배·MSTR)이 세금 차이보다 결과를 더 크게 바꿉니다.`; }
+['#sA','#sR','#sO','#sT'].forEach(s=>$(s).addEventListener('input',calc2)); calc2();
+</script>
+</body></html>
