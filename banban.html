@@ -35,11 +35,6 @@
   .rb { margin-top:10px; padding:10px 12px; border-radius:8px; background:rgba(79,209,197,.07); border:1px solid rgba(79,209,197,.35); font-size:13px; line-height:1.6; }
   .rb.due { border-color:var(--hot); background:rgba(242,54,69,.08); animation:pulse 1.6s ease-out infinite; }
   .rb .h { display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; } .rb .h b { font-size:14px; }
-  .rb .bar { position:relative; height:10px; border-radius:5px; margin:6px 0 2px; background:linear-gradient(90deg, rgba(154,208,245,.55) 0 calc(var(--w)*1%), rgba(79,209,197,.55) calc(var(--w)*1%) 100%); }
-  .rb .bar i { position:absolute; left:50%; top:-3px; width:2px; height:16px; background:#fff; opacity:.8; }
-  .rb .calc { display:grid; grid-template-columns:auto 1fr auto 1fr; gap:6px 8px; align-items:center; margin-top:8px; font-size:12.5px; } @media (max-width:560px){ .rb .calc { grid-template-columns:auto 1fr; } }
-  .rb input { width:100%; padding:5px 8px; border-radius:6px; border:1px solid var(--line); background:#0a0c0f; color:var(--fg); font-variant-numeric:tabular-nums; font-size:13px; }
-  .rb .out { grid-column:1 / -1; padding:6px 10px; border-left:3px solid rgba(79,209,197,.7); background:rgba(255,255,255,.03); border-radius:0 6px 6px 0; }
   /* 게이지 */
   .gauges { display:grid; gap:12px; }
   .g { display:grid; gap:4px; }
@@ -291,47 +286,30 @@ function render(){
   const why=(i,from,to,cutEv)=>cutEv?'TQQQ가 구간 최고가 대비 −25% (TS)':to==='C'?'S&P500이 200일선 −2.5% 아래로':from==='C'?'S&P500이 200일선 +2.5% 위로':to==='T'?'QQQ가 52주 고점 −10% 안으로':'QQQ가 52주 고점 −10% 밖으로';
   const ago=n=>n===0?'오늘':n===1?'어제':`${n}거래일 전`;
   const recent=last&&N-1-last[0]<=1;
-  // ── 리밸런싱 신호 (엔진과 같은 규칙: 신고가 구간 · TS 아님 · 매달 첫 거래일 종가에 50:50) ──
+  // ── 리밸런싱 신호 (엔진과 같은 규칙: 신고가 구간 · TS 아님 · 매달 첫 미국 거래일 종가에 50:50) — 날짜만 알림 ──
   const RB=(()=>{ if(!(inm&&st==='T'&&!cutNow)) return null;
     const isFirst=i=>i>0&&d[i].slice(0,7)!==d[i-1].slice(0,7);
     let lastEntry=0; for(const x of e.ev) if(x[2]==='T'&&!x[4]) lastEntry=x[0];
-    let lastMs=0; for(let i=N-2;i>0;i--) if(isFirst(i)){ lastMs=i; break; }   // 오늘을 뺀 마지막 월초 거래일
-    const today=isFirst(N-1)&&lastEntry!==N-1;   // 오늘이 이달 첫 거래일(= 오늘 종가에 리밸런싱) · 오늘 막 들어온 날이면 비중이 이미 50:50
-    const ref=today?Math.max(lastEntry,lastMs):Math.max(lastEntry,lastMs,isFirst(N-1)?N-1:0), refD=d[ref];
-    const mT=new Map(B.adj.TQQQ.map(r=>[day(r[0]),r[1]])), mS=new Map(B.adj.SPY.map(r=>[day(r[0]),r[1]]));
-    const g=(m,a,b)=>m.has(a)&&m.has(b)?m.get(b)/m.get(a)-1:null;
-    const rT=g(mT,refD,d[N-1]), rS=g(mS,refD,d[N-1]);
-    const wT=rT==null||rS==null?null:0.5*(1+rT)/(0.5*(1+rT)+0.5*(1+rS));
-    // 다음 리밸런싱일 = 다음 달 첫 미국 거래일(주말·1월 1일·9월 첫 월요일 노동절 제외 · 그 밖의 휴장은 다음 거래일)
+    const today=isFirst(N-1)&&lastEntry!==N-1;   // 오늘이 이달 첫 거래일 = 오늘 종가에 리밸런싱 (오늘 막 들어온 날이면 이미 50:50)
+    // 다음 리밸런싱일 = 다음 달 첫 미국 거래일 (주말·1월 1일·9월 첫 월요일 노동절 제외 · 그 밖의 휴장은 다음 거래일)
     const nx=new Date(Date.UTC(dt[N-1].getUTCFullYear(),dt[N-1].getUTCMonth()+1,1));
-    const bump=()=>{ while(nx.getUTCDay()===0||nx.getUTCDay()===6||(nx.getUTCMonth()===0&&nx.getUTCDate()===1)||(nx.getUTCMonth()===8&&nx.getUTCDay()===1&&nx.getUTCDate()<=7)) nx.setUTCDate(nx.getUTCDate()+1); }; bump();
-    const nxD=nx.toISOString().slice(0,10), wd='일월화수목금토'[nx.getUTCDay()], days=Math.round((nx-dt[N-1])/864e5);
-    return {ref,refD,today,rT,rS,wT,nxD,wd,days}; })();
-  const pctW=x=>(x*100).toFixed(0);
+    while(nx.getUTCDay()===0||nx.getUTCDay()===6||(nx.getUTCMonth()===0&&nx.getUTCDate()===1)||(nx.getUTCMonth()===8&&nx.getUTCDay()===1&&nx.getUTCDate()<=7)) nx.setUTCDate(nx.getUTCDate()+1);
+    return {today,nxD:nx.toISOString().slice(0,10),wd:'일월화수목금토'[nx.getUTCDay()],days:Math.round((nx-dt[N-1])/864e5)}; })();
   // 오늘 할 일
   let todo;
   if(last&&N-1-last[0]===0) todo=`오늘 종가에 <b>${lab(last[1],last[3])} → ${lab(last[2],last[4])}</b>로 바꿉니다 (${why(last[0],last[1],last[2],last[4])}).`;
-  else if(RB&&RB.today) todo=`<b>오늘 종가에 리밸런싱</b> — 이달 첫 거래일입니다. 그날 평가금액 기준 <b>TQQQ 50% : SPYM 50%</b>로 되돌립니다${RB.wT!=null?` (지금 약 TQQQ ${pctW(RB.wT)} : ${pctW(1-RB.wT)} SPYM → <b>${RB.wT>0.5?'TQQQ를 계좌의 '+pctW(RB.wT-0.5)+'% 팔아 SPYM 매수':'SPYM을 계좌의 '+pctW(0.5-RB.wT)+'% 팔아 TQQQ 매수'}</b>)`:''}. 아래 계산기에 평가금액을 넣으면 금액이 나옵니다.`;
+  else if(RB&&RB.today) todo=`<b>오늘 종가에 리밸런싱</b> — 이달 첫 거래일입니다. 오늘 종가 평가금액 기준으로 <b>TQQQ 50% : SPYM 50%</b>로 되돌립니다.`;
   else { todo= !inm?'<b>아무것도 안 함</b> — SGOV로 대기. S&P500이 밴드 위(+2.5%)로 올라오는 날 종가에 들어갑니다.'
          : st==='M'?'<b>아무것도 안 함</b> — QQQ 100% 유지. QQQ가 52주 고점 −10% 안으로 돌아오는 날 TQQQ 50% + SPYM 50%로.'
          : cutNow?'<b>아무것도 안 함</b> — SPYM 50% + SGOV 50% 유지(TS 발동 중). QQQ가 −10% 밖으로 갔다가 다시 들어오거나, 밴드 탈출 뒤 재진입할 때 TQQQ를 다시 삽니다.'
          : `<b>아무것도 안 함</b> — TQQQ 50% + SPYM 50% 유지. 다음 리밸런싱은 <b>${RB.nxD}(${RB.wd})</b> 종가${RB.days<=3?' (<b>곧</b>)':''} — 그날까지는 비중이 벌어져도 그대로 둡니다.`; }
-  const rbBox=RB?`<div class="rb ${RB.today?'due':''}" id="rb"><div class="h"><b>리밸런싱 ${RB.today?'<span class="tag chg">오늘</span>':`다음 ${RB.nxD}(${RB.wd}) 종가 · ${RB.days}일 뒤`}</b><span class="muted">매달 첫 미국 거래일 · 휴장이면 다음 거래일 · 신고가 구간에서 TS 아닐 때만</span></div>
-      ${RB.wT!=null?`<div>기준일 ${RB.refD} 이후 TQQQ <b class="${RB.rT>=0?'up':'dn'}">${fmtPct(RB.rT*100)}</b> · SPYM <b class="${RB.rS>=0?'up':'dn'}">${fmtPct(RB.rS*100)}</b> → 지금 비중 약 <b>TQQQ ${pctW(RB.wT)} : ${pctW(1-RB.wT)} SPYM</b>${Math.abs(RB.wT-0.5)>=0.005?` → ${RB.today?'오늘':'그날'} ${RB.wT>0.5?'TQQQ를 계좌의 <b>'+pctW(RB.wT-0.5)+'%</b> 팔아 SPYM 매수':'SPYM을 계좌의 <b>'+pctW(0.5-RB.wT)+'%</b> 팔아 TQQQ 매수'}`:' → 이미 50:50 근처'}</div>
-      <div class="bar" style="--w:${RB.wT*100}"><i></i></div><div class="cap"><span>TQQQ ${pctW(RB.wT)}%</span><span>50 : 50</span><span>SPYM ${pctW(1-RB.wT)}%</span></div>`:'<div class="muted">비중 추정용 가격 자료가 아직 없음</div>'}
-      <div class="calc"><label for="rbT">TQQQ 평가액</label><input id="rbT" inputmode="decimal" placeholder="예: 5500"><label for="rbS">SPYM 평가액</label><input id="rbS" inputmode="decimal" placeholder="예: 5100"><div class="out" id="rbOut">평가액 두 개를 넣으면 팔고 살 금액이 나옵니다 (단위는 아무거나 — 만원·달러).</div></div></div>`:'';
+  const rbBox=RB?`<div class="rb ${RB.today?'due':''}" id="rb"><div class="h"><b>리밸런싱 ${RB.today?'<span class="tag chg">오늘 종가</span>':`다음 <b>${RB.nxD}(${RB.wd})</b> 종가 · ${RB.days}일 뒤`}</b><span class="muted">매달 첫 미국 거래일(1일이 주말·휴장이면 다음 거래일) · 신고가 구간에서 TS 아닐 때만 · 그 밖의 날은 비중이 벌어져도 그대로</span></div></div>`:'';
   const nowEl=$('#now'); if(recent) nowEl.classList.add('changed');
   nowEl.innerHTML=`<div class="l">${d[N-1]} 종가 기준 · <span class="tag">반반형</span>${recent?`<span class="tag chg">${ago(N-1-last[0])} 바뀜</span>`:'<span class="tag gray">변화 없음</span>'}</div>
     <div class="big">${label}</div><div class="sub">${stateTxt}</div>
     <div class="todo">오늘 할 일: ${todo}</div>${rbBox}
     ${last?`<div class="recent">최근 변화 ${d[last[0]]} (${ago(N-1-last[0])}): ${lab(last[1],last[3])} → <b>${lab(last[2],last[4])}</b> — ${why(last[0],last[1],last[2],last[4])}</div>`:''}
     <div class="timeline" style="margin-top:8px">${e.ev.slice(-6).reverse().map(x=>`<div><span class="d">${d[x[0]]}</span><span>${lab(x[1],x[3])} → ${lab(x[2],x[4])} <span class="muted">· ${why(x[0],x[1],x[2],x[4])}</span></span></div>`).join('')}</div>`;
-  if(RB){ const iT=$('#rbT'), iS=$('#rbS'), out=$('#rbOut'); try{ iT.value=localStorage.getItem('bb_rbT')||''; iS.value=localStorage.getItem('bb_rbS')||''; }catch(_){}
-    const f=x=>Number(String(x).replace(/[^\d.]/g,'')), fm=x=>x.toLocaleString(undefined,{maximumFractionDigits:0});
-    const calc=()=>{ const t=f(iT.value), sv=f(iS.value); try{ localStorage.setItem('bb_rbT',iT.value); localStorage.setItem('bb_rbS',iS.value); }catch(_){}
-      if(!(t>0&&sv>0)){ out.textContent='평가액 두 개를 넣으면 팔고 살 금액이 나옵니다 (단위는 아무거나 — 만원·달러).'; return; }
-      const tot=t+sv, tgt=tot/2, dT=t-tgt; out.innerHTML=`합계 ${fm(tot)} → 목표 TQQQ ${fm(tgt)} : SPYM ${fm(tgt)} · 지금 TQQQ ${(t/tot*100).toFixed(1)}% → ${Math.abs(dT)<tot*0.002?'<b>이미 50:50 — 할 것 없음</b>':dT>0?`<b>TQQQ ${fm(dT)} 팔고 SPYM ${fm(dT)} 사기</b>`:`<b>SPYM ${fm(-dT)} 팔고 TQQQ ${fm(-dT)} 사기</b>`} (${RB.today?'오늘':RB.nxD} 종가 기준 금액으로 다시 계산)`; };
-    iT.addEventListener('input',calc); iS.addEventListener('input',calc); calc(); }
   // ── 게이지 ──
   const P=(v,lo,hi)=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
   const g1=(()=>{ const lo=-8, up=8, v=spUpPct*100; const toLo=(S.idx/S.lo-1)*100, toUp=(S.idx/S.up-1)*100;
@@ -350,13 +328,7 @@ function render(){
       <div class="track ts" style="--lo:${P(-25,lo,up)}"><span class="mark" style="left:${P(v,lo,up)}%"></span></div>
       <div class="cap"><span>−35%</span><span>TS선 −25% = ${tsLine.toFixed(2)}</span><span>최고가</span></div>
       <div class="why">${cutNow?`<b class="bad">TS 발동됨</b> — 구간이 바뀔 때까지 TQQQ 없음`:`TS선까지 <b>${fmtPct((tq/tsLine-1)*100)}</b> 여유 (TQQQ가 ${tsLine.toFixed(2)} 이하로 마감하면 TQQQ 몫을 SGOV로)`}</div></div>`; })();
-  const g4=(()=>{ if(!RB||RB.wT==null) return `<div class="g"><div class="t"><span>④ 비중 TQQQ : SPYM · 리밸런싱</span><b class="muted">해당 없음</b></div><div class="why">신고가 구간에서 TQQQ 50% + SPYM 50%를 들고 있을 때만 봅니다.</div></div>`;
-    const lo=35, up=65, v=RB.wT*100;
-    return `<div class="g"><div class="t"><span>④ 비중 TQQQ ${v.toFixed(0)}% : SPYM ${(100-v).toFixed(0)}%</span><b class="${Math.abs(v-50)<3?'ok':'wr'}">${v>=50?'+':'−'}${Math.abs(v-50).toFixed(1)}%p</b></div>
-      <div class="track" style="background:linear-gradient(90deg, rgba(240,180,41,.32) 0 ${P(45,lo,up)}%, rgba(138,147,163,.22) ${P(45,lo,up)}% ${P(55,lo,up)}%, rgba(240,180,41,.32) ${P(55,lo,up)}% 100%)"><span class="tick" style="left:${P(50,lo,up)}%"></span><span class="mark" style="left:${P(v,lo,up)}%"></span></div>
-      <div class="cap"><span>TQQQ 35%</span><span>50 : 50</span><span>TQQQ 65%</span></div>
-      <div class="why">${RB.today?'<b class="bad">오늘 종가에 50:50으로</b>':`다음 리밸런싱 <b>${RB.nxD}(${RB.wd})</b> 종가 · 그 전엔 벌어져도 그대로`} · 기준일 ${RB.refD}</div></div>`; })();
-  $('#gauges').innerHTML=g1+g2+g3+g4;
+  $('#gauges').innerHTML=g1+g2+g3;
   // 데이터 상태
   { const t=J.ts?new Date(J.ts*1000):null, age=t?Math.round((Date.now()-t)/60000):null, fin=J.bar_final;
     $('#dstat').innerHTML=`게이지의 S&amp;P500·QQQ·TQQQ 값은 실시간 파일(QQQ ${day(qr[qi][0])} 봉), 단계와 TS선은 40년 파일(${d[N-1]} 봉 · ${fin===false?'<b class="bad">장중 실시간가 — 종가 확정 전엔 바뀔 수 있음</b>':fin===true?'<span class="ok">종가 확정</span>':'확정 여부 미기록'}${age!=null?` · ${age}분 전 갱신${age>90?' <b class="bad">— 자동 갱신 확인 필요</b>':''}`:''}). 백테스트는 QQQ 대신 나스닥100을 쓰므로 52주 고점 대비 숫자가 0.1%p쯤 다를 수 있습니다.`; }
