@@ -35,6 +35,8 @@
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .btn.rg.on { border-color:var(--accent); color:var(--accent); }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  #plot-d { height:440px; } #plot-b { height:340px; } #plot-c { height:580px; }
+  @media (max-width:599px){ #plot-d { height:360px; } #plot-b { height:280px; } #plot-c { height:480px; } }
 </style>
 </head>
 <body>
@@ -58,20 +60,20 @@
   <div class="panel">
     <h2>일봉<span class="desc">5일선 · 218일선 · 218일선 +7% 엔벨로프 · 이격도(200) 160/50</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
-    <div class="plot" id="plot-d" style="height:620px"></div>
+    <div class="plot" id="plot-d"></div>
   </div>
 
   <div class="panel">
     <h2>3일봉 · Global M2 3일 평균
       <span class="tools">오프셋 <input type="range" id="m2off" min="0" max="120" value="0"> <span id="m2offv">0</span>일</span></h2>
     <div class="sum" id="sum-b">불러오는 중…</div>
-    <div class="plot" id="plot-b" style="height:480px"></div>
+    <div class="plot" id="plot-b"></div>
   </div>
 
   <div class="panel">
     <h2>월봉<span class="desc">BB 20/2 · RSI 14 (QQQ) · Williams Vix Fix 22/20/2/50/0.85</span></h2>
     <div class="sum" id="sum-c">불러오는 중…</div>
-    <div class="plot" id="plot-c" style="height:820px"></div>
+    <div class="plot" id="plot-c"></div>
   </div>
 
   <div class="status">데이터: Yahoo Finance(TQQQ 시세, 매시간 갱신) · Global M2는 MSTR 대시보드와 같은 데이터(3시간마다 갱신)를 씁니다.</div>
@@ -119,6 +121,7 @@ function vixfix(rows, pd=22, bbl=20, mult=2, lb=50, ph=0.85){
 
 /* ── 그리기 ── */
 const C = { grid:'#262c35', txt:'#c9cfd8', up:'#089981', dn:'#f23645' };
+const PH = (pc, mob) => window.innerWidth < 600 ? mob : pc;   // 그래프 높이: PC / 휴대폰
 const base = h => ({ paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:C.txt,size:11}, height:h,
   margin:{l:8,r:56,t:10,b:28}, showlegend:false, hovermode:'x unified', dragmode:'pan', xaxis:{rangeslider:{visible:false}, gridcolor:C.grid} });
 const ax = o => ({ gridcolor:C.grid, zeroline:false, side:'right', tickfont:{size:10}, ...o });
@@ -135,7 +138,7 @@ function chartD(){
   const ma5=sma(c,5), ma218=sma(c,218), s200=sma(c,200), env=ma218.map(v=>v==null?null:v*1.07), disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
   const st = disp[i]>=160?' <span class="hot">과열</span>':disp[i]<=50?' <span class="on">과매도</span>':'';
   $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 5일선 ${fmt(ma5[i])} · 218일선 ${fmt(ma218[i])} (${c[i]>ma218[i]?'위':'아래'}, ${pct(c[i],ma218[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}${synNote()}`;
-  const L = base(620); L.yaxis=ax({domain:[0.36,1], type:isLong()?'log':'linear'}); L.yaxis2=ax({domain:[0,0.30]});
+  const L = base(PH(440,360)); L.yaxis=ax({domain:[0.36,1], type:isLong()?'log':'linear'}); L.yaxis2=ax({domain:[0,0.30]});
   const back=startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; if(!isLong()) L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
   { const v=r.slice(back), lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h)); L.yaxis.range= isLong() ? [Math.log10(lo*0.8), Math.log10(hi_*1.25)] : [lo*0.95, hi_*1.05]; }
   L.shapes=[...synShade(x), hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
@@ -152,7 +155,7 @@ function chartD(){
 function bars3(r){ const out=[]; for(let e=r.length;e>0;e-=3){ const s=Math.max(0,e-3), g=r.slice(s,e); out.unshift({t:g[0].t,o:g[0].o,h:Math.max(...g.map(x=>x.h)),l:Math.min(...g.map(x=>x.l)),c:g.at(-1).c}); } return out; }
 function chartB(){
   const r = bars3(ohlc('TQQQ_1d')), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
-  const L = base(480); L.yaxis=ax({type:isLong()?'log':'linear'}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
+  const L = base(PH(340,280)); L.yaxis=ax({type:isLong()?'log':'linear'}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
   const back = startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; L.shapes=synShade(x);
   { const v=r.slice(back), lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h)); L.yaxis.range= isLong() ? [Math.log10(lo*0.8), Math.log10(hi_*1.25)] : [lo*0.95, hi_*1.05]; }
   const tr=[candle(r)];
@@ -187,7 +190,7 @@ function chartC(){
   $('#sum-c').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(bs.up[i])} / ${fmt(bs.mid[i])} / ${fmt(bs.lo[i])} (%b ${pb.toFixed(2)}) · QQQ RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}${synNote()}${isLong()?' · 40년 차트의 볼밴은 로그 가격 기준(하단이 0 아래로 내려가지 않게) — 위 숫자는 일반 볼밴 · 1999년 이전 RSI는 나스닥100 월봉':''}`;
   const s = startIdx(x);
   const visH = [...r.slice(s).map(d=>d.h), ...b.up.slice(s).filter(v=>v!=null)], visL=[...r.slice(s).map(d=>d.l), ...b.lo.slice(s).filter(v=>v!=null)];
-  const L = base(820); L.yaxis=isLong() ? ax({domain:[0.48,1], type:'log', range:[Math.log10(Math.min(...r.map(d=>d.l))*0.7), Math.log10(Math.max(...visH)*1.3)]})
+  const L = base(PH(580,480)); L.yaxis=isLong() ? ax({domain:[0.48,1], type:'log', range:[Math.log10(Math.min(...r.map(d=>d.l))*0.7), Math.log10(Math.max(...visH)*1.3)]})
     : ax({domain:[0.48,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
   L.yaxis2=ax({domain:[0.25,0.44], range:[0,100]}); L.yaxis3=ax({domain:[0,0.21]});
   L.xaxis.range=[x[s], new Date(x[i].getTime()+60*86400000)];
