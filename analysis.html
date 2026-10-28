@@ -44,7 +44,7 @@
 <body>
 <div class="wrap">
   <header>
-    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html" class="cur">TQQQ 분석</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="simple.html">간단지표</a><a href="banban.html">반반형</a><a href="signal.html">신호등형</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="quotes.html">명언</a></nav>
+    <nav class="nav"><a href="index.html">TQQQ 신호판</a><a href="analysis.html" class="cur">TQQQ 분석</a><a href="mstr.html">MSTR</a><a href="soxl.html">SOXL</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="simple.html">간단지표</a><a href="banban.html">반반형</a><a href="signal.html">신호등형</a><a href="yeonjun.html">연준형</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="quotes.html">명언</a></nav>
     <span style="flex-basis:100%;height:0"></span>
     <h1>TQQQ 분석</h1>
     <span class="date" id="today"></span>
@@ -168,7 +168,8 @@ function chartB(){
     const peakI = rows.reduce((b,a,k)=> a[1]>rows[b][1]?k:b, Math.max(0,n-260));
     const ago = rows[Math.max(0,n-63)];
     tr.push(line(mx, rows.map((a,k)=>k<2?null:(rows[k][1]+rows[k-1][1]+rows[k-2][1])/3), '#2e9d4a', 'Global M2 3일 평균', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5,shape:'spline',smoothing:0.6}}));
-    const vis = rows.slice(Math.max(0,rows.findIndex(a=>new Date(a[0])>=new Date('2015-01-01')))).map(a=>a[1]); L.yaxis2.range=[Math.min(...vis)*0.98, Math.max(...vis)*1.02];
+    // M2 세로 3배: 2015년 이후 최소~최대 폭의 1/3만 보이게 잡아 최근 값이 위쪽 70%에 오도록 (오래된 구간은 아래로 잘려 나감)
+    const vis = rows.slice(Math.max(0,rows.findIndex(a=>new Date(a[0])>=new Date('2015-01-01')))).map(a=>a[1]), span=(Math.max(...vis)*1.02-Math.min(...vis)*0.98)/3, top=rows[n][1]+span*0.3; L.yaxis2.range=[top-span, top];
     m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}, 3일 평균 $${((rows[n][1]+rows[n-1][1]+rows[n-2][1])/3).toFixed(1)}조) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
       + `<br><span class="note">${M2.countries.join('+')} · 각국 최신 발표값 × 일별 환율${M2.notes&&M2.notes.length?' · '+M2.notes.join(' · '):''}</span>`;
   }

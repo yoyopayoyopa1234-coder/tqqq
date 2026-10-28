@@ -44,7 +44,7 @@ def build_returns(J, B):
     ps = [0.0]
     for v in sp: ps.append(ps[-1] + v)
     sp200 = [None if i < 199 else (ps[i + 1] - ps[i - 199]) / 200 for i in range(N)]
-    return dict(d=d, N=N, nd=nd, sp=sp, T=T, dt=dt, ret=ret, hi=hi, mav=mav, sp200=sp200)
+    return dict(d=d, N=N, nd=nd, sp=sp, T=T, dt=dt, ret=ret, hi=hi, mav=mav, sp200=sp200, dff=dff)
 
 # ── 단계 계산 (simple.html mkLevels 와 같은 규칙) ──
 def mk_levels(D, cfg):
@@ -66,6 +66,29 @@ def mk_levels(D, cfg):
         elif cfg.get("split"): lv.append("M1" if dv >= -cfg["split"] else "M2")
         else: lv.append("M")
     return lv
+
+def mk_levels_fed(D, b=0.025, months=6, thr=0.15, n=21):
+    """연준형 단계: S&P 밴드 아래 C(빨강) · 투자 중 연준 긴축(실효금리 n일 평균이 months개월 전보다 thr 이상 높음)이면 M(QQQ) · 아니면 T(QLD)"""
+    from datetime import timedelta
+    d, N, sp, sp200, dt, dff = D["d"], D["N"], D["sp"], D["sp200"], D["dt"], D["dff"]
+    avg = [None] * N; s = 0.0
+    for i, v in enumerate(dff):
+        s += v
+        if i >= n: s -= dff[i - n]
+        if i >= n - 1: avg[i] = s / n
+    import bisect as _b
+    lv = []; inm = False
+    for i in range(N):
+        m = sp200[i]
+        if m is None: lv.append("C"); continue
+        if not inm:
+            if sp[i] > m * (1 + b): inm = True
+        elif sp[i] < m * (1 - b): inm = False
+        j = max(0, _b.bisect_left(dt, dt[i] - timedelta(days=round(months * 30.44))))
+        hiking = avg[i] is not None and avg[j] is not None and avg[i] - avg[j] >= thr
+        lv.append("C" if not inm else ("M" if hiking else "T"))
+    return lv
+
 
 def engine(D, lv, W, a, b, ts=0.25):
     """비중 혼합 엔진 (simple.html engineH 와 같은 규칙): 단계 바뀔 때 비중 설정, 월초 재조정, TQQQ 몫 TS."""
@@ -166,6 +189,10 @@ def main():
         signals[nm] = dict(text=text, level=st, cut=bool(cutnow), ts_line=round(e["tpk"] * (1 - ts), 2) if (ts and isinstance(L, list) and not cutnow) else None)
         trs = e["tr"]; win = sum(1 for x in trs if x > 0) / len(trs) * 100 if trs else 0
         bt[nm] = dict(c=round(e["c"], 2), m=round(e["m"], 2), n=len(trs), win=round(win, 1), mdd_from=e["w"][0], mdd_to=e["w"][1])
+    # 연준형: 밴드 ±2.5% · 연준 긴축 중(실효금리 1개월 평균이 6개월 전보다 +0.15%p 이상)이면 QQQ · 아니면 QLD · 밴드 아래 SGOV (yeonjun.html)
+    lvF = mk_levels_fed(D); WF = {"T": {"L": 1}, "M": {"Q": 1}, "C": {"C": 1}}; eF = engine(D, lvF, WF, a0, N - 1, None); stF = lvF[-1]
+    signals["연준형"] = dict(text={"T": "QLD", "M": "QQQ", "C": "SGOV"}[stF], level=stF, cut=False, ts_line=None)
+    trs = eF["tr"]; bt["연준형"] = dict(c=round(eF["c"], 2), m=round(eF["m"], 2), n=len(trs), win=round(sum(1 for x in trs if x > 0) / len(trs) * 100, 1) if trs else 0, mdd_from=eF["w"][0], mdd_to=eF["w"][1])
     # 분산형: 세 구좌(구간 −8/−10/−12% · TS −20/−25/−30%) 독립 운용 후 합산
     WD = {"T": {"T": 0.9, "S": 0.1}, "M": {"T": 0.7, "S": 0.3}, "X": {"Q": 1}, "C": {"C": 1}}; subs = []
     for top, ts in ((0.08, 0.20), (0.10, 0.25), (0.12, 0.30)):
