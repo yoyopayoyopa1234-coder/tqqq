@@ -2,6 +2,25 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FedWatch</title>
 <style>
+  .lvl { position:relative; overflow:hidden; }
+  .lvl .top2 { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; }
+  .lvl .name { font-size:30px; font-weight:900; letter-spacing:1px; color:var(--lc); text-shadow:0 0 18px var(--lc); animation:glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 0%,100%{ text-shadow:0 0 8px var(--lc);} 50%{ text-shadow:0 0 26px var(--lc), 0 0 2px #fff; } }
+  .lvl .rate { font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .lvl .sub2 { font-size:13px; color:#c9cfd8; line-height:1.65; }
+  .thermo { position:relative; height:26px; border-radius:13px; margin:30px 0 44px; display:flex; overflow:visible; }
+  .thermo .seg { position:relative; height:100%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:rgba(255,255,255,.85); opacity:.38; transition:opacity .6s; }
+  .thermo .seg:first-child { border-radius:13px 0 0 13px; } .thermo .seg:last-child { border-radius:0 13px 13px 0; }
+  .thermo .seg.on { opacity:1; box-shadow:0 0 18px var(--sc); animation:segp 1.8s ease-in-out infinite; }
+  @keyframes segp { 0%,100%{ filter:brightness(1);} 50%{ filter:brightness(1.35);} }
+  .thermo .pin { position:absolute; top:-26px; transform:translateX(-50%); transition:left 1.6s cubic-bezier(.2,.9,.2,1); text-align:center; font-size:11px; white-space:nowrap; }
+  .thermo .pin b { display:block; font-size:12px; color:#fff; }
+  .thermo .pin::after { content:''; display:block; margin:2px auto 0; width:3px; height:34px; background:#fff; border-radius:2px; box-shadow:0 0 10px #fff; }
+  .thermo .pin.ghost { top:auto; bottom:-48px; color:var(--muted); } .thermo .pin.ghost::after { display:none; } .thermo .pin.ghost::before { content:''; display:block; margin:0 auto 2px; width:2px; height:30px; background:repeating-linear-gradient(#ff9f68 0 4px,transparent 4px 7px); }
+  @media (max-width:640px){ .thermo .seg { font-size:0; } }
+  .thermo .tk { position:absolute; bottom:-16px; transform:translateX(-50%); font-size:10px; color:var(--muted); }
+  .bands { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; } @media (max-width:640px){ .bands { grid-template-columns:repeat(2,1fr); } }
+  .bands div { border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:11.5px; color:var(--muted); line-height:1.5; } .bands div b { color:var(--bc); font-size:12.5px; } .bands div.on { border-color:var(--bc); background:color-mix(in srgb,var(--bc) 12%,transparent); color:#dfe3ea; }
   :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#ff8c42; color-scheme:dark;
     --hike:#ff9f68; --hold:#8a93a3; --cut:#5ec8f2; --live:#3ddc84; }
   * { box-sizing:border-box; }
@@ -74,6 +93,11 @@
 
   <div class="hero" id="hero"><div class="muted">불러오는 중…</div></div>
   <div class="minis" id="minis"></div>
+
+  <div class="panel lvl" id="lvlP">
+    <h2>지금 금리 수준 <span class="desc">기준금리(실효금리) 높이를 다섯 단계로 · 기준 = 연준이 보는 장기 중립금리 약 3% · 1986년 이후 분포</span></h2>
+    <div class="body" id="lvl"><div class="muted">불러오는 중…</div></div>
+  </div>
 
   <div class="panel">
     <h2>CME FedWatch 표 (재현) <span class="desc">연방기금 선물 가격으로 CME와 같은 방법으로 계산한 회의별 목표금리 구간 확률 · 가장 높은 칸은 하늘색</span></h2>
@@ -219,6 +243,26 @@ function drawHist(){
   Plotly.react('hist',ds.map((d,i)=>({type:'scatter',mode:'lines',x:H.map(h=>h.t),y:H.map(h=>{ const r=h.f.find(x=>x[0]===d); return r?r[1]:null; }),name:md(d)+' 인상',connectgaps:true,line:{color:C[i],width:1.8},hovertemplate:'%{y:.1f}%<extra>'+md(d)+'</extra>'})),
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:40,r:10,t:10,b:30},legend:{orientation:'h',y:1.15},xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',range:[0,100],ticksuffix:'%'}},{displayModeBar:false,responsive:true});
 }
+// ── 금리 수준 ──
+const LV=[{n:'초저금리',lo:0,hi:1,c:'#5ec8f2',t:'돈이 거의 공짜 · 2009~15·2020~22년'},{n:'저금리',lo:1,hi:2.5,c:'#3ddc84',t:'경기 부양 쪽 · 2003~04·2017~19년'},{n:'보통금리',lo:2.5,hi:3.5,c:'#c9cfd8',t:'중립금리(≈3%) 근처 · 경기를 밀지도 누르지도 않음'},{n:'고금리',lo:3.5,hi:5,c:'#ff9f68',t:'중립보다 높아 경기를 누름 · 2005·2025~26년'},{n:'초고금리',lo:5,hi:99,c:'#f23645',t:'강한 긴축 · 1989·2000·2006~07·2023~24년(5.25~5.50%)'}];
+const MAXR=7; let DFF=null, lvlDone=false;
+const lvOf=r=>LV.find(x=>r>=x.lo&&r<x.hi)||LV[4];
+function drawLevel(){
+  const F=FW&&FW.fw; if(!F||F.effr==null) return;
+  const r=+F.effr, L=lvOf(r), mid=(F.lo+F.hi)/2, fut=(F.futures||[]), f1y=fut.length?fut[Math.min(fut.length-1,12)]:null, ahead=f1y?lvOf(f1y.rate):null;
+  const pos=v=>Math.min(100,Math.max(0,v/MAXR*100));
+  let shareAbove=null, med=null; if(DFF){ const xs=DFF.filter(v=>v!=null); shareAbove=xs.filter(v=>v>r).length/xs.length*100; const so=[...xs].sort((a,b)=>a-b); med=so[Math.floor(so.length/2)]; }
+  const neutral=3.0, gap=r-neutral;
+  const segs=LV.map(x=>{ const w=(Math.min(x.hi,MAXR)-x.lo)/MAXR*100; return `<div class="seg ${x===L?'on':''}" style="width:${w}%;background:${x.c};--sc:${x.c}">${w>9?x.n:''}</div>`; }).join('');
+  const ticks=[0,1,2.5,3.5,5,7].map(v=>`<span class="tk" style="left:${pos(v)}%">${v}%</span>`).join('');
+  $('#lvl').innerHTML=`<div class="top2" style="--lc:${L.c}"><span class="name">${L.n}</span><span class="rate">${F.lo.toFixed(2)}–${F.hi.toFixed(2)}% <span class="muted" style="font-size:13px;font-weight:400">실효 ${r.toFixed(2)}%</span></span></div>
+    <div class="thermo">${segs}${ticks}<span class="pin" id="pinNow" style="left:0%"><b>지금 ${r.toFixed(2)}%</b></span>${f1y?`<span class="pin ghost" id="pinFut" style="left:0%">선물 1년 뒤 ${(+f1y.rate).toFixed(2)}%</span>`:''}</div>
+    <div class="sub2"><b style="color:${L.c}">${L.n}</b> — ${L.t}. 중립금리(연준 장기 전망 ≈3%)보다 <b>${gap>=0?'+':'−'}${Math.abs(gap).toFixed(2)}%p</b> ${gap>0.4?'높아 <b>경기를 누르는(긴축적) 쪽</b>입니다':gap<-0.4?'낮아 <b>경기를 미는(완화적) 쪽</b>입니다':'— 중립에 가깝습니다'}.${shareAbove!=null?` 1986년 이후로 보면 금리가 지금보다 높았던 날이 <b>${shareAbove.toFixed(0)}%</b>(중앙값 ${med.toFixed(2)}%)라 <b>40년 평균으로는 ${Math.abs(r-med)<0.5?'평범한 높이':r>med?'조금 높은 편':'낮은 편'}</b>이지만, 2009년 이후 제로금리 시대에 비하면 높습니다.`:''}
+    ${f1y?`<br>선물 시장은 1년 뒤(${f1y.month}) 약 <b style="color:${ahead.c}">${(+f1y.rate).toFixed(2)}% · ${ahead.n}</b>를 보고 있습니다 — ${f1y.rate>r+0.12?'<b style="color:#ff9f68">더 올라가는 쪽 ▲</b>':f1y.rate<r-0.12?'<b style="color:#5ec8f2">내려가는 쪽 ▼</b>':'거의 그대로'}.`:''}</div>
+    <div class="bands" style="margin-top:10px">${LV.map(x=>`<div class="${x===L?'on':''}" style="--bc:${x.c}"><b>${x.n}</b> ${x.lo===0?'1% 미만':x.hi>50?x.lo+'% 이상':x.lo+'~'+x.hi+'%'}${DFF?`<br>40년 중 ${(DFF.filter(v=>v!=null&&v>=x.lo&&v<x.hi).length/DFF.filter(v=>v!=null).length*100).toFixed(0)}%`:''}</div>`).join('')}</div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ const a=$('#pinNow'); if(a) a.style.left=pos(r)+'%'; const g=$('#pinFut'); if(g&&f1y) g.style.left=pos(f1y.rate)+'%'; }));
+  if(!DFF&&!lvlDone){ lvlDone=true; fetch('tq40.json?'+Math.floor(Date.now()/36e5)).then(x=>x.ok?x.json():null).then(J=>{ if(J&&J.dff){ DFF=J.dff.filter((_,i)=>J.d[i]>='1986-01-01'); drawLevel(); } }).catch(()=>{}); }
+}
 const load=()=>fetch('fedwatch.json?'+Math.floor(Date.now()/60000)).then(r=>r.ok?r.json():null).catch(()=>null);
 const PLOTLY_SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js'];
 const loadScript=src=>new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
@@ -226,9 +270,9 @@ const loadScript=src=>new Promise((ok,no)=>{ const s=document.createElement('scr
   const p=load();
   for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
   FW=await p;
-  try{ if(FW) render(); else $('#hero').innerHTML='<div class="muted">자료 준비 중 — 15분 안에 첫 수집이 끝납니다.</div>'; }catch(e){ console.error(e); $('#hero').innerHTML='<div class="muted">표시 오류: '+esc(e.message)+'</div>'; }
+  try{ if(FW){ render(); drawLevel(); } else $('#hero').innerHTML='<div class="muted">자료 준비 중 — 15분 안에 첫 수집이 끝납니다.</div>'; }catch(e){ console.error(e); $('#hero').innerHTML='<div class="muted">표시 오류: '+esc(e.message)+'</div>'; }
   // 1분마다 새 계산이 올라왔는지 확인 → 바뀌면 숫자가 굴러가며 바뀜
-  setInterval(async()=>{ const n=await load(); if(n&&(!FW||n.ts!==FW.ts)){ FW=n; try{ render(); $('#hero').classList.add('flash'); setTimeout(()=>$('#hero').classList.remove('flash'),1300); }catch(e){ console.error(e); } } },60e3);
+  setInterval(async()=>{ const n=await load(); if(n&&(!FW||n.ts!==FW.ts)){ FW=n; try{ render(); drawLevel(); $('#hero').classList.add('flash'); setTimeout(()=>$('#hero').classList.remove('flash'),1300); }catch(e){ console.error(e); } } },60e3);
 })();
 </script>
 </body></html>
