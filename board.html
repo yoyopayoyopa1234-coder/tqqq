@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TQQQ 200일선 신호판</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429;
+          --in:#5ad445; --out:#8a93a3; --hot:#f23645; --warn:#f0a030; --blue:#2962ff; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 48px; max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:14px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; min-width:0; }
+  .panel > h2 { margin:0; padding:10px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; border-bottom:1px solid var(--line); }
+  .panel > h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .body { padding:12px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.6; }
+  .state { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .badge { font-weight:800; font-size:16px; padding:4px 12px; border-radius:8px; }
+  .b-in { background:rgba(90,212,69,.16); color:var(--in); }
+  .b-out { background:rgba(138,147,163,.18); color:#c9cfd8; }
+  .zone { font-size:12px; color:var(--muted); }
+  .action { padding:10px 12px; border-radius:8px; background:rgba(240,180,41,.08); border:1px solid rgba(240,180,41,.25); }
+  .action b { color:var(--accent); }
+  .num { font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; }
+  .band { display:grid; gap:4px; }
+  .track { position:relative; height:10px; border-radius:5px; background:linear-gradient(90deg, rgba(242,54,69,.35) 0 calc(var(--lo)*1%), rgba(138,147,163,.22) calc(var(--lo)*1%) calc(var(--up)*1%), rgba(90,212,69,.35) calc(var(--up)*1%) 100%); }
+  .mark { position:absolute; top:-4px; width:3px; height:18px; background:var(--fg); border-radius:2px; transform:translateX(-50%); }
+  .tick { position:absolute; top:-2px; width:1px; height:14px; background:var(--muted); }
+  .cap { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .kv { display:grid; grid-template-columns:auto 1fr; gap:3px 12px; font-size:13px; }
+  .kv dt { color:var(--muted); } .kv dd { margin:0; text-align:right; font-variant-numeric:tabular-nums; }
+  .chips { display:flex; flex-wrap:wrap; gap:4px; }
+  .chip { font-size:11px; padding:1px 7px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-variant-numeric:tabular-nums; }
+  .chip.hit { border-color:rgba(90,212,69,.5); color:var(--in); background:rgba(90,212,69,.1); }
+  .chip.next { border-color:rgba(240,180,41,.6); color:var(--accent); }
+  .up { color:#089981; } .dn { color:#f23645; } .wr { color:var(--warn); }
+  .plot { width:100%; height:680px; }
+  .tbl { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { padding:5px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  th:first-child, td:first-child { text-align:left; } th { color:var(--muted); font-weight:500; }
+  .calc { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; }
+  .calc label { display:grid; gap:3px; font-size:12px; color:var(--muted); }
+  .calc input, .calc select { font:inherit; font-size:14px; padding:6px 8px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); width:100%; }
+  .out { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
+  .out > div { border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+  .out .l { font-size:11px; color:var(--muted); } .out .v { font-size:16px; font-variant-numeric:tabular-nums; }
+  .fg { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .fg .score { font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; }
+  details { font-size:13px; line-height:1.7; } details summary { cursor:pointer; color:var(--accent); }
+  details ul { margin:6px 0; padding-left:18px; }
+  .fine { font-size:11.5px; color:var(--muted); line-height:1.6; }
+  .err { color:var(--hot); }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="analysis.html">TQQQ 분석</a><a href="mstr.html">MSTR</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary class="cur">기타 · TQQQ 신호판 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html" class="cur">TQQQ 신호판</a><a href="soxl.html">SOXL</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <span style="flex-basis:100%;height:0"></span>
+    <h1>TQQQ 200일선 신호판</h1>
+    <span class="date" id="upd"></span>
+    <span class="right"><button class="btn" id="refresh" type="button">새로고침</button></span>
+  </header>
+
+  <div class="grid" id="cards">
+    <div class="panel"><h2>SPX ±2.5%<span class="desc">불러오는 중…</span></h2></div>
+  </div>
+
+  <div class="panel">
+    <h2>40년 백테스트<span class="desc">위 SPX ±2.5% V2 규칙 그대로 · 1986년 10월~ · 2010년 전 TQQQ는 나스닥100 3배 환산</span></h2>
+    <div class="body" id="bt40">불러오는 중…</div>
+  </div>
+
+  <div class="panel">
+    <h2>데이터 검증<span class="desc">TradingView 실시간 페이지 · 아기티큐(AgiTQ) · 이 사이트 계산 대조</span></h2>
+    <div class="body" id="verify">불러오는 중…</div>
+  </div>
+
+  <div class="grid">
+    <div class="panel"><h2>스위칭 자산</h2><div class="body" id="extra">—</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>규칙 요약</h2>
+    <div class="body">
+      <details open><summary>SPX ±2.5% (V2)</summary><ul>
+        <li>기준: S&amp;P 500 지수(SPX) 종가와 200일선, 밴드 ±2.5%</li>
+        <li>매수: SPX가 상단(+2.5%) 돌파 → SGOV로 TQQQ 3분할 매수 (분할 중 밴드로 내려와도 계속 매수)</li>
+        <li>관망: 밴드 안에서는 기존 포지션 유지</li>
+        <li>소익절 +10/25/50% → 잔고 10% · 대익절 +100/200/400/800%… → 잔고 50%, 덜어낸 금액은 SPYM</li>
+        <li>연쇄 TS: 사이클 TQQQ 고점 대비 −25% → TQQQ 수량 50% SPYM 전환, 고점 리셋 후 반복</li>
+        <li>전량 탈출: SPX가 하단(−2.5%) 이탈 → TQQQ·SPYM 전량 매도, SGOV 대피</li>
+      </ul></details>
+      <p class="fine">사이클 수익률은 "매수 신호일 TQQQ 종가" 기준입니다. 실제 3분할 매수 평단과 다를 수 있습니다. 신호가 새로 나오면 GitHub 앱으로 알림이 갑니다. 규칙을 자동 계산한 참고 화면이며 투자 자문이 아닙니다.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = (v,d=2) => v==null?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sg = (v,d=1) => v==null?'—':`<span class="${v>=0?'up':'dn'}">${v>=0?'+':''}${Number(v).toFixed(d)}%</span>`;
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} } };
+let TQ = null;
+
+function card(R, key){
+  const IN = R.state==='IN', cy=R.cycle;
+  const zoneTxt = R.zone==='above' ? '상단 밴드 위' : R.zone==='band' ? '밴드 안 (관망 구간)' : '하단 밴드 아래';
+  let action;
+  if(IN && R.zone==='above') action = `<b>보유 유지.</b> 상단 밴드 위 상승 추세. 전량 탈출선 ${R.name} <span class="num">${fmt(R.lo)}</span> (${sg(R.to_lo)})`;
+  else if(IN) action = `<b>밴드 안 관망 — 포지션 유지.</b> 휩쏘 구간이라 매매하지 않습니다. 탈출선 <span class="num">${fmt(R.lo)}</span> (${sg(R.to_lo)}), 상단 <span class="num">${fmt(R.up)}</span>`;
+  else action = `<b>SGOV 대기.</b> 매수 신호: ${R.name}가 <span class="num">${fmt(R.up)}</span> 위로 마감 (${sg(R.to_up)} 남음)`;
+  // 밴드 게이지: 하단-2.5%폭 ~ 상단+2.5%폭 범위로 표시
+  const w = R.up - R.lo, lo0 = R.lo - w, hi0 = R.up + w, P = v => Math.max(0,Math.min(100,(v-lo0)/(hi0-lo0)*100));
+  const ma = (R.lo+R.up)/2;
+  let cyc = '';
+  if(cy){
+    const smalls = [10,25,50].map(x=>`<span class="chip ${cy.hit_small.includes(x)?'hit':(x===cy.next_small?'next':'')}">+${x}%</span>`).join('');
+    const bigs = [100,200,400,800,1600].map(x=>`<span class="chip ${cy.hit_big.includes(x)?'hit':(x===cy.next_big?'next':'')}">+${x}%</span>`).join('');
+    cyc = `<dl class="kv">
+      <dt>사이클 시작</dt><dd>${cy.entry_date} · TQQQ ${fmt(cy.entry_tq)} · ${cy.days}일째</dd>
+      <dt>사이클 수익률</dt><dd>${sg(cy.ret)} (최고 ${sg(cy.max_ret)})</dd>
+      <dt>TQQQ 사이클 고점</dt><dd>${fmt(cy.ts_peak ?? cy.peak)}</dd>
+      <dt>TS 발동선${cy.ts_level?` (−${cy.ts_level}%)`:''}</dt><dd>${cy.ts_line?`<b class="num" style="color:#f23645">${fmt(cy.ts_line)}</b> · 현재 고점 대비 <b style="color:#f23645">${cy.dd.toFixed(1)}%</b>`:'이번 사이클 TS(−25%) 발동 완료 — V1은 사이클당 1회, 남은 건 하단 밴드 이탈(전량 SGOV)'}</dd>
+      <dt>TS 발동 기록</dt><dd>${cy.ts.length? cy.ts.map(t=>`${t.date} @ ${fmt(t.price)}${t.level?` (−${t.level}%)`:''}`).join('<br>') : '없음'}</dd>
+    </dl>
+    <div><div class="zone">소익절 (잔고 10%)</div><div class="chips">${smalls}</div></div>
+    <div><div class="zone">대익절 (잔고 50%)</div><div class="chips">${bigs}</div></div>
+    <div class="zone">다음 익절가: ${cy.next_small?`소익절 +${cy.next_small}% → TQQQ <span class="num">${fmt(cy.next_small_px)}</span> · `:''}대익절 +${cy.next_big}% → TQQQ <span class="num">${fmt(cy.next_big_px)}</span></div>`;
+  }
+  const hist = R.cycles.slice().reverse().map(c=>`<tr><td>${c.entry_date}</td><td>${c.exit_date}</td><td>${fmt(c.entry_tq)}→${fmt(c.exit_tq)}</td><td>${sg(c.ret)}</td><td>${sg(c.max_ret)}</td><td>${c.ts_n}</td></tr>`).join('');
+  return `<div class="panel"><h2>${R.name} ±${(R.band*100).toFixed(R.band===0.025?1:0)}%<span class="desc">${R.multi_ts?'V2 · 연쇄 TS':'V1 · TS −25%'} · ${R.date} 종가</span></h2>
+  <div class="body">
+    <div class="state"><span class="badge ${IN?'b-in':'b-out'}">${IN?'보유 (TQQQ)':'대피 (SGOV)'}</span><span class="zone">${zoneTxt} · 200일선 대비 ${sg(R.dist_ma,2)}</span></div>
+    <div class="action">${action}</div>
+    <div class="band">
+      <div class="track" style="--lo:${P(R.lo)};--up:${P(R.up)}"><span class="tick" style="left:${P(ma)}%"></span><span class="mark" style="left:${P(R.idx)}%"></span></div>
+      <div class="cap"><span>하단 ${fmt(R.lo)}</span><span>200일선 ${fmt(R.ma200)}</span><span>상단 ${fmt(R.up)}</span></div>
+      <div class="cap"><span>${R.name} <b class="num" style="color:var(--fg)">${fmt(R.idx)}</b></span><span>TQQQ <b class="num" style="color:var(--fg)">${fmt(R.tqqq)}</b></span></div>
+    </div>
+    ${cyc}
+    <div class="plot" id="plot-${key}"></div>
+    <details><summary>지난 사이클 (최근 ${R.cycles.length}개)</summary><div class="tbl"><table><thead><tr><th>진입</th><th>탈출</th><th>TQQQ</th><th>수익률</th><th>최고</th><th>TS</th></tr></thead><tbody>${hist||'<tr><td colspan="6">없음</td></tr>'}</tbody></table></div></details>
+  </div></div>`;
+}
+
+function chart(R, key){
+  if(!window.Plotly) return;
+  const C=R.chart, x=C.d;
+  const up=C.ma.map(v=>v==null?null:v*(1+R.band)), lo=C.ma.map(v=>v==null?null:v*(1-R.band));
+  const tr=[
+    {x,y:up,mode:'lines',line:{color:'rgba(90,212,69,.7)',width:1},name:'상단',hoverinfo:'skip'},
+    {x,y:lo,mode:'lines',line:{color:'rgba(242,54,69,.7)',width:1},name:'하단',fill:'tonexty',fillcolor:'rgba(138,147,163,.10)',hoverinfo:'skip'},
+    {x,y:C.ma,mode:'lines',line:{color:'#2962ff',width:1.2,dash:'dot'},name:'200일선'},
+    {x,y:C.idx,mode:'lines',line:{color:'#e6e9ee',width:1.6},name:R.name},
+    {x,y:C.tq,mode:'lines',line:{color:'#f0b429',width:1.4},name:'TQQQ',yaxis:'y2'},
+  ];
+  const shapes=[];
+  if(R.cycle && R.cycle.ts_line){
+    const i0 = x.findIndex(d=>d>=R.cycle.entry_date);
+    shapes.push({type:'line',xref:'x',x0:x[Math.max(0,i0)],x1:x[x.length-1],yref:'y2',y0:R.cycle.ts_line,y1:R.cycle.ts_line,line:{color:'#f0a030',width:1,dash:'dash'}});
+  }
+  Plotly.react('plot-'+key, tr, {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:10},height:680,
+    margin:{l:6,r:50,t:6,b:24},showlegend:false,hovermode:'x unified',dragmode:'pan',
+    xaxis:{gridcolor:'#262c35',range:[x[Math.max(0,x.length-380)],x[x.length-1]],rangebreaks:[{bounds:['sat','mon']}]},
+    yaxis:{domain:[0.42,1],gridcolor:'#262c35',side:'right'},yaxis2:{domain:[0,0.36],gridcolor:'#262c35',side:'right',title:{text:'TQQQ',font:{size:10}}},
+    shapes}, {responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']});
+}
+
+
+const pc = (v,d=1) => v==null?'—':(v<=-99.95?'≈−100%':`${v<0?'−':''}${Math.abs(v).toFixed(d)}%`);
+const cm = r => `${pc(r[0])} <span class="zone">/ ${pc(r[1])}</span>`;
+function bt40(B){
+  if(!B){ $('#bt40').innerHTML='<span class="zone">백테스트 데이터 준비 중 (다음 갱신 때 생성)</span>'; return; }
+  const r=B.rows[0], ratio=x=>(x.cagr/Math.abs(x.mdd)).toFixed(2);
+  const rows=B.rows.map(x=>`<tr><td>${x.name}<div class="zone">${x.from}~</div></td><td><b>${pc(x.cagr)}</b></td><td class="dn">${pc(x.mdd)}</td><td>${ratio(x)}</td><td>${pc(x.tax)}</td><td>${cm(x.tqqq)}</td><td>${cm(x.qqq)}</td><td>${cm(x.spx)}</td></tr>`).join('');
+  $('#bt40').innerHTML = `
+    <div class="out">
+      <div><div class="l">40년 CAGR (연평균)</div><div class="v up">${pc(r.cagr)}</div></div>
+      <div><div class="l">40년 MDD (최대 낙폭)</div><div class="v dn">${pc(r.mdd)}</div></div>
+      <div><div class="l">가성비 (CAGR÷MDD)</div><div class="v">${ratio(r)}</div></div>
+      <div><div class="l">세후 CAGR (양도세 22%)</div><div class="v">${pc(r.tax)}</div></div>
+      <div><div class="l">${r.from.slice(0,4)}~${B.asof.slice(0,4)} 자산</div><div class="v">${Math.round(r.x).toLocaleString()}배</div></div>
+      <div><div class="l">매수 신호 횟수</div><div class="v">연 ${r.cyc}회</div></div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>기간</th><th>CAGR</th><th>MDD</th><th>가성비</th><th>세후</th><th>TQQQ 보유</th><th>QQQ 보유</th><th>S&amp;P500</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="zone">보유 비교는 CAGR / MDD · 신호판 최대 낙폭 구간: ${B.dd.map(x=>`<b class="dn">${pc(x.dd)}</b> ${x.peak.slice(0,7)}→${x.low.slice(0,7)}`).join(' · ')}</div>
+    <div class="plot" id="plot-bt40" style="height:540px"></div>
+    <div class="fine">신호일 종가에 체결, 3분할은 신호일부터 3거래일. SPYM은 2010년부터 SPY 배당 포함, 그 전은 S&amp;P500 지수(배당 제외). SGOV는 미국 기준금리(연방기금금리)로 계산. 세후는 해마다 실현 이익에 22%(기본공제 무시). 신호 다음날 종가에 체결하면 40년 ${pc(B.next_day[0])} / ${pc(B.next_day[1])}입니다(1987년 블랙먼데이 하루 차이가 큼). 환산 TQQQ는 실제 상품이 아니므로 2010년 전 수치는 참고용입니다.</div>`;
+}
+function btChart(){
+  const B=TQ&&TQ.bt40; if(!window.Plotly||!B) return; const C=B.chart, x=C.d;
+  const L=(y,name,color,w)=>({x,y,name,mode:'lines',line:{color,width:w},hovertemplate:'%{y:,.1f}배'});
+  Plotly.react('plot-bt40',[L(C.v2,'신호판 V2','#5ad445',2),L(C.tqqq,'TQQQ 보유','#f0b429',1.2),L(C.qqq,'QQQ 보유','#2962ff',1.2),L(C.spx,'S&P500','#8a93a3',1.2)],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:10},height:540,margin:{l:6,r:50,t:6,b:24},
+     legend:{orientation:'h',x:0,y:1.08,font:{size:11}},hovermode:'x unified',dragmode:'pan',
+     xaxis:{gridcolor:'#262c35'},yaxis:{type:'log',gridcolor:'#262c35',side:'right'},
+     shapes:[{type:'rect',xref:'x',x0:x[0],x1:'2010-02',yref:'paper',y0:0,y1:1,fillcolor:'rgba(138,147,163,.07)',line:{width:0},layer:'below'}],
+     annotations:[{xref:'x',x:'1998-01',yref:'paper',y:0.02,text:'환산 구간',showarrow:false,font:{size:10,color:'#8a93a3'}}]},
+    {responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']});
+}
+
+async function load(){
+  try{
+    TQ = await (await fetch('tq.json?'+Math.floor(Date.now()/600000))).json();
+  }catch(e){ $('#cards').innerHTML='<div class="panel"><div class="body err">데이터 준비 중입니다. 잠시 후 새로고침하세요.</div></div>'; return; }
+  const u=new Date(TQ.updated), hrs=(Date.now()-u)/36e5;
+  $('#upd').innerHTML = u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 기준'+(hrs>26?' <span class="err">(갱신 멈춤)</span>':'');
+  $('#cards').innerHTML = card(TQ.spx,'spx');
+  const ex=TQ.extra||{};
+  $('#extra').innerHTML = ['SPYM','SGOV'].map(s=>{ const e=ex[s]||{}; return `<div class="state"><b style="min-width:52px">${s}</b>${e.px!=null?`<span class="num">$${fmt(e.px)}</span> ${sg(e.chg,2)}`:'<span class="zone">—</span>'}<span class="zone">${s==='SPYM'?'방어·스위칭 (S&P 500 1배)':'현금 대기 (초단기 국채)'}</span></div>`; }).join('')
+    + `<div class="state"><b style="min-width:52px">TQQQ</b><span class="num">$${fmt(TQ.spx.tqqq)}</span><span class="zone">공격 (나스닥100 3배)</span></div>`;
+  bt40(TQ.bt40); chart(TQ.spx,'spx'); btChart(); verify();
+}
+
+
+async function verify(){
+  let V; try{ V = await (await fetch('verify_summary.json?'+Date.now())).json(); }catch(e){ $('#verify').innerHTML='<span class="zone">검증 데이터 준비 중</span>'; return; }
+  const col = {ok:'var(--in)', minor:'var(--accent)', bad:'var(--hot)', warn:'var(--warn)'}[V.level] || 'var(--muted)';
+  const bg = {ok:'rgba(90,212,69,.10)', minor:'rgba(240,180,41,.10)', bad:'rgba(242,54,69,.12)', warn:'rgba(240,160,48,.10)'}[V.level] || 'transparent';
+  const mk = {open:'미국 장중', closed:'장 마감', extended:'시간외', unknown:'—'}[V.market] || '—';
+  const mins = Math.round((Date.now() - new Date(V.at)) / 60000);
+  const hist = (V.history||[]).slice(-24).map(h=>`<span title="${h.at} ${h.ok}/${h.n}" style="display:inline-block;width:9px;height:14px;border-radius:2px;margin-right:2px;background:${{ok:'#5ad445',minor:'#f0b429',bad:'#f23645',warn:'#f0a030'}[h.level]||'#5d6675'}"></span>`).join('');
+  const passed = (V.history||[]).filter(h=>h.level==='ok').length, total=(V.history||[]).length;
+  const rows = (V.checks||[]).map(c=>`<tr><td>${c.name}</td><td>${c.detail}</td><td>${c.ok?'<span class="up">일치</span>':'<span class="dn">차이</span>'}</td></tr>`).join('');
+  $('#verify').innerHTML = `
+    <div style="padding:10px 12px;border-radius:8px;background:${bg};border:1px solid ${col}"><b style="color:${col}">${V.verdict}</b>
+      <div class="zone" style="margin-top:2px">${V.at_kst} 검증 (${mins<1?'방금':mins+'분 전'}) · ${mk} · 15분마다 자동 검증${mins>90?' · <span class="dn">검증이 지연되고 있습니다</span>':''}</div></div>
+    <div><div class="zone" style="margin-bottom:4px">검증 분석</div><ul style="margin:0;padding-left:18px;display:grid;gap:3px">${(V.notes||[]).map(n=>`<li>${n}</li>`).join('')}</ul></div>
+    <div><div class="zone" style="margin-bottom:4px">최근 ${Math.min(24,total)}회 기록 (초록 전부 일치 · 노랑 수치만 차이 · 빨강 신호 불일치) — ${total}회 중 ${passed}회 전부 일치</div>${hist}</div>
+    <details><summary>항목별 대조 (${(V.checks||[]).filter(c=>c.ok).length}/${(V.checks||[]).length})</summary><div class="tbl"><table><thead><tr><th>항목</th><th>값 (TradingView·AgiTQ / 이 사이트)</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table></div></details>
+    <div class="fine">매시간 GitHub 서버가 TradingView 공개 페이지(종가·SMA 200)와 AgiTQ 화면을 직접 열어 이 사이트 계산과 대조합니다. 새로고침하면 가장 최근 검증 결과가 보입니다.</div>`;
+}
+
+$('#refresh').addEventListener('click',load);
+const SRC=['https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js','https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://cdn.plot.ly/plotly-2.35.2.min.js'];
+const ls = s => new Promise((ok,no)=>{ const e=document.createElement('script'); e.src=s; e.onload=ok; e.onerror=no; document.head.appendChild(e); });
+(async()=>{ const p=load(); for(const s of SRC){ try{ await ls(s); if(window.Plotly) break; }catch(e){} } await p; if(TQ){ chart(TQ.spx,'spx'); btChart(); } })();
+</script>
+</body>
+</html>
