@@ -8,7 +8,7 @@
   :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
   * { box-sizing:border-box; }
   html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
-  .wrap { padding:12px 12px 40px; max-width:1100px; margin:0 auto; }
+  .wrap { padding:12px 12px 40px; max-width:1650px; margin:0 auto; }
   header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
   h1 { font-size:18px; margin:0; }
   .date { color:var(--muted); font-size:12px; }
@@ -36,6 +36,8 @@
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
   #plot-d { height:440px; } #plot-b, #plot-btc { height:340px; } #plot-c { height:580px; }
   @media (max-width:599px){ #plot-d { height:360px; } #plot-b, #plot-btc { height:280px; } #plot-c { height:480px; } }
+  /* 휴대폰: 그래프를 화면의 1.5배 너비로 — 옆으로 밀어서 봄 */
+  @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:150%; } }
 </style>
 </head>
 <body>
@@ -59,26 +61,26 @@
   <div class="panel">
     <h2>일봉<span class="desc">5일선 · 218일선 · 218일선 +7% 엔벨로프 · 이격도(200) 160/50</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
-    <div class="plot" id="plot-d"></div>
+    <div class="plotbox"><div class="plot" id="plot-d"></div></div>
   </div>
 
   <div class="panel">
     <h2>3일봉 · Global M2 3일 평균
       <span class="tools">오프셋 <input type="range" id="m2off" min="0" max="120" value="0"> <span id="m2offv">0</span>일</span></h2>
     <div class="sum" id="sum-b">불러오는 중…</div>
-    <div class="plot" id="plot-b"></div>
+    <div class="plotbox"><div class="plot" id="plot-b"></div></div>
   </div>
 
   <div class="panel">
     <h2>월봉<span class="desc">BB 20/2 · RSI 14 · Williams Vix Fix 22/20/2/50/0.85</span></h2>
     <div class="sum" id="sum-c">불러오는 중…</div>
-    <div class="plot" id="plot-c"></div>
+    <div class="plotbox"><div class="plot" id="plot-c"></div></div>
   </div>
 
   <div class="panel">
     <h2>비트코인 월봉</h2>
     <div class="sum" id="sum-btc">불러오는 중…</div>
-    <div class="plot" id="plot-btc"></div>
+    <div class="plotbox"><div class="plot" id="plot-btc"></div></div>
   </div>
 
   <div class="status">데이터: Yahoo Finance(시세·환율), TradingView ECONOMICS(Global M2, 17개국). GitHub 서버가 3시간마다 갱신합니다.</div>
@@ -114,7 +116,7 @@ function vixfix(rows, pd=22, bbl=20, mult=2, lb=50, ph=0.85){
 const C = { grid:'#262c35', txt:'#c9cfd8', up:'#089981', dn:'#f23645' };
 const PH = (pc, mob) => window.innerWidth < 600 ? mob : pc;   // 그래프 높이: PC / 휴대폰
 const base = h => ({ paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:C.txt,size:11}, height:h,
-  margin:{l:8,r:56,t:10,b:28}, showlegend:false, hovermode:'x unified', dragmode:'pan', xaxis:{rangeslider:{visible:false}, gridcolor:C.grid} });
+  margin:{l:8,r:56,t:10,b:28}, showlegend:false, hovermode:'x unified', dragmode: window.innerWidth < 600 ? false : 'pan', xaxis:{rangeslider:{visible:false}, gridcolor:C.grid} });
 const ax = o => ({ gridcolor:C.grid, zeroline:false, side:'right', tickfont:{size:10}, ...o });
 const candle = (r,nm='MSTR') => ({ type:'candlestick', x:r.map(d=>d.t), open:r.map(d=>d.o), high:r.map(d=>d.h), low:r.map(d=>d.l), close:r.map(d=>d.c),
   increasing:{line:{color:C.up},fillcolor:C.up}, decreasing:{line:{color:C.dn},fillcolor:C.dn}, name:nm });
@@ -226,6 +228,10 @@ const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement(
   await dataP; init();
 })();
 
+</script>
+<script>
+// 휴대폰: 넓힌 그래프는 최근 쪽(오른쪽 끝)부터 보이게
+(function(){ let n=0; const go=()=>{ document.querySelectorAll('.plotbox').forEach(b=>{ if(b.scrollWidth>b.clientWidth && !b.dataset.moved){ b.scrollLeft=b.scrollWidth; b.dataset.moved=1; } }); if(++n<20) setTimeout(go,500); }; setTimeout(go,800); })();
 </script>
 </body>
 </html>
