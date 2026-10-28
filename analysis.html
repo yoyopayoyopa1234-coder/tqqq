@@ -158,23 +158,32 @@ function bars3(r){ const out=[]; for(let e=r.length;e>0;e-=3){ const s=Math.max(
 function chartB(){
   const r = bars3(ohlc('TQQQ_1d')), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
   const L = base(PH(560,460)); L.yaxis=ax({type:isLong()?'log':'linear'}); L.yaxis2=ax({overlaying:'y', side:'left', showgrid:false, title:{text:'M2 $조',font:{size:10}}});
-  const back = startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; L.shapes=synShade(x);
-  { const v=r.slice(back), lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h)); L.yaxis.range= isLong() ? [Math.log10(lo*0.8), Math.log10(hi_*1.25)] : [lo*0.95, hi_*1.05]; }
-  const tr=[candle(r)];
+  // 처음 화면 = 최근 2년 (꺾임이 보이게) · 확대·이동하면 TQQQ·M2 세로 범위가 보이는 구간에 꽉 차게 다시 맞춰짐
+  const x0=new Date(x[i].getTime()-2*365.25*86400000); L.xaxis.range=[x0, new Date(x[i].getTime()+10*86400000)]; L.shapes=synShade(x);
+  const tr=[candle(r)]; let m2x=null, m2y=null;
   const M2 = DATA && DATA.m2 && DATA.m2.rows && DATA.m2.rows.length ? DATA.m2 : null;
   let m2txt = '<span class="err">Global M2 데이터 없음</span>';
   if(M2){
     const off=+$('#m2off').value, rows=M2.rows, mx=rows.map(a=>new Date(new Date(a[0]).getTime()+off*86400000)), n=rows.length-1;
     const peakI = rows.reduce((b,a,k)=> a[1]>rows[b][1]?k:b, Math.max(0,n-260));
     const ago = rows[Math.max(0,n-63)];
-    tr.push(line(mx, rows.map((a,k)=>k<2?null:(rows[k][1]+rows[k-1][1]+rows[k-2][1])/3), '#2e9d4a', 'Global M2 3일 평균', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5,shape:'spline',smoothing:0.6}}));
-    // M2 세로 3배: 2015년 이후 최소~최대 폭의 1/3만 보이게 잡아 최근 값이 위쪽 70%에 오도록 (오래된 구간은 아래로 잘려 나감)
-    const vis = rows.slice(Math.max(0,rows.findIndex(a=>new Date(a[0])>=new Date('2015-01-01')))).map(a=>a[1]), span=(Math.max(...vis)*1.02-Math.min(...vis)*0.98)/3, top=rows[n][1]+span*0.3; L.yaxis2.range=[top-span, top];
+    m2x=mx; m2y=rows.map((a,k)=>k<2?null:(rows[k][1]+rows[k-1][1]+rows[k-2][1])/3);
+    tr.push(line(m2x, m2y, '#2e9d4a', 'Global M2 3일 평균', {yaxis:'y2', line:{color:'#2e9d4a',width:2.5,shape:'spline',smoothing:0.6}}));
     m2txt = `Global M2 <b>$${rows[n][1].toFixed(1)}조</b> (${rows[n][0]}, 3일 평균 $${((rows[n][1]+rows[n-1][1]+rows[n-2][1])/3).toFixed(1)}조) · 3개월 전 대비 ${pct(rows[n][1],ago[1])} · 최근 1년 고점 $${rows[peakI][1].toFixed(1)}조(${rows[peakI][0]}) 대비 ${pct(rows[n][1],rows[peakI][1])}`
       + `<br><span class="note">${M2.countries.join('+')} · 각국 최신 발표값 × 일별 환율${M2.notes&&M2.notes.length?' · '+M2.notes.join(' · '):''}</span>`;
   }
-  $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (최근 3일) · ${m2txt}${synNote()}`;
-  Plotly.react('plot-b', tr, L, cfg);
+  $('#sum-b').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (최근 3일) · ${m2txt}${synNote()} · <span class="note">처음엔 최근 2년 · 확대·이동하면 TQQQ와 M2가 보이는 구간에 맞춰 세로로 꽉 참</span>`;
+  // 보이는 구간 [a,b]에 맞춰 세로 범위 계산 — TQQQ는 차트 위쪽 ~85%, M2는 아래쪽 ~85%를 쓰게 살짝 어긋나게
+  const fit=(a,b)=>{ const ta=+new Date(a), tb=+new Date(b), v=r.filter(d=>+d.t>=ta&&+d.t<=tb), out={};
+    if(v.length>1){ const lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h));
+      if(isLong()){ const A=Math.log10(lo), B=Math.log10(hi_), sp=(B-A)||0.1; out['yaxis.range']=[A-sp*0.18, B+sp*0.03]; } else { const sp=(hi_-lo)||1; out['yaxis.range']=[lo-sp*0.18, hi_+sp*0.03]; } }
+    if(m2x){ const w=m2y.filter((y,k)=>y!=null&&+m2x[k]>=ta&&+m2x[k]<=tb); if(w.length>1){ const lo=Math.min(...w), hi_=Math.max(...w), sp=(hi_-lo)||1; out['yaxis2.range']=[lo-sp*0.03, hi_+sp*0.18]; } }
+    return out; };
+  Object.entries(fit(L.xaxis.range[0],L.xaxis.range[1])).forEach(([k,v])=>{ (k==='yaxis.range'?L.yaxis:L.yaxis2).range=v; });
+  Plotly.react('plot-b', tr, L, cfg).then(g=>{ if(g.__fitOn) return; g.__fitOn=true;
+    g.on('plotly_relayout',ev=>{ if(!ev||g.__fitting) return; let a=ev['xaxis.range[0]'], b=ev['xaxis.range[1]']; if(ev['xaxis.range']) [a,b]=ev['xaxis.range'];
+      if(ev['xaxis.autorange']){ a=x[0]; b=x[i]; } if(a==null||b==null) return;
+      const u=fit(a,b); if(!Object.keys(u).length) return; g.__fitting=true; Plotly.relayout(g,u).then(()=>{ g.__fitting=false; }); }); });
 }
 
 /* RSI는 QQQ 월봉으로 계산해 TQQQ 월봉 날짜에 맞춤 */
