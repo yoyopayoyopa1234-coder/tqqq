@@ -252,7 +252,7 @@ function chartN(){
   const b=sxy/sxx, a=my-b*mx, tr=p.map((_,i)=>Math.exp(a+b*i)), dev=p.map((v,i)=>(v/tr[i]-1)*100), i=N-1;
   const ext=(f)=>{ let k=0; dev.forEach((v,j)=>{ if(f(v,dev[k])) k=j; }); return k; }, hi=ext((v,w)=>v>w), lo=ext((v,w)=>v<w);
   const ym=d=>d.slice(0,7).replace('-','.');
-  $('#sum-n').innerHTML=`나스닥100 <b>${fmt(p[i])}</b> · 추세선 ${fmt(tr[i])} · 추세선 대비 <b class="${dev[i]>=0?'hot':'on'}">${dev[i]>=0?'+':''}${dev[i].toFixed(0)}%</b> · 추세선 연 ${((Math.exp(12*b)-1)*100).toFixed(1)}% 상승<br><span class="note">역대 최고 ${ym(rows[hi][0])} +${dev[hi].toFixed(0)}% · 최저 ${ym(rows[lo][0])} ${dev[lo].toFixed(0)}% · 기간 ${ym(rows[0][0])}~${ym(rows[i][0])} · 물가 미반영 · 2000년 거품이 기울기를 끌어올린 점 감안</span>`;
+  $('#sum-n').innerHTML=`<span class="note">${rows[i][0]} 종가 기준 · 15분마다 자동 갱신</span><br>나스닥100 <b>${fmt(p[i])}</b> · 추세선 ${fmt(tr[i])} · 추세선 대비 <b class="${dev[i]>=0?'hot':'on'}">${dev[i]>=0?'+':''}${dev[i].toFixed(0)}%</b> · 추세선 연 ${((Math.exp(12*b)-1)*100).toFixed(1)}% 상승<br><span class="note">역대 최고 ${ym(rows[hi][0])} +${dev[hi].toFixed(0)}% · 최저 ${ym(rows[lo][0])} ${dev[lo].toFixed(0)}% · 기간 ${ym(rows[0][0])}~${ym(rows[i][0])} · 물가 미반영 · 2000년 거품이 기울기를 끌어올린 점 감안</span>`;
   const L=base(PH(640,520)); L.yaxis=ax({domain:[0.30,1],type:'log'}); L.yaxis2=ax({domain:[0,0.24],ticksuffix:'%'});
   L.shapes=[hline(0,'y2','#a855f7','dash')];
   Plotly.react('plot-n',[ line(x,p,'#29b6f6','나스닥100',{line:{color:'#29b6f6',width:1.8}}), line(x,tr,'#a855f7','추세선',{line:{color:'#a855f7',width:2.4}}),
