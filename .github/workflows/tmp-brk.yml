@@ -1,0 +1,20 @@
+name: tmp-brk
+on: { push: { branches: [tmp-brk] } }
+jobs:
+  get:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: |
+          cd scripts && python - <<'PY'
+          import json, gzip, base64
+          from yahoo_data import yahoo
+          out = {}
+          for s in ("BRK-A", "BRK-B", "%5EGSPC"):
+              out[s] = yahoo(s, "1d", "p315532800")
+          b = base64.b64encode(gzip.compress(json.dumps(out).encode())).decode()
+          print("LEN", len(b))
+          for i in range(0, len(b), 60000): print("CHUNK", b[i:i+60000])
+          PY
