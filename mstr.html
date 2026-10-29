@@ -54,7 +54,7 @@
   </header>
 
   <div class="panel">
-    <h2>일봉<span class="desc">200일선 · 200일선 +7% 엔벨로프 · 이격도(200) 160/50</span></h2>
+    <h2>일봉<span class="desc">200일선 · 이격도(200) 160/50</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-d"></div></div>
   </div>
@@ -123,9 +123,9 @@ const fmt = v => v.toLocaleString('en-US',{maximumFractionDigits:2});
 
 function chartD(){
   const r = ohlc('MSTR_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
-  const s200=sma(c,200), ma200=s200, env=s200.map(v=>v==null?null:v*1.07), disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
+  const s200=sma(c,200), ma200=s200, disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
   const st = disp[i]>=160?' <span class="hot">과열</span>':disp[i]<=50?' <span class="on">과매도</span>':'';
-  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 200일선 ${fmt(ma200[i])} (${c[i]>ma200[i]?'위':'아래'}, ${pct(c[i],ma200[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
+  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 200일선 ${fmt(ma200[i])} (${c[i]>ma200[i]?'위':'아래'}, ${pct(c[i],ma200[i])}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
   const L = base(PH(720,600)); L.yaxis=ax({domain:[0.36,1]}); L.yaxis2=ax({domain:[0,0.30]});
   const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
   L.shapes=[hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
@@ -133,7 +133,6 @@ function chartD(){
   const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[Math.min(40,...vis)-5, Math.max(170,...vis)+5];
   Plotly.react('plot-d', [ candle(r),
     line(x,ma200,'#ff9800','200일선',{line:{color:'#ff9800',width:3.2}}),
-    line(x,env,'#8fb0ff','엔벨로프 +7%',{line:{color:'#8fb0ff',width:1.2,dash:'dot'}}),
     line(x,disp,'#2bb58f','이격도(200)',{yaxis:'y2', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);
 }
 
