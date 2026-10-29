@@ -53,7 +53,7 @@
   </header>
 
   <div class="panel">
-    <h2>일봉<span class="desc">5일선 · 218일선 · 218일선 +7% 엔벨로프 · 이격도(200) 160/50</span></h2>
+    <h2>일봉<span class="desc">200일선 · 200일선 +7% 엔벨로프 · 이격도(200) 160/50</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-d"></div></div>
   </div>
@@ -118,17 +118,16 @@ const fmt = v => v.toLocaleString('en-US',{maximumFractionDigits:2});
 
 function chartD(){
   const r = ohlc('KORU_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
-  const ma5=sma(c,5), ma218=sma(c,218), s200=sma(c,200), env=ma218.map(v=>v==null?null:v*1.07), disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
+  const s200=sma(c,200), ma200=s200, env=s200.map(v=>v==null?null:v*1.07), disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
   const st = disp[i]>=160?' <span class="hot">과열</span>':disp[i]<=50?' <span class="on">과매도</span>':'';
-  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 5일선 ${fmt(ma5[i])} · 218일선 ${fmt(ma218[i])} (${c[i]>ma218[i]?'위':'아래'}, ${pct(c[i],ma218[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
+  $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 200일선 ${fmt(ma200[i])} (${c[i]>ma200[i]?'위':'아래'}, ${pct(c[i],ma200[i])}) · 엔벨로프 ${fmt(env[i])} (${c[i]>env[i]?'돌파':'아래'}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
   const L = base(PH(720,600)); L.yaxis=ax({domain:[0.36,1]}); L.yaxis2=ax({domain:[0,0.30]});
   const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)];
   L.shapes=[hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
   L.annotations=[[160,'#f23645'],[50,'#2962ff']].map(([y,col])=>({xref:'paper',x:0,yref:'y2',y,text:String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
   const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[Math.min(40,...vis)-5, Math.max(170,...vis)+5];
   Plotly.react('plot-d', [ candle(r),
-    line(x,ma5,'#f7a21b','5일선',{line:{color:'#f7a21b',width:1.2}}),
-    line(x,ma218,'#4f7cf7','218일선',{line:{color:'#4f7cf7',width:1.8}}),
+    line(x,ma200,'#ff9800','200일선',{line:{color:'#ff9800',width:3.2}}),
     line(x,env,'#8fb0ff','엔벨로프 +7%',{line:{color:'#8fb0ff',width:1.2,dash:'dot'}}),
     line(x,disp,'#2bb58f','이격도(200)',{yaxis:'y2', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);
 }
@@ -181,21 +180,21 @@ function chartC(){
 async function alerts(){
   try{
     const d=ohlc('KORU_1d'), mo=ohlc('KORU_1mo'), dc=d.map(r=>r.c), mc=mo.map(r=>r.c), c=dc[dc.length-1];
-    const ma218=sma(dc,218).at(-1), env=ma218*1.07, disp=c/sma(dc,200).at(-1)*100, bmid=bb(mc).mid.at(-1), mrsi=qqqRsi(mo).at(-1), v=vixfix(mo);
+    const ma200=sma(dc,200).at(-1), env=ma200*1.07, disp=c/sma(dc,200).at(-1)*100, bmid=bb(mc).mid.at(-1), mrsi=qqqRsi(mo).at(-1), v=vixfix(mo);
     const vixRecent=v.sig.slice(-12).filter(Boolean).length, f=x=>x.toFixed(2);
     const conds=[
       {kind:'buy',name:'월봉 Vix Fix 투매 신호 점등',on:v.sig.at(-1),val:`Vix Fix ${v.w.at(-1).toFixed(1)} / 기준 ${v.rh.at(-1).toFixed(1)}`},
       {kind:'buy',name:'이격도(200) 50 이하 — 과매도',on:disp<=50,val:`이격도 ${disp.toFixed(1)}`},
-      {kind:'buy',name:'218일선 위로 회복',on:c>ma218,val:`${f(c)} vs 218일선 ${f(ma218)}`},
-      {kind:'buy',name:'218일선 +7% 엔벨로프 돌파',on:c>env,val:`${f(c)} vs 엔벨로프 ${f(env)}`},
+      {kind:'buy',name:'200일선 위로 회복',on:c>ma200,val:`${f(c)} vs 200일선 ${f(ma200)}`},
+      {kind:'buy',name:'200일선 +7% 엔벨로프 돌파',on:c>env,val:`${f(c)} vs 엔벨로프 ${f(env)}`},
       {kind:'buy',name:'월봉 RSI 50 돌파',on:mrsi>=50,val:`월봉 RSI ${mrsi.toFixed(1)}`},
       {kind:'buy',name:'월봉 BB 중심선 돌파 (추세 전환)',on:c>bmid,val:`${f(c)} vs BB 중심 ${f(bmid)}`},
       {kind:'warn',name:'이격도(200) 160 이상 — 과열 경고',on:disp>=160,val:`이격도 ${disp.toFixed(1)}`},
-      {kind:'warn',name:'218일선 이탈 — 반등 실패 경고',on:c<ma218,val:`${f(c)} vs 218일선 ${f(ma218)}`}];
+      {kind:'warn',name:'200일선 이탈 — 반등 실패 경고',on:c<ma200,val:`${f(c)} vs 200일선 ${f(ma200)}`}];
     const score=conds.filter(x=>x.kind==='buy'&&x.on).length;
     const [stage,txt] = (c>bmid&&mrsi>=50)?['전환','추세 전환 확인 구간 — 월봉 BB 중심선과 RSI 50을 모두 넘었습니다.']
-      : ((vixRecent>=3||disp<=50)&&c>ma218)?['회복','투매 신호 이후 218일선을 회복한 구간 — 분할 매수 검토 구간입니다.']
-      : (v.sig.at(-1)||disp<=50)?['투매','공포(투매) 구간 — 역사적으로 바닥 후보였던 자리입니다. 218일선 회복 확인 전입니다.']
+      : ((vixRecent>=3||disp<=50)&&c>ma200)?['회복','투매 신호 이후 200일선을 회복한 구간 — 분할 매수 검토 구간입니다.']
+      : (v.sig.at(-1)||disp<=50)?['투매','공포(투매) 구간 — 역사적으로 바닥 후보였던 자리입니다. 200일선 회복 확인 전입니다.']
       : disp>=160?['과열','과열 구간 — 신규 매수에 불리한 자리입니다.'] : ['관망','뚜렷한 매수 조건이 겹치지 않은 구간입니다.'];
     $('#al-stage').innerHTML = `<span class="stage s-${stage}">${stage}</span>매수 조건 ${score}/6`;
     const rows = conds.map(c=>`<div class="row"><span class="${c.on?(c.kind==='buy'?'ok':'wr'):'no'}">${c.on?(c.kind==='buy'?'●':'▲'):'○'}</span><span>${c.name}</span><span class="v">${c.val}</span></div>`).join('');
