@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TQQQ 분석</title>
+<title>TQQQ</title>
 <style>
   :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
   * { box-sizing:border-box; }
@@ -35,8 +35,8 @@
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .btn.rg.on { border-color:var(--accent); color:var(--accent); }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  #plot-d { height:720px; } #plot-b { height:560px; } #plot-c { height:920px; }
-  @media (max-width:599px){ #plot-d { height:600px; } #plot-b { height:460px; } #plot-c { height:780px; } }
+  #plot-d { height:720px; } #plot-b { height:560px; } #plot-c { height:920px; } #plot-n { height:640px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b { height:460px; } #plot-c { height:780px; } #plot-n { height:520px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 </style>
@@ -44,9 +44,9 @@
 <body>
 <div class="wrap">
   <header>
-    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="analysis.html" class="cur">TQQQ 분석</a><a href="spx.html">S&amp;P500</a><a href="mstr.html">MSTR</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="tax.html">절세</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="soxl.html">SOXL</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="analysis.html" class="cur">TQQQ</a><a href="spx.html">S&amp;P500</a><a href="mstr.html">MSTR</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="tax.html">절세</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="soxl.html">SOXL</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
     <span style="flex-basis:100%;height:0"></span>
-    <h1>TQQQ 분석</h1>
+    <h1>TQQQ</h1>
     <span class="date" id="today"></span>
     <span class="right">
       <button class="btn rg" data-r="40" type="button">40년</button><button class="btn rg" data-r="recent" type="button">2015~</button>
@@ -71,6 +71,12 @@
     <h2>월봉<span class="desc">BB 20/2 · RSI 14 (QQQ) · Williams Vix Fix 22/20/2/50/0.85</span></h2>
     <div class="sum" id="sum-c">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-c"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>나스닥100 40년 추세선<span class="desc">월말 종가 · 로그 눈금 · 보라 직선 = 1985년부터 지금까지 로그 회귀 추세선 · 아래는 추세선 대비 %</span></h2>
+    <div class="sum" id="sum-n">불러오는 중…</div>
+    <div class="plotbox"><div class="plot" id="plot-n"></div></div>
   </div>
 
   <div class="status">데이터: Yahoo Finance(TQQQ 시세, 매시간 갱신) · Global M2는 MSTR 대시보드와 같은 데이터(3시간마다 갱신)를 씁니다.</div>
@@ -238,6 +244,20 @@ async function alerts(){
   }catch(e){ $('#al-body').innerHTML='<span class="note">데이터 준비 중</span>'; }
 }
 function safe(fn, id){ try{ fn(); }catch(e){ $(id).innerHTML=`<span class="err">오류: ${e.message} — 새로고침을 눌러주세요.</span>`; } }
+function chartN(){
+  const J=DATA&&DATA.t40; if(!J||!J.ndx) throw new Error('데이터 준비 중');
+  const m=new Map(); J.d.forEach((d,i)=>{ if(J.ndx[i]!=null) m.set(d.slice(0,7),[d,J.ndx[i]]); });
+  const rows=[...m.values()], N=rows.length, x=rows.map(r=>new Date(r[0]+'T00:00:00Z')), p=rows.map(r=>r[1]), ly=p.map(Math.log);
+  const mx=(N-1)/2, my=ly.reduce((a,b)=>a+b,0)/N; let sxy=0,sxx=0; ly.forEach((y,i)=>{ sxy+=(i-mx)*(y-my); sxx+=(i-mx)**2; });
+  const b=sxy/sxx, a=my-b*mx, tr=p.map((_,i)=>Math.exp(a+b*i)), dev=p.map((v,i)=>(v/tr[i]-1)*100), i=N-1;
+  const ext=(f)=>{ let k=0; dev.forEach((v,j)=>{ if(f(v,dev[k])) k=j; }); return k; }, hi=ext((v,w)=>v>w), lo=ext((v,w)=>v<w);
+  const ym=d=>d.slice(0,7).replace('-','.');
+  $('#sum-n').innerHTML=`나스닥100 <b>${fmt(p[i])}</b> · 추세선 ${fmt(tr[i])} · 추세선 대비 <b class="${dev[i]>=0?'hot':'on'}">${dev[i]>=0?'+':''}${dev[i].toFixed(0)}%</b> · 추세선 연 ${((Math.exp(12*b)-1)*100).toFixed(1)}% 상승<br><span class="note">역대 최고 ${ym(rows[hi][0])} +${dev[hi].toFixed(0)}% · 최저 ${ym(rows[lo][0])} ${dev[lo].toFixed(0)}% · 기간 ${ym(rows[0][0])}~${ym(rows[i][0])} · 물가 미반영 · 2000년 거품이 기울기를 끌어올린 점 감안</span>`;
+  const L=base(PH(640,520)); L.yaxis=ax({domain:[0.30,1],type:'log'}); L.yaxis2=ax({domain:[0,0.24],ticksuffix:'%'});
+  L.shapes=[hline(0,'y2','#a855f7','dash')];
+  Plotly.react('plot-n',[ line(x,p,'#29b6f6','나스닥100',{line:{color:'#29b6f6',width:1.8}}), line(x,tr,'#a855f7','추세선',{line:{color:'#a855f7',width:2.4}}),
+    {x,y:dev,name:'추세선 대비',type:'bar',yaxis:'y2',marker:{color:dev.map(v=>v>=0?'rgba(242,54,69,.6)':'rgba(8,153,129,.6)')},hovertemplate:'%{y:.0f}%'} ], L, cfg);
+}
 async function init(){
   if(!DATA) await loadData();
   if(DATA && DATA.updated){
@@ -245,7 +265,7 @@ async function init(){
     $('#today').innerHTML += ' · 데이터 ' + u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + ' 기준'
       + (hrs>26 ? ' <span class="err">(갱신이 멈춤 — 확인 필요)</span>' : '');
   }
-  safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
+  safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c'); safe(chartN,'#sum-n');
 }
 function paintRange(){ document.querySelectorAll('.rg').forEach(b=>b.classList.toggle('on',b.dataset.r===RANGE)); }
 paintRange();
