@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from yahoo_data import yahoo
 
-STOCKS = [("SOXL", "SOXL", "soxl_data.json"), ("KORU", "KORU", "koru_data.json"), ("SSO", "SSO", "sso_data.json"), ("SPX", "%5EGSPC", "spx_data.json")]
-RANGES = {"SPX": {"1d": "p473385600", "1wk": "p473385600", "1mo": "p473385600"}}   # 1985-01-01부터   # S&P500은 길게 (5·10·15년 버튼용)
+STOCKS = [("SOXL", "SOXL", "soxl_data.json"), ("KORU", "KORU", "koru_data.json"), ("SSO", "SSO", "sso_data.json"), ("QLD", "QLD", "qld_data.json"), ("SPX", "%5EGSPC", "spx_data.json")]
+RANGES = {"QLD": {"1d": "p1136073600", "1wk": "p1136073600", "1mo": "p1136073600"}, "SPX": {"1d": "p473385600", "1wk": "p473385600", "1mo": "p473385600"}}   # 1985-01-01부터   # S&P500은 길게 (5·10·15년 버튼용)
 
 def fix_bars(bars, daily):
     """야후 주·월봉의 튀는 값(예: QLD 2024-09 고가 94.33)을 같은 기간 일봉으로 다시 계산."""

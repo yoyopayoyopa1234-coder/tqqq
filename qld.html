@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QLD 매매법</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1650px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .panel h2 { margin:0; padding:9px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; border-bottom:1px solid var(--line); }
+  .panel h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .panel h2 .tools { margin-left:auto; display:flex; gap:4px; align-items:center; font-weight:400; font-size:12px; color:var(--muted); }
+  .sum { padding:8px 12px; font-size:13px; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--line); line-height:1.6; }
+  .sum b { font-weight:600; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:#5ad445; font-weight:600; } .hot { color:#f23645; font-weight:600; }
+  .plot { width:100%; }
+  .status { font-size:12px; color:var(--muted); padding:6px 2px; line-height:1.6; }
+  .err { color:#f23645; }
+  .note { color:var(--muted); font-size:11px; }
+  input[type=range] { width:90px; vertical-align:middle; }
+  .al { display:grid; gap:4px; }
+  .al .row { display:flex; gap:8px; align-items:baseline; }
+  .al .ok { color:#5ad445; } .al .no { color:#5d6675; } .al .wr { color:#f0a030; }
+  .al .v { color:var(--muted); font-size:12px; margin-left:auto; text-align:right; }
+  .stage { display:inline-block; padding:1px 9px; border-radius:999px; font-weight:700; font-size:12px; margin-right:6px; }
+  .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
+  .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:920px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:780px; } }
+  /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
+  @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
+
+  #plot-q { height:760px; } @media (max-width:599px){ #plot-q { height:620px; } }
+  .rules { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; padding:12px; } @media (max-width:760px){ .rules { grid-template-columns:repeat(2,1fr); } }
+  .rule { border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:rgba(255,255,255,.02); transition:all .4s; }
+  .rule .t { font-size:12px; color:var(--muted); } .rule .n { font-size:17px; font-weight:800; margin:2px 0; } .rule .d { font-size:12px; color:#c9cfd8; font-variant-numeric:tabular-nums; }
+  .rule.on { border-color:#5ad445; background:rgba(90,212,69,.10); box-shadow:0 0 14px rgba(90,212,69,.25); } .rule.on .n { color:#8be37a; }
+  .big { font-size:15px; } .big b.k { font-size:20px; }
+  table.h { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; } table.h th, table.h td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; } table.h th:first-child, table.h td:first-child { text-align:left; } table.h th { color:var(--muted); font-weight:500; }
+  .tw { overflow-x:auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="qld.html" class="cur">QLD 매매법</a><a href="analysis.html">TQQQ 분석</a><a href="spx.html">S&amp;P500</a><a href="mstr.html">MSTR</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="loan.html">위기대출</a><a href="fedwatch.html">FedWatch</a><a href="tax.html">절세</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="soxl.html">SOXL</a><a href="sso.html">SSO</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <span style="flex-basis:100%;height:0"></span>
+    <h1>QLD 매매법</h1>
+    <span class="date" id="today"></span>
+    <span class="right"><button class="btn" id="refresh" type="button">새로고침</button></span>
+  </header>
+
+  <div class="panel">
+    <h2>오늘 QLD<span class="desc">매수 방법이 단순한 것이 QLD 매매법의 장점</span></h2>
+    <div class="sum big" id="now">불러오는 중…</div>
+    <div class="rules" id="rules"></div>
+    <div class="sum" style="border-top:1px solid var(--line);border-bottom:0">
+      <b>규칙</b> ① QLD가 <b>120일 이평</b>에 닿으면 산다 ② <b>200일 이평</b>에 닿으면 더 산다 ③ 전고점 대비 <b>−10% 줍줍 · −20% 줍줍줍 · −30% 줍줍줍줍</b> (떨어질수록 더 많이)<br>
+      <span class="note">닿음 = 그날 저가가 이평선 이하 · 전고점·하락률은 종가 기준 · 초록 칸이 지금 해당하는 매수 신호 · 투자 자문 아님</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>일봉<span class="desc">120일선 · 200일선 · 전고점 −10/−20/−30% 선 · 아래는 전고점 대비 하락률</span></h2>
+    <div class="plotbox"><div class="plot" id="plot-q"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>지난 하락 구간<span class="desc">전고점 대비 −10% 이상 빠졌던 때 · 각 단계에 처음 닿은 날과 그 뒤 1년 수익률</span></h2>
+    <div class="tw" id="hist">불러오는 중…</div>
+  </div>
+
+  <div class="status">데이터: Yahoo Finance(QLD, 달러) · 15분마다 갱신</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const today=()=>$('#today').textContent = new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); today();
+let DATA=null;
+async function loadData(){ DATA=await fetch('qld_data.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null).catch(()=>null); }
+const sma=(a,n)=>{ const o=new Array(a.length).fill(null); let s=0; for(let i=0;i<a.length;i++){ s+=a[i]; if(i>=n) s-=a[i-n]; if(i>=n-1) o[i]=s/n; } return o; };
+const fmt=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sg=v=>`<span class="${v>=0?'up':'dn'}">${v>=0?'+':''}${v.toFixed(1)}%</span>`;
+const ds=t=>t.toLocaleDateString('ko-KR',{year:'2-digit',month:'numeric',day:'numeric'});
+const LV=[[10,'줍줍'],[20,'줍줍줍'],[30,'줍줍줍줍']];
+
+function calc(){
+  const r=DATA.ohlc.QLD_1d.map(a=>({t:new Date(a[0]*1000),o:a[1],h:a[2],l:a[3],c:a[4]}));
+  const c=r.map(d=>d.c), m120=sma(c,120), m200=sma(c,200);
+  let pk=-Infinity, pkI=0; const peak=[], dd=[], pkIdx=[];
+  for(let i=0;i<r.length;i++){ if(c[i]>pk){ pk=c[i]; pkI=i; } peak.push(pk); pkIdx.push(pkI); dd.push((c[i]/pk-1)*100); }
+  return {r,c,m120,m200,peak,dd,pkIdx};
+}
+function today_(D){
+  const {r,c,m120,m200,peak,dd,pkIdx}=D, i=r.length-1, x=r[i];
+  const t120=x.l<=m120[i], t200=x.l<=m200[i];
+  const cards=[
+    {t:'① 120일 이평',n:t120?'닿음 · 매수':'아직',on:t120,d:`120일선 ${fmt(m120[i])} · 현재가 ${sg((c[i]/m120[i]-1)*100)}`},
+    {t:'② 200일 이평',n:t200?'닿음 · 더 매수':'아직',on:t200,d:`200일선 ${fmt(m200[i])} · 현재가 ${sg((c[i]/m200[i]-1)*100)}`},
+    ...LV.map(([p,w])=>{ const lv=peak[i]*(1-p/100), on=dd[i]<=-p; return {t:`③ 전고 −${p}%`,n:on?w:'아직',on,d:`${fmt(lv)} · ${on?'도달':'까지 '+((lv/c[i]-1)*100).toFixed(1)+'%'}`}; })];
+  $('#rules').innerHTML=cards.map(k=>`<div class="rule${k.on?' on':''}"><div class="t">${k.t}</div><div class="n">${k.n}</div><div class="d">${k.d}</div></div>`).join('');
+  const lvl=LV.filter(([p])=>dd[i]<=-p).pop(), act=[t120&&'120일선',t200&&'200일선',lvl&&('전고 −'+lvl[0]+'% '+lvl[1])].filter(Boolean);
+  $('#now').innerHTML=`QLD <b class="k">${fmt(c[i])}</b> ${sg((c[i]/c[i-1]-1)*100)} · 전고점 ${fmt(peak[i])} (${ds(r[pkIdx[i]].t)}) 대비 <b>${dd[i].toFixed(1)}%</b><br>`+
+    (act.length?`<b style="color:#8be37a">오늘 매수 신호: ${act.join(' · ')}</b>`:`<span class="note" style="font-size:13px">오늘은 매수 신호 없음 — 가장 가까운 자리: ${[[m120[i],'120일선'],[m200[i],'200일선'],...LV.map(([p])=>[peak[i]*(1-p/100),'전고 −'+p+'%'])].filter(([v])=>v<c[i]).sort((a,b)=>b[0]-a[0]).map(([v,n])=>`${n} ${fmt(v)} (${((v/c[i]-1)*100).toFixed(1)}%)`)[0]||'—'}</span>`);
+}
+function chart(D){
+  const {r,c,m120,m200,peak,dd}=D, x=r.map(d=>d.t), i=r.length-1;
+  const C={grid:'#262c35',txt:'#c9cfd8',up:'#089981',dn:'#f23645'};
+  const ln=(y,col,name,w=1.4,dash)=>({x,y,name,mode:'lines',line:{color:col,width:w,dash},yaxis:'y'});
+  const tr=[{type:'candlestick',x,open:r.map(d=>d.o),high:r.map(d=>d.h),low:r.map(d=>d.l),close:c,name:'QLD',increasing:{line:{color:C.up},fillcolor:C.up},decreasing:{line:{color:C.dn},fillcolor:C.dn}},
+    ln(m120,'#f7a21b','120일선',1.6), ln(m200,'#2962ff','200일선',1.8),
+    ...LV.map(([p],k)=>ln(peak.map(v=>v*(1-p/100)),['#7fd17a','#4fb84a','#2f8f2b'][k],'전고 −'+p+'%',1,'dot')),
+    {x,y:dd,name:'전고 대비',mode:'lines',fill:'tozeroy',line:{color:'#f23645',width:1},fillcolor:'rgba(242,54,69,.18)',yaxis:'y2',hovertemplate:'%{y:.1f}%'}];
+  const L={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:C.txt,size:11},margin:{l:8,r:56,t:10,b:28},showlegend:false,hovermode:'x unified',
+    dragmode:window.innerWidth<600?false:'pan',xaxis:{rangeslider:{visible:false},gridcolor:C.grid,range:[new Date(x[i].getTime()-3*365.25*864e5),new Date(x[i].getTime()+10*864e5)]},
+    yaxis:{domain:[0.30,1],type:'log',gridcolor:C.grid,side:'right',tickfont:{size:10}},
+    yaxis2:{domain:[0,0.25],gridcolor:C.grid,side:'right',tickfont:{size:10},ticksuffix:'%',range:[Math.max(-85,Math.min(...dd.slice(-800))-5),3]},
+    shapes:LV.map(([p],k)=>({type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:-p,y1:-p,line:{color:['#7fd17a','#4fb84a','#2f8f2b'][k],width:1,dash:'dot'}}))};
+  Plotly.react('plot-q',tr,L,{responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d','toImage']});
+}
+function hist(D){
+  const {r,c,dd,pkIdx}=D, n=r.length, rows=[];
+  let i=0;
+  while(i<n){
+    if(dd[i]>-10){ i++; continue; }
+    const p=pkIdx[i]; let j=i, lo=i; const hit={};
+    while(j<n && dd[j]<0){ if(dd[j]<dd[lo]) lo=j; for(const [q] of LV) if(hit[q]==null && dd[j]<=-q) hit[q]=j; j++; }
+    rows.push({p,lo,hit,rec:j<n?j:null}); i=j;
+  }
+  const fwd=k=>{ const t=r[k].t.getTime()+365.25*864e5; const m=r.findIndex(d=>d.t.getTime()>=t); return m<0?null:(c[m]/c[k]-1)*100; };
+  const cell=k=>{ if(k==null) return '<td>—</td>'; const f=fwd(k); return `<td>${ds(r[k].t)}<br><span class="note">1년 뒤 ${f==null?'진행 중':sg(f)}</span></td>`; };
+  $('#hist').innerHTML=`<table class="h"><tr><th>전고점</th><th>−10% 줍줍</th><th>−20% 줍줍줍</th><th>−30% 줍줍줍줍</th><th>최저</th><th>전고 회복</th></tr>`+
+    rows.reverse().map(o=>`<tr><td>${ds(r[o.p].t)}<br><span class="note">${fmt(c[o.p])}</span></td>${cell(o.hit[10])}${cell(o.hit[20])}${cell(o.hit[30])}<td><span class="dn">${dd[o.lo].toFixed(1)}%</span><br><span class="note">${ds(r[o.lo].t)}</span></td><td>${o.rec==null?'<span class="note">회복 전</span>':ds(r[o.rec].t)+'<br><span class="note">'+Math.round((r[o.rec].t-r[o.p].t)/864e5/30.4)+'개월 걸림</span>'}</td></tr>`).join('')+
+    `</table><div class="note" style="padding:8px 12px">QLD 상장(2006) 이후 · 종가 기준 · 1년 뒤 수익률은 그 단계에 처음 닿은 날 종가에 샀을 때 기준</div>`;
+}
+async function init(){
+  if(!DATA) await loadData();
+  if(!DATA||!DATA.ohlc||!DATA.ohlc.QLD_1d){ $('#now').innerHTML='<span class="err">데이터 준비 중 — 잠시 뒤 새로고침하세요.</span>'; return; }
+  const u=new Date(DATA.updated); $('#today').innerHTML+=' · 데이터 '+u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 기준';
+  const D=calc(); for(const [f,id] of [[today_,'#now'],[hist,'#hist']]) try{ f(D); }catch(e){ $(id).innerHTML='<span class="err">오류: '+e.message+'</span>'; }
+  if(window.Plotly) try{ chart(D); }catch(e){}
+}
+$('#refresh').addEventListener('click',()=>{ DATA=null; today(); init(); });
+/* ── 차트마다 기간 버튼 (2년·5년·10년·15년·전체) — 누르면 그 기간으로 가로 범위를 바꾸고 세로를 보이는 봉에 맞춤 ── */
+(function(){
+  const YRS=[['2년',2],['5년',5],['10년',10],['15년',15],['전체',0]], SEL={}, DEF={'plot-b':document.title.includes('TQQQ')&&location.pathname.includes('analysis')?2:0};
+  const st=document.createElement('style'); st.textContent='.yr{display:flex;gap:4px;flex-wrap:wrap;padding:8px 12px 0}.yr button{font-size:12px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-family:inherit}.yr button.on{color:#0f1216;background:#9ad0f5;border-color:#9ad0f5;font-weight:700;box-shadow:0 0 10px rgba(154,208,245,.5)}';
+  document.head.appendChild(st);
+  const span=g=>{ let mn=Infinity, mx=-Infinity; for(const t of g.data||[]){ if(!t.x||!t.x.length) continue; const a=+new Date(t.x[0]), b=+new Date(t.x[t.x.length-1]); if(a<mn) mn=a; if(b>mx) mx=b; } return [mn,mx]; };
+  const fitY=(g,a,b)=>{ const c=(g.data||[]).find(t=>t.type==='candlestick'); if(!c) return {}; let lo=Infinity, hi=-Infinity;
+    for(let k=0;k<c.x.length;k++){ const t=+new Date(c.x[k]); if(t<a||t>b) continue; if(c.low[k]<lo) lo=c.low[k]; if(c.high[k]>hi) hi=c.high[k]; }
+    if(!(hi>lo)) return {}; const ya=g.layout.yaxis||{};
+    if(ya.type==='log'){ const A=Math.log10(lo), B=Math.log10(hi), s=(B-A)||0.1; return {'yaxis.range':[A-s*0.06, B+s*0.06]}; }
+    const s=hi-lo; return {'yaxis.range':[Math.max(0,lo-s*0.06), hi+s*0.06]}; };
+  const fitM2=(g,a,b)=>{ const m=(g.data||[]).find(t=>t.name==='Global M2 3일 평균'); if(!m) return {}; const w=[]; for(let k=0;k<m.x.length;k++){ const t=+new Date(m.x[k]); if(t>=a&&t<=b&&m.y[k]!=null) w.push(m.y[k]); }
+    if(w.length<2) return {}; const sp=((Math.max(...w)-Math.min(...w))||1)/2, top=w[w.length-1]+sp*0.3; return {'yaxis2.range':[top-sp, top]}; };   // M2 세로 2배
+  const apply=(id,y)=>{ const g=document.getElementById(id); if(!g||!g.data) return; const [mn,mx]=span(g); if(!isFinite(mn)) return;
+    const a=y?Math.max(mn, mx-y*365.25*864e5):mn, pad=(mx-a)*0.02, u={'xaxis.range':[new Date(a), new Date(mx+pad)]};
+    if(!g.__fitOn) Object.assign(u, fitY(g,a,mx), fitM2(g,a,mx)); g.__yrBusy=true; Plotly.relayout(g,u).then(()=>{ g.__yrBusy=false; }); };
+  const paint=id=>{ const v=SEL[id]??DEF[id]??0; document.querySelectorAll(`.yr[data-for="${id}"] button`).forEach(b=>b.classList.toggle('on',+b.dataset.y===v)); };
+  document.querySelectorAll('.plotbox > .plot').forEach(p=>{ const id=p.id, bar=document.createElement('div'); bar.className='yr'; bar.dataset.for=id;
+    bar.innerHTML=YRS.map(([t,y])=>`<button type="button" data-y="${y}">${t}</button>`).join('');
+    bar.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; SEL[id]=+b.dataset.y; paint(id); apply(id,SEL[id]); });
+    p.parentNode.parentNode.insertBefore(bar,p.parentNode); paint(id); });
+  // 다시 그려질 때(기간 토글·오프셋·새로고침)마다 고른 기간을 다시 적용 · 확대·이동하면 세로 자동 맞춤
+  const hook=()=>{ if(!window.Plotly||Plotly.__yrHooked) return !!(window.Plotly&&Plotly.__yrHooked); const orig=Plotly.react; Plotly.__yrHooked=true;
+    Plotly.react=function(id,...r){ return orig.call(this,id,...r).then(g=>{ const k=typeof id==='string'?id:g.id;
+      if(!g.__yrOn){ g.__yrOn=true; g.on('plotly_relayout',ev=>{ if(!ev||g.__yrBusy||g.__fitOn) return; let a=ev['xaxis.range[0]'], b=ev['xaxis.range[1]']; if(ev['xaxis.range']) [a,b]=ev['xaxis.range']; if(a==null||b==null) return;
+        const u={...fitY(g,+new Date(a),+new Date(b)), ...fitM2(g,+new Date(a),+new Date(b))}; if(Object.keys(u).length){ g.__yrBusy=true; Plotly.relayout(g,u).then(()=>{ g.__yrBusy=false; }); } }); }
+      const y=SEL[k]; if(y!=null) apply(k,y); return g; }); }; return true; };
+  if(!hook()){ const t=setInterval(()=>{ if(hook()) clearInterval(t); },150); setTimeout(()=>clearInterval(t),60000); }
+})();
+const PLOTLY_SRC = [
+  'https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js',
+  'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
+  'https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js',
+  'https://cdn.plot.ly/plotly-2.35.2.min.js',
+];
+const loadScript = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+(async()=>{
+  const dataP=loadData();
+  for(const src of PLOTLY_SRC){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
+  await dataP; init();
+})();
+</script>
+<script>
+(function(){ let n=0; const go=()=>{ document.querySelectorAll('.plotbox').forEach(b=>{ if(b.scrollWidth>b.clientWidth && !b.dataset.moved){ b.scrollLeft=b.scrollWidth; b.dataset.moved=1; } }); if(++n<20) setTimeout(go,500); }; setTimeout(go,800); })();
+</script>
+</body>
+</html>
