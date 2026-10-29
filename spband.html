@@ -45,6 +45,28 @@
   table.t th:first-child, table.t td:first-child { text-align:left; } table.t th { color:var(--muted); font-weight:500; }
   table.t tr.me td { color:var(--accent); font-weight:700; } .tw { overflow-x:auto; padding:0 4px; }
   .sig { font-size:22px; font-weight:800; } .rl { padding:10px 12px; font-size:13px; line-height:1.75; }
+
+  .body { padding:12px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.6; }
+  .hero { position:relative; margin-bottom:14px; border-radius:14px; padding:16px; border:1px solid var(--hc); background:radial-gradient(120% 140% at 0% 0%, var(--hg), transparent 60%), var(--panel); overflow:hidden; }
+  .hero .row1 { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; }
+  .live { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--hc); }
+  .live i { width:9px; height:9px; border-radius:50%; background:var(--hc); animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 var(--hg2)} 70%{box-shadow:0 0 0 10px rgba(0,0,0,0)} 100%{box-shadow:0 0 0 0 rgba(0,0,0,0)} }
+  .big { font-size:34px; font-weight:900; letter-spacing:.5px; color:var(--hc); text-shadow:0 0 18px var(--hg2); animation:glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 0%,100%{ text-shadow:0 0 8px var(--hg2);} 50%{ text-shadow:0 0 26px var(--hg2);} }
+  .days { font-size:13px; color:#c9cfd8; } .days b { font-size:20px; color:#fff; font-variant-numeric:tabular-nums; }
+  .action { margin-top:12px; padding:10px 12px; border-radius:10px; background:rgba(240,180,41,.08); border:1px solid rgba(240,180,41,.28); font-size:13.5px; line-height:1.65; } .action b { color:var(--accent); }
+  .gauge { position:relative; height:14px; border-radius:7px; margin:34px 4px 30px; background:linear-gradient(90deg, rgba(242,54,69,.45) 0 var(--lo), rgba(138,147,163,.25) var(--lo) var(--up), rgba(90,212,69,.45) var(--up) 100%); }
+  .gauge .pin { position:absolute; top:-26px; transform:translateX(-50%); text-align:center; font-size:11px; white-space:nowrap; transition:left 1.4s cubic-bezier(.2,.9,.2,1); }
+  .gauge .pin b { display:block; font-size:12px; color:#fff; }
+  .gauge .pin::after { content:''; display:block; margin:1px auto 0; width:3px; height:24px; background:#fff; border-radius:2px; box-shadow:0 0 10px #fff; }
+  .gauge .tk { position:absolute; top:18px; transform:translateX(-50%); font-size:10.5px; color:var(--muted); white-space:nowrap; text-align:center; }
+  .gauge .ln { position:absolute; top:-3px; width:2px; height:20px; background:var(--c); transform:translateX(-50%); }
+  .kv4 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; } @media (max-width:640px){ .kv4 { grid-template-columns:repeat(2,1fr); } }
+  .kv4 > div { border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.02); } .kv4 .l { font-size:11px; color:var(--muted); } .kv4 .v { font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; } .kv4 .s { font-size:11.5px; color:#c9cfd8; }
+  #plot-s { height:560px; } @media (max-width:599px){ #plot-s { height:460px; } }
+  .vf { display:grid; gap:2px; } .vf .r { display:grid; grid-template-columns:22px 1fr auto; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; } .vf .ok { color:#5ad445; } .vf .no { color:#f23645; } .vf .d { color:var(--muted); font-variant-numeric:tabular-nums; text-align:right; }
+  .vhead { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; } .vbadge { font-weight:800; padding:3px 10px; border-radius:8px; }
 </style>
 </head>
 <body>
@@ -56,11 +78,22 @@
     <span class="date" id="today"></span>
   </header>
 
+  <div id="hero" class="hero" style="--hc:#8a93a3;--hg:rgba(138,147,163,.12);--hg2:rgba(138,147,163,.5)"><div class="muted">불러오는 중…</div></div>
+
   <div class="panel">
-    <h2>오늘 신호<span class="desc">S&amp;P500 200일선 ±2.5% 밴드 — 반반형의 진입·탈출선</span></h2>
-    <div class="sum" id="now">불러오는 중…</div>
-    <div class="rl"><b>규칙</b> ① 200일선 = 오늘 포함 최근 200거래일 S&amp;P500 종가 평균 ② 쉬는 중 S&amp;P500 종가 &gt; <b>200일선 × 1.025</b>(진입선) → 그날 종가에 투자 시작 ③ 투자 중 종가 &lt; <b>200일선 × 0.975</b>(탈출선) → 그날 종가에 전부 SGOV ④ 밴드 안(−2.5%~+2.5%)에선 전날 상태 그대로<br>
-    <span class="note">200일선 딱 그 선으로 사고팔면 선 근처에서 하루 걸러 신호가 뒤집혀 손해가 쌓임 → 위아래 2.5% 완충 구간 · 판단은 나스닥이 아니라 S&amp;P500 종가 · 아래 백테스트는 투자 중 S&amp;P500 보유 기준(반반형은 투자 중 TQQQ 50%+SPYM 50% 또는 QQQ) · 세금·수수료 제외 · 투자 자문 아님</span></div>
+    <h2>S&amp;P500 · 200일선 ±2.5% 밴드<span class="desc">초록선 = 진입선(+2.5%) · 빨간선 = 탈출선(−2.5%) · 회색 띠 = 관망 구간 · ▲진입 ▼탈출 · 빨간 칸 = SGOV로 쉰 기간</span></h2>
+    <div class="plotbox"><div class="plot" id="plot-s"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>2차 검증<span class="desc">이 화면 계산 ↔ 서버 파이썬 독립 계산 ↔ TQQQ 신호판(같은 SPX ±2.5% 규칙)</span></h2>
+    <div class="body" id="verify">불러오는 중…</div>
+  </div>
+
+  <div class="panel">
+    <h2>규칙<span class="desc">숫자는 200일·2.5% 둘뿐</span></h2>
+    <div class="rl"><b>①</b> 200일선 = 오늘 포함 최근 200거래일 S&amp;P500 종가 평균<br><b>②</b> 쉬는 중(SGOV) S&amp;P500 종가 &gt; <b>200일선 × 1.025</b>(진입선) → 그날 종가에 투자 시작<br><b>③</b> 투자 중 종가 &lt; <b>200일선 × 0.975</b>(탈출선) → 그날 종가에 전부 SGOV<br><b>④</b> 밴드 안(−2.5%~+2.5%)에선 전날 상태 그대로 — 200일선 위·아래가 아니라 밴드를 넘었느냐만 봄<br>
+    <span class="note">200일선 딱 그 선으로 사고팔면 선 근처에서 하루 걸러 신호가 뒤집혀 손해가 쌓임 → 위아래 2.5% 완충 · 판단은 나스닥이 아니라 S&amp;P500 종가 · 반반형은 투자 중 TQQQ 50%+SPYM 50% 또는 QQQ, 아래 백테스트는 투자 중 S&amp;P500 보유 기준 · 세금·수수료 제외 · 투자 자문 아님</span></div>
   </div>
 
   <div class="panel">
@@ -105,11 +138,71 @@ function calc(J,B){
     Object.assign(o,{c:(Math.pow(v,1/y)-1)*100,m:mdd*100,w,cv,dd,pv,tr:tr/2,win:wins.length?wins.filter(x=>x>0).length/wins.length*100:null,v}); }
   return {d,N,a0,S,q3,q161,nd,sp,s200,bandSig};
 }
+
+function hero(R,i,on,m,up,dn,last){
+  const {d,sp}=R, f=v=>v.toLocaleString('en-US',{maximumFractionDigits:2}), days=Math.round((new Date(d[i])-new Date(d[last]))/864e5), tdays=i-last;
+  const dist=(sp[i]/m-1)*100, zone=sp[i]>up?'진입선 위 — 상승 추세':sp[i]<dn?'탈출선 아래 — 하락 추세':'밴드 안 — 관망 구간';
+  const C=on?['#5ad445','rgba(90,212,69,.14)','rgba(90,212,69,.55)']:['#f23645','rgba(242,54,69,.13)','rgba(242,54,69,.55)'];
+  const el=$('#hero'); el.style.setProperty('--hc',C[0]); el.style.setProperty('--hg',C[1]); el.style.setProperty('--hg2',C[2]);
+  const ret=(sp[i]/sp[last]-1)*100;
+  const act=on?(sp[i]>up?`<b>보유 유지.</b> 진입선 위 상승 추세. 탈출선 <b>${f(dn)}</b> 아래로 마감하는 날 종가에 전부 SGOV — 지금보다 <b>${pc((dn/sp[i]-1)*100)}</b> 남음`
+                           :`<b>밴드 안 관망 — 포지션 유지.</b> 휩쏘 구간이라 매매하지 않습니다. 탈출선 <b>${f(dn)}</b>까지 ${pc((dn/sp[i]-1)*100)}`)
+              :`<b>SGOV 대기.</b> 진입선 <b>${f(up)}</b> 위로 마감하는 날 종가에 투자 시작 — 지금보다 <b>${pc((up/sp[i]-1)*100)}</b> 남음`;
+  const lo0=-10, hi0=12, P=v=>Math.max(1,Math.min(99,(v-lo0)/(hi0-lo0)*100));
+  el.innerHTML=`<div class="row1"><span class="live"><i></i>LIVE · ${d[i]} 종가</span><span class="big">${on?'투자 중':'SGOV 대기'}</span>
+      <span class="days">${d[last]}부터 <b>${tdays}</b>거래일째 (${days}일) · 그동안 S&amp;P ${pc(ret)}</span></div>
+    <div class="zone" style="margin-top:4px;color:#c9cfd8">${zone} · 200일선 대비 <b>${pc(dist,2)}</b></div>
+    <div class="gauge" style="--lo:${P(-2.5)}%;--up:${P(2.5)}%">
+      <span class="ln" style="left:${P(-2.5)}%;--c:#f23645"></span><span class="ln" style="left:${P(0)}%;--c:#2962ff"></span><span class="ln" style="left:${P(2.5)}%;--c:#5ad445"></span>
+      <span class="tk" style="left:${P(-2.5)}%">탈출 −2.5%<br>${f(dn)}</span><span class="tk" style="left:${P(0)}%">200일선<br>${f(m)}</span><span class="tk" style="left:${P(2.5)}%">진입 +2.5%<br>${f(up)}</span>
+      <span class="pin" id="pin" style="left:${P(0)}%"><b>${pc(dist,1)}</b>지금</span></div>
+    <div class="kv4">
+      <div><div class="l">S&amp;P500</div><div class="v">${f(sp[i])}</div><div class="s">전일 ${pc((sp[i]/sp[i-1]-1)*100,2)}</div></div>
+      <div><div class="l">200일선</div><div class="v">${f(m)}</div><div class="s">${pc(dist,2)}</div></div>
+      <div><div class="l" style="color:#5ad445">진입선 (+2.5%)</div><div class="v">${f(up)}</div><div class="s">${pc((up/sp[i]-1)*100)}</div></div>
+      <div><div class="l" style="color:#f23645">탈출선 (−2.5%)</div><div class="v">${f(dn)}</div><div class="s">${pc((dn/sp[i]-1)*100)}</div></div>
+    </div>
+    <div class="action">${act}</div>`;
+  requestAnimationFrame(()=>setTimeout(()=>{ const p=$('#pin'); if(p) p.style.left=P(dist)+'%'; },60));
+}
+function bandChart(R){
+  if(!window.Plotly) return;
+  const {d,sp,s200,bandSig}=R, n=d.length, k0=Math.max(0,n-2600), x=[], y=[], ma=[], u=[], l=[];
+  for(let k=k0;k<n;k++){ x.push(d[k]); y.push(sp[k]); ma.push(s200[k]); u.push(s200[k]&&s200[k]*1.025); l.push(s200[k]&&s200[k]*0.975); }
+  const ein=[], eout=[], shapes=[]; let s0=null;
+  for(let k=k0;k<n;k++){ if(k>0&&bandSig[k]!==bandSig[k-1]) (bandSig[k]?ein:eout).push(k);
+    if(!bandSig[k]&&s0==null) s0=k; if((bandSig[k]||k===n-1)&&s0!=null){ shapes.push({type:'rect',xref:'x',yref:'paper',x0:d[s0],x1:d[k],y0:0,y1:1,fillcolor:'rgba(242,54,69,.08)',line:{width:0},layer:'below'}); s0=null; } }
+  const mk=(ix,sym,col,name)=>({x:ix.map(k=>d[k]),y:ix.map(k=>sp[k]),mode:'markers',name,marker:{symbol:sym,size:13,color:col,line:{color:'#0f1216',width:1}},hovertemplate:name+' %{x}<br>%{y:,.0f}<extra></extra>'});
+  const n1=n-1, from=d[Math.max(k0,n1-400)];
+  Plotly.react('plot-s',[
+    {x,y:u,mode:'lines',line:{color:'rgba(90,212,69,.9)',width:1.3},name:'진입선 +2.5%',hovertemplate:'%{y:,.0f}'},
+    {x,y:l,mode:'lines',line:{color:'rgba(242,54,69,.9)',width:1.3},name:'탈출선 −2.5%',fill:'tonexty',fillcolor:'rgba(138,147,163,.13)',hovertemplate:'%{y:,.0f}'},
+    {x,y:ma,mode:'lines',line:{color:'#2962ff',width:1.2,dash:'dot'},name:'200일선',hovertemplate:'%{y:,.0f}'},
+    {x,y,mode:'lines',line:{color:'#e6e9ee',width:1.8},name:'S&P500',hovertemplate:'%{y:,.2f}'},
+    mk(ein,'triangle-up','#5ad445','▲진입'), mk(eout,'triangle-down','#f23645','▼탈출')],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:8,r:56,t:10,b:28},showlegend:false,hovermode:'x unified',
+     dragmode:window.innerWidth<600?false:'pan',xaxis:{gridcolor:'#262c35',range:[from,d[n1]],rangebreaks:[{bounds:['sat','mon']}]},yaxis:{gridcolor:'#262c35',side:'right',type:'log'},shapes},
+    {responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']});
+}
+async function verify(R,i,on,m,up,dn,last){
+  let V; try{ V=await (await fetch('spband_check.json?'+Math.floor(Date.now()/60000))).json(); }catch(e){ $('#verify').innerHTML='<span class="note">검증 데이터 준비 중 (다음 15분 갱신 때 생성)</span>'; return; }
+  const {d,sp}=R, me={date:d[i],idx:sp[i],ma200:m,up,lo:dn,state:on?'IN':'OUT',since:d[last]}, P=V.mine, B=V.board;
+  const close=(a,b)=>a!=null&&b!=null&&Math.abs(a/b-1)<5e-4, f=v=>v==null?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const rows=[['날짜',me.date,P.date,B.date,me.date===P.date&&P.date===B.date],['S&P500 종가',f(me.idx),f(P.idx),f(B.idx),close(me.idx,P.idx)&&close(P.idx,B.idx)],
+    ['200일선',f(me.ma200),f(P.ma200),f(B.ma200),close(me.ma200,P.ma200)&&close(P.ma200,B.ma200)],['진입선 +2.5%',f(me.up),f(P.up),f(B.up),close(me.up,P.up)&&close(P.up,B.up)],
+    ['탈출선 −2.5%',f(me.lo),f(P.lo),f(B.lo),close(me.lo,P.lo)&&close(P.lo,B.lo)],['상태',me.state,P.state,B.state,me.state===P.state&&P.state===B.state],
+    ['신호 시작일',me.since,P.since,B.since||'—',me.since===P.since&&(B.since==null||B.since===P.since)]];
+  const allok=rows.every(r=>r[4])&&V.ok, mins=Math.round((Date.now()/1000-V.ts)/60);
+  $('#verify').innerHTML=`<div class="vhead"><span class="vbadge" style="background:${allok?'rgba(90,212,69,.16)':'rgba(242,54,69,.18)'};color:${allok?'#5ad445':'#f23645'}">${allok?'✓ 세 곳 모두 일치':'✗ 불일치 — 확인 필요'}</span><span class="note">서버 검증 ${V.at_kst} (${mins<1?'방금':mins+'분 전'}) · 15분마다 자동${mins>90?' · <span class="err">검증 지연</span>':''}</span></div>
+    <div class="tw"><table class="t"><tr><th>항목</th><th>이 화면</th><th>서버 파이썬</th><th>TQQQ 신호판</th><th></th></tr>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td style="color:${r[4]?'#5ad445':'#f23645'};font-weight:700">${r[4]?'✓':'✗'}</td></tr>`).join('')}</table></div>
+    ${(V.notes||[]).length?`<ul style="margin:0;padding-left:18px;font-size:12.5px;color:#f0b429">${V.notes.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}
+    <details><summary style="cursor:pointer;color:var(--accent);font-size:12.5px">최근 신호 기록 (서버 계산)</summary><div class="tw"><table class="t"><tr><th>날짜</th><th>신호</th><th>S&amp;P500</th></tr>${V.recent.slice().reverse().map(s=>`<tr><td>${s.date}</td><td style="color:${s.kind==='IN'?'#5ad445':'#f23645'};font-weight:700">${s.kind==='IN'?'▲ 진입':'▼ 탈출'}</td><td>${f(s.idx)}</td></tr>`).join('')}</table></div></details>
+    <div class="note">이 화면(브라우저 자바스크립트)·서버 파이썬(spband_check.py)·TQQQ 신호판(tq_signals.py)이 같은 데이터로 따로 계산한 값을 맞춰 봅니다. 하나라도 다르면 빨간 ✗.</div>`;
+}
 function render(R){
   const {d,N,a0,S,sp,s200,bandSig}=R, i=N-1, on=bandSig[i], m=s200[i], up=m*1.025, dn=m*0.975, f=v=>v.toLocaleString('en-US',{maximumFractionDigits:0});
   let last=i; while(last>0 && bandSig[last-1]===on) last--;
-  $('#now').innerHTML=`${d[i]} 종가 기준 · S&amp;P500 <b>${f(sp[i])}</b> · 200일선 ${f(m)} (${pc((sp[i]/m-1)*100)}) · 진입선 ${f(up)} · 탈출선 ${f(dn)}<br>`+
-    `<span class="sig" style="color:${on?'#5ad445':'#f23645'}">${on?'투자 중':'쉬는 중(SGOV)'}</span> <span class="note">${d[last]}부터 · ${on?'탈출선 '+f(dn)+' 아래로 마감하면 SGOV (지금보다 '+pc((dn/sp[i]-1)*100)+')':'진입선 '+f(up)+' 위로 마감하면 투자 시작 (지금보다 '+pc((up/sp[i]-1)*100)+')'}</span>`;
+  hero(R,i,on,m,up,dn,last); bandChart(R); verify(R,i,on,m,up,dn,last);
   $('#period').textContent=`${d[a0]} ~ ${d[i]} · 거치식`;
   const H=S.hold, Q=S.b;
   $('#tbl').innerHTML='<tr><th>방법</th><th>연복리</th><th>최대낙폭</th><th>최대낙폭 기간</th><th>가성비</th><th>왕복 매매</th><th>승률</th></tr>'+
