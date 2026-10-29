@@ -346,10 +346,55 @@ def effr_now():
         note("FRED EFFR 실패", type(e).__name__, str(e)[:60]); return None, None, None, None
 
 
+# ── CME FedWatch 계산 방식 (회의 없는 달 선물로 구간 금리를 잡고, 회의 달 선물로 역산) ──
+import calendar
+from datetime import date
+def cme_levels(R, meets, effr, today, allm=None):
+    """CME 방식: 회의 사이 구간마다 금리 수준 L[k] (L[0]=첫 회의 전, L[k]=k번째 회의 뒤).
+    ① 구간 안에 회의 없는 온전한 달 선물이 있으면 그 달 금리 ② 없으면 뒤 회의 달 선물에서 역산(뒤 구간 금리 알 때) ③ 앞 회의 달에서 순산"""
+    ds = [date.fromisoformat(x) for x in meets]; mm = {x[:7] for x in (allm or meets)}; n = len(ds)
+    def mk(y, m): return f"{y}-{m:02d}"
+    def nxt(y, m): return (y + (m == 12), m % 12 + 1)
+    L = [None] * (n + 1)
+    for k in range(n + 1):
+        a = (today.year, today.month) if k == 0 else nxt(ds[k-1].year, ds[k-1].month)
+        if k == 0 and mk(*a) in mm: a = nxt(*a)
+        b = (ds[k].year, ds[k].month) if k < n else nxt(*nxt(ds[-1].year, ds[-1].month))
+        y, m = a
+        while (y, m) < b:
+            if mk(y, m) not in mm and mk(y, m) in R: L[k] = R[mk(y, m)]; break
+            y, m = nxt(y, m)
+    def split(i):  # i번째 회의 달: 평균*N = 앞*d + 뒤*(N-d)
+        d = ds[i]; N = calendar.monthrange(d.year, d.month)[1]; return R.get(mk(d.year, d.month)), N, d.day
+    for _ in range(3 * n + 3):
+        ch = False
+        for k in range(n + 1):
+            if L[k] is not None: continue
+            if k < n and L[k+1] is not None:
+                r, N, dd = split(k)
+                if r is not None and dd > 0: L[k] = (r * N - L[k+1] * (N - dd)) / dd; ch = True; continue
+            if k > 0 and L[k-1] is not None:
+                r, N, dd = split(k-1)
+                if r is not None and N - dd > 0: L[k] = (r * N - L[k-1] * dd) / (N - dd); ch = True
+        if not ch: break
+    if L[0] is None: L[0] = effr
+    return L
+def cme_probs(L, lo):
+    out = []; dist = {0: 1.0}
+    for k in range(1, len(L)):
+        if L[k] is None: break
+        steps = (L[k] - L[k-1]) / 0.25; i = int(steps // 1); f = steps - i; nd = {}
+        for lv, pr in dist.items():
+            nd[lv+i] = nd.get(lv+i, 0) + pr*(1-f); nd[lv+i+1] = nd.get(lv+i+1, 0) + pr*f
+        dist = {a: b for a, b in nd.items() if b > 1e-6}; t = sum(dist.values()); dist = {a: b/t for a, b in dist.items()}
+        out.append((L[k-1], L[k], dict(dist)))
+    return out
+
 def fedwatch_calc(now, old):
     from datetime import date
     us = (now - timedelta(hours=5)).date()
-    meets = [x for x in FOMC if x >= us.isoformat()]
+    # 결정 발표(미국 오후 2시 = UTC 18~19시)가 지난 회의는 빼기 — CME 표와 같게
+    meets = [x for x in FOMC if now.astimezone(timezone.utc) < datetime.fromisoformat(x + "T19:00:00+00:00")]
     if not meets: return None
     last = date.fromisoformat(meets[-1]); months = []
     y, m = us.year, us.month
@@ -366,32 +411,14 @@ def fedwatch_calc(now, old):
     effr, lo, hi, edate = effr_now()
     if effr is None: return old.get("fw")
     R = {f["month"]: f["rate"] for f in fut if f["rate"] is not None}
-    mm = {x[:7] for x in FOMC}
-    import calendar
-    res = []; dist = {0: 1.0}; prev_end = effr
-    for ds in meets:
-        d = date.fromisoformat(ds); mk = ds[:7]
-        pk = f"{d.year - (d.month == 1)}-{(d.month - 2) % 12 + 1:02d}"; nk = f"{d.year + (d.month == 12)}-{d.month % 12 + 1:02d}"
-        # 회의 전 금리: 앞 달에 회의가 없고 선물이 있으면 그 달 평균, 아니면 직전 회의 뒤 금리
-        start = R[pk] if (pk not in mm and pk in R and ds != meets[0]) else prev_end
-        N = calendar.monthrange(d.year, d.month)[1]
-        if nk not in mm and nk in R: end = R[nk]
-        elif mk in R and N - d.day > 0: end = (R[mk] * N - start * d.day) / (N - d.day)
-        else: break
-        steps = (end - start) / 0.25
-        k = int(steps // 1); f = steps - k
-        nd = {}
-        for lv, pr in dist.items():
-            nd[lv + k] = nd.get(lv + k, 0) + pr * (1 - f)
-            nd[lv + k + 1] = nd.get(lv + k + 1, 0) + pr * f
-        dist = {a: b for a, b in nd.items() if b > 1e-6}
-        tot = sum(dist.values()); dist = {a: b / tot for a, b in dist.items()}
+    L = cme_levels(R, meets, effr, us, FOMC)
+    res = []
+    for ds, (start, end, dist) in zip(meets, cme_probs(L, lo)):
         probs = {f"{round((lo + 0.25 * a) * 100)}": round(b * 100, 2) for a, b in sorted(dist.items())}
         res.append(dict(date=ds, start=round(start, 4), end=round(end, 4), probs=probs,
                         hike=round(sum(b for a, b in dist.items() if a > 0) * 100, 2), hold=round(dist.get(0, 0) * 100, 2),
                         cut=round(sum(b for a, b in dist.items() if a < 0) * 100, 2),
                         exp=round(lo + 0.125 + 0.25 * sum(a * b for a, b in dist.items()), 4)))
-        prev_end = end
     note("FedWatch 재현", effr, lo, hi, [(r["date"], r["hike"], r["hold"]) for r in res[:3]], "선물", got, "/", len(fut))
     return dict(asof=now.isoformat(timespec="minutes"), effr=effr, effr_date=edate, lo=lo, hi=hi, futures=fut, meets=res)
 
