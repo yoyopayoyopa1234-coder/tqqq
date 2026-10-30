@@ -200,6 +200,7 @@ async function verify(R,i,on,m,up,dn,last){
       ['진입선 +2.5% (TradingView)',f(s.tv_up),f(up),dp(up,s.tv_up),0.05],['탈출선 −2.5% (TradingView)',f(s.tv_lo),f(dn),dp(dn,s.tv_lo),0.05]].map(([n,a,b,diff,tl])=>[n,a,b,diff!=null&&Math.abs(diff)<=tl,diff==null?'':(diff>=0?'+':'')+diff.toFixed(3)+'%']);
     er.push(['밴드 위치 (TradingView)',zk[s.tv_zone]||s.tv_zone||'—',zk[myzone],s.tv_zone===myzone,'']);
     er.push(['투자 중 / 대기 (AgiTQ 200슨피단)',s.ag_state==='IN'?'투자 중':s.ag_state==='OUT'?'대기':'—',on?'투자 중':'대기',s.ag_state==null||s.ag_state===(on?'IN':'OUT'),'']);
+    if(s.ag_ts) er.push(['AgiTQ TS(−25%) 긴급대피','발동 — TQQQ 절반 → SPYM','해당 없음 (이 매매법엔 TS 없음)',true,'TS는 TQQQ 몫만 줄이는 규칙 · 밴드 신호(투자 중)는 그대로']);
     if(s.ag_days!=null) er.push(['신호 뒤 거래일 수 (AgiTQ)',Math.round(s.ag_days)+'일 차',tdays+'일 차',Math.abs(s.ag_days-tdays)<=1,'장중엔 오늘 포함으로 ±1일 차이 가능']);
     extok=er.every(r=>r[3]); const xm=Math.round((Date.now()-new Date(X.at))/6e4);
     const ag=(X.agitq||[]), a0=ag.findIndex(l=>/200슨피단/.test(l)), a1=ag.findIndex((l,k)=>k>a0&&/200큐큐단/.test(l));

@@ -51,7 +51,8 @@ ag_lines = [l.strip() for l in res.get("agitq", {}).get("text", "").split("\n") 
 cut = next((i for i, l in enumerate(ag_lines) if "(QQQ)" in l), len(ag_lines))
 ag_part = {"spx": " ".join(ag_lines[:cut]), "qqq": " ".join(ag_lines[cut:])}
 def ag_state(t):
-    if re.search(r"보유", t): return "IN"
+    # TS(−25%) 긴급대피는 TQQQ 절반만 SPYM로 바꾸는 것 — 밴드 안(투자 중) 상태는 그대로이므로 IN
+    if re.search(r"보유|TS\s*-?\d+%|긴급대피|절반 매도|SPYM 즉시 전환", t): return "IN"
     if re.search(r"대피|전량|매도|SGOV", t): return "OUT"
     return None
 def g(t, rx):
@@ -79,6 +80,9 @@ for key, pn, tn, band, label in (("spx", "tv_spx", "tv_spx_tech", 0.025, "SPX"),
         checks.append((f"{label} 밴드 위치", it["zone_match"], f"TV {it['tv_zone']} / 사이트 {R.get('zone')}"))
     t = ag_part[key]; it["ag_state"] = ag_state(t); it["ag_days"] = g(t, r"상단 밴드 위 (\d+)일"); it["ag_dd"] = g(t, r"최고점 대비 (-?[\d.]+)%")
     it["my_days"] = cy.get("tdays"); it["my_dd"] = cy.get("dd") if cy.get("dd") is not None else (round((R["tqqq"] / cy["peak"] - 1) * 100, 2) if cy.get("peak") else None)
+    it["ag_ts"] = bool(re.search(r"TS\s*-?\d+%|긴급대피|절반 매도", t))
+    my_ts = bool(cy.get("ts")) and cy["ts"][-1].get("date") == R.get("date"); it["my_ts"] = my_ts
+    if it["ag_ts"] or my_ts: checks.append((f"{label} TS(−25%) 발동 (AgiTQ)", it["ag_ts"] == my_ts, f"AgiTQ {'발동' if it['ag_ts'] else '없음'} / 사이트 {'발동' if my_ts else '없음'}"))
     if it["ag_state"]: checks.append((f"{label} 보유/대피 (AgiTQ)", it["ag_state"] == R.get("state"), f"AgiTQ {it['ag_state']} / 사이트 {R.get('state')}"))
     if it["ag_days"] is not None and it["my_days"] is not None:
         diff = int(it["ag_days"] - it["my_days"]); checks.append((f"{label} 상단 위 일수 (AgiTQ)", abs(diff) <= 1, f"{int(it['ag_days'])} / {it['my_days']}일"))
