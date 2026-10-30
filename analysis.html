@@ -35,8 +35,8 @@
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .btn.rg.on { border-color:var(--accent); color:var(--accent); }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  #plot-d { height:720px; } #plot-b { height:560px; } #plot-c { height:1060px; } #plot-n { height:640px; }
-  @media (max-width:599px){ #plot-d { height:600px; } #plot-b { height:460px; } #plot-c { height:900px; } #plot-n { height:520px; } }
+  #plot-d { height:720px; } #plot-b { height:560px; } #plot-c { height:920px; } #plot-n { height:640px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b { height:460px; } #plot-c { height:780px; } #plot-n { height:520px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 </style>
@@ -68,7 +68,7 @@
   </div>
 
   <div class="panel">
-    <h2>월봉<span class="desc">BB 20/2 · BB 밴드폭(수축=변동성 폭발 전) · RSI 14 (QQQ) · Williams Vix Fix 22/20/2/50/0.85</span></h2>
+    <h2>월봉<span class="desc">BB 20/2 · RSI 14 (QQQ) · Williams Vix Fix 22/20/2/50/0.85</span></h2>
     <div class="sum" id="sum-c">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-c"></div></div>
   </div>
@@ -195,35 +195,23 @@ function qqqRsi(rows){
   const r=rsi(q.map(d=>d.c)), m=new Map(q.map((d,j)=>[k(d.t),r[j]]));
   return rows.map(d=>m.get(k(d.t)) ?? null);
 }
-/* 볼린저 밴드 폭(BBW) = (상단−하단)/중심 ×100 · 백분위 = 지난 값 중 지금보다 좁았던 비율 */
-function bbw(c,n=20,k=2){ const b=bb(c,n,k); return b.mid.map((m,i)=>m==null||m===0?null:(b.up[i]-b.lo[i])/m*100); }
-function squeeze(w,i,look=120){ const hist=w.slice(Math.max(0,i-look),i+1).filter(v=>v!=null); if(hist.length<10) return null;
-  const now=w[i], rank=hist.filter(v=>v<now).length/(hist.length-1)*100, min6=Math.min(...w.slice(Math.max(0,i-5),i+1).filter(v=>v!=null));
-  const lvl=rank<=10?['극단 수축 — 변동성 폭발 임박 구간','#f23645']:rank<=25?['수축 — 변동성 커지기 직전 후보','#f0a030']:rank>=80?['확장 — 이미 변동성 큰 구간','#2bb58f']:['보통','#8a93a3'];
-  return {now,rank,low6:now<=min6+1e-9,prev:w[i-1],lvl}; }
-function bbwHtml(label,w,i,look){ const s=squeeze(w,i,look); if(!s) return ''; const ch=s.prev!=null?s.now-s.prev:null;
-  return `<span style="white-space:nowrap">${label} 밴드폭 <b style="color:${s.lvl[1]}">${s.now.toFixed(1)}%</b>${ch!=null?` (${ch>=0?'+':''}${ch.toFixed(1)}%p)`:''} · 최근 ${look}개 봉 중 백분위 <b style="color:${s.lvl[1]}">${s.rank.toFixed(0)}</b> <span class="note">(0=가장 좁음)</span> · <span style="color:${s.lvl[1]};font-weight:700">${s.lvl[0]}</span>${s.low6?' · 6개 봉 중 최저':''}</span>`; }
 function chartC(){
   const r = ohlc('TQQQ_1mo'), x=r.map(d=>d.t), c=r.map(d=>d.c), b=isLong()?bbLog(c):bb(c), bs=bb(c), rs=qqqRsi(r), v=vixfix(r), i=r.length-1;
-  const pb=(c[i]-bs.lo[i])/(bs.up[i]-bs.lo[i]), bw=bbw(c);
-  let dl=''; try{ const dc=ohlc('TQQQ_1d').map(d=>d.c); dl=bbwHtml('일봉',bbw(dc),dc.length-1,250); }catch(e){}
-  $('#sum-c').innerHTML = `<div style="margin-bottom:4px">${bbwHtml('월봉',bw,i,120)}${dl?'<br>'+dl:''}</div><b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(bs.up[i])} / ${fmt(bs.mid[i])} / ${fmt(bs.lo[i])} (%b ${pb.toFixed(2)}) · QQQ RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}${synNote()}${isLong()?' · 40년 차트의 볼밴은 로그 가격 기준(하단이 0 아래로 내려가지 않게) — 위 숫자는 일반 볼밴 · 1999년 이전 RSI는 나스닥100 월봉':''}`;
+  const pb=(c[i]-bs.lo[i])/(bs.up[i]-bs.lo[i]);
+  $('#sum-c').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(bs.up[i])} / ${fmt(bs.mid[i])} / ${fmt(bs.lo[i])} (%b ${pb.toFixed(2)}) · QQQ RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}${synNote()}${isLong()?' · 40년 차트의 볼밴은 로그 가격 기준(하단이 0 아래로 내려가지 않게) — 위 숫자는 일반 볼밴 · 1999년 이전 RSI는 나스닥100 월봉':''}`;
   const s = startIdx(x);
   const visH = [...r.slice(s).map(d=>d.h), ...b.up.slice(s).filter(v=>v!=null)], visL=[...r.slice(s).map(d=>d.l), ...b.lo.slice(s).filter(v=>v!=null)];
-  const L = base(PH(1060,900)); L.yaxis=isLong() ? ax({domain:[0.52,1], type:'log', range:[Math.log10(Math.min(...r.map(d=>d.l))*0.7), Math.log10(Math.max(...visH)*1.3)]})
-    : ax({domain:[0.52,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
-  L.yaxis4=ax({domain:[0.36,0.49], ticksuffix:'%'}); L.yaxis2=ax({domain:[0.19,0.33], range:[0,100]}); L.yaxis3=ax({domain:[0,0.16]});
-  { const vis=bw.slice(s).filter(v=>v!=null).sort((a,b)=>a-b); if(vis.length>5) L.shapes_bw=vis[Math.floor(vis.length*0.2)]; }
+  const L = base(PH(920,780)); L.yaxis=isLong() ? ax({domain:[0.48,1], type:'log', range:[Math.log10(Math.min(...r.map(d=>d.l))*0.7), Math.log10(Math.max(...visH)*1.3)]})
+    : ax({domain:[0.48,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
+  L.yaxis2=ax({domain:[0.25,0.44], range:[0,100]}); L.yaxis3=ax({domain:[0,0.21]});
   L.xaxis.range=[x[s], new Date(x[i].getTime()+60*86400000)];
   L.shapes=[ ...synShade(x), {type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:30,y1:70,fillcolor:'rgba(120,110,230,0.10)',line:{width:0}},
     hline(30,'y2','#5d6675'), hline(50,'y2','#5d6675'), hline(70,'y2','#5d6675') ];
-  if(L.shapes_bw!=null){ L.shapes.push(hline(L.shapes_bw,'y4','#f0a030','dash')); L.annotations=(L.annotations||[]).concat([{xref:'paper',x:0,yref:'y4',y:L.shapes_bw,text:'하위 20%',showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:'#f0a030'}},{xref:'paper',x:0,yref:'y4',y:1,yanchor:'top',text:'BB 밴드폭 %',showarrow:false,xanchor:'left',font:{size:10,color:'#c9cfd8'},yref:'y4 domain'}]); delete L.shapes_bw; }
   Plotly.react('plot-c', [
     line(x,b.up,'#f23645','BB 상단',{line:{color:'#f23645',width:1.2}}),
     line(x,b.lo,'#089981','BB 하단',{line:{color:'#089981',width:1.2}, fill:'tonexty', fillcolor:'rgba(33,150,243,0.08)'}),
     line(x,b.mid,'#2962ff','BB 중심',{line:{color:'#2962ff',width:1.2}}),
     candle(r),
-    line(x,bw,'#f0a030','BB 밴드폭',{yaxis:'y4', line:{color:'#f0a030',width:1.8}, fill:'tozeroy', fillcolor:'rgba(240,160,48,.10)'}),
     line(x,rs,'#7c7cf0','QQQ RSI 14',{yaxis:'y2', line:{color:'#7c7cf0',width:1.8}}),
     { type:'bar', x, y:v.w, name:'Vix Fix', marker:{color:v.sig.map(g=>g?'#5ad445':'#e05a5a')}, yaxis:'y3' },
     line(x, v.rh, '#f0a030', 'RangeHigh', { yaxis:'y3', line:{color:'#f0a030',width:2.5} }) ], L, cfg);
