@@ -144,9 +144,9 @@ function chartD(){
   const L = base(PH(720,600)); L.yaxis=ax({domain:[0.36,1], type:isLong()?'log':'linear'}); L.yaxis2=ax({domain:[0,0.30]});
   const back=startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; if(!isLong()) L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
   { const v=r.slice(back), lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h)); L.yaxis.range= isLong() ? [Math.log10(lo*0.8), Math.log10(hi_*1.25)] : [lo*0.95, hi_*1.05]; }
-  L.shapes=[...synShade(x), hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
-  L.annotations=[[160,'#f23645'],[50,'#2962ff']].map(([y,col])=>({xref:'paper',x:0,yref:'y2',y,text:String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
-  const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[Math.min(40,...vis)-5, Math.max(170,...vis)+5];
+  L.shapes=[...synShade(x), hline(160,'y2','#f23645','dash'), {type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:100,y1:100,line:{color:'#ff9800',width:3}}, hline(50,'y2','#2962ff','dash')];
+  L.annotations=[[160,'#f23645'],[100,'#ff9800','200일선 (100)'],[50,'#2962ff']].map(([y,col,lb])=>({xref:'paper',x:0,yref:'y2',y,text:lb||String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
+  const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[0,200]; L.yaxis2.dtick=50;
   Plotly.react('plot-d', [ candle(r),
     line(x,ma200,'#ff9800','200일선',{line:{color:'#ff9800',width:3.2}}),
     line(x,disp,'#2bb58f','이격도(200)',{yaxis:'y2', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);

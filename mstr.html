@@ -54,7 +54,7 @@
   </header>
 
   <div class="panel">
-    <h2>일봉<span class="desc">200일선 · 이격도(200) 160/50 · 아래 칸 점선 = 200일선 가격(왼쪽 축)</span></h2>
+    <h2>일봉<span class="desc">200일선 · 이격도(200) 160/50 · 이격도 칸 주황선(100) = 200일선</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-d"></div></div>
   </div>
@@ -128,15 +128,12 @@ function chartD(){
   $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 200일선 ${fmt(ma200[i])} (${c[i]>ma200[i]?'위':'아래'}, ${pct(c[i],ma200[i])}) · 이격도 <b>${disp[i].toFixed(1)}</b>${st}`;
   const L = base(PH(720,600)); L.yaxis=ax({domain:[0.36,1]}); L.yaxis2=ax({domain:[0,0.30]});
   const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
-  L.shapes=[hline(160,'y2','#f23645','dash'), hline(100,'y2','#5d6675'), hline(50,'y2','#2962ff','dash')];
-  L.annotations=[[160,'#f23645'],[50,'#2962ff']].map(([y,col])=>({xref:'paper',x:0,yref:'y2',y,text:String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
-  const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[Math.min(40,...vis)-5, Math.max(170,...vis)+5];
+  L.shapes=[hline(160,'y2','#f23645','dash'), {type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:100,y1:100,line:{color:'#ff9800',width:3}}, hline(50,'y2','#2962ff','dash')];
+  L.annotations=[[160,'#f23645'],[100,'#ff9800','200일선 (100)'],[50,'#2962ff']].map(([y,col,lb])=>({xref:'paper',x:0,yref:'y2',y,text:lb||String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
+  const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[0,200]; L.yaxis2.dtick=50;
   /* 이격도 칸에 200일선 가격도 겹쳐 표시 — 왼쪽 축($, 로그) */
-  L.margin.l=46; L.yaxis5=ax({overlaying:'y2', side:'left', type:'log', showgrid:false, tickprefix:'$', tickfont:{size:10,color:'#ff9800'}});
-  L.annotations.push({xref:'paper',x:1,yref:'y5',y:Math.log10(ma200[i]),text:'200일선 $'+fmt(ma200[i]),showarrow:false,xanchor:'right',yanchor:'bottom',font:{size:10,color:'#ff9800'}});
   Plotly.react('plot-d', [ candle(r),
     line(x,ma200,'#ff9800','200일선',{line:{color:'#ff9800',width:3.2}}),
-    line(x,ma200,'#ff9800','200일선($)',{yaxis:'y5', line:{color:'#ff9800',width:1.6,dash:'dot'}}),
     line(x,disp,'#2bb58f','이격도(200)',{yaxis:'y2', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);
 }
 
