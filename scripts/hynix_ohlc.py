@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from yahoo_data import yahoo
 
-STOCKS = [("SOXL", "SOXL", "soxl_data.json"), ("CWEB", "CWEB", "cweb_data.json"), ("YINN", "YINN", "yinn_data.json")]
+STOCKS = [("SOXL", "SOXL", "soxl_data.json"), ("CWEB", "CWEB", "cweb_data.json")]
 RANGES = {}   # 1985-01-01부터   # S&P500은 길게 (5·10·15년 버튼용)
 
 def fix_bars(bars, daily):
