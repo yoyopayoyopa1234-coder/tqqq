@@ -38,6 +38,15 @@
   @media (max-width:599px){ #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:1260px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
+
+  .sg5 { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin:6px 0 4px; }
+  .sg5 > div { border-radius:10px; padding:10px 4px; text-align:center; font-weight:800; font-size:14px; color:rgba(255,255,255,.45); background:var(--b); opacity:.35; transition:all .6s; border:1px solid transparent; }
+  .sg5 > div small { display:block; font-size:10.5px; font-weight:500; margin-top:2px; }
+  .sg5 > div.on { opacity:1; color:#fff; border-color:var(--c); box-shadow:0 0 22px var(--c); animation:sgp 1.8s ease-in-out infinite; transform:translateY(-2px); }
+  @keyframes sgp { 0%,100%{ box-shadow:0 0 8px var(--c);} 50%{ box-shadow:0 0 28px var(--c);} }
+  .sgbar { position:relative; height:8px; border-radius:4px; background:linear-gradient(90deg,#1b5e20,#5ad445,#5d6675,#ff8a65,#c62828); margin:18px 2px 6px; }
+  .sgbar i { position:absolute; top:-7px; width:4px; height:22px; border-radius:2px; background:#fff; box-shadow:0 0 10px #fff; transform:translateX(-50%); transition:left 1.4s cubic-bezier(.2,.9,.2,1); }
+  table.sgt { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; } table.sgt td, table.sgt th { padding:5px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; } table.sgt td:first-child, table.sgt th:first-child { text-align:left; } table.sgt th { color:var(--muted); font-weight:500; }
 </style>
 </head>
 <body>
@@ -51,6 +60,11 @@
       <button class="btn" id="refresh" type="button">새로고침</button>
     </span>
   </header>
+
+  <div class="panel">
+    <h2>고점·저점 신호기<span class="desc">이격도 · RSI(일·월) · 월봉 %b · Vix Fix를 합쳐 지금 위치를 5단계로</span></h2>
+    <div class="sum" id="sig-body" style="border-bottom:0">불러오는 중…</div>
+  </div>
 
   <div class="panel">
     <h2>일봉<span class="desc">200일선 · 이격도 (100=0 · 160=+60 · 50=−50)</span></h2>
@@ -132,6 +146,45 @@ function sqzmom(r,len=20,mult=2,kl=20,km=1.5){
   for(let i=2*len-2;i<N;i++){ let sx=0,sy=0,sxy=0,sxx=0; for(let k=0;k<len;k++){ const y=x[i-len+1+k]; sx+=k; sy+=y; sxy+=k*y; sxx+=k*k; }
     const b=(len*sxy-sx*sy)/(len*sxx-sx*sx), a=(sy-b*sx)/len; val[i]=a+b*(len-1); }
   return {val,on,off};
+}
+const SIGK='KORU';
+/* ── 고점·저점 신호기: 각 지표를 −2(바닥)~+2(꼭지)로 점수화해 평균 ── */
+const SG_LV=[['최저점','#1b8e3a','바닥권 — 역사적 저평가 구간'],['저점','#5ad445','눌림 — 분할 매수 검토 구간'],['보통','#8a93a3','중립'],['고점','#ff8a65','과열 시작 — 신규 매수 자제'],['최고점','#f23645','꼭지권 — 역사적 과열 구간']];
+function sgScore(dpPct,rsD,rsM,pbM,vix){
+  const sDisp=dpPct<=10?-2:dpPct<=30?-1:dpPct<70?0:dpPct<90?1:2;
+  const sR=v=>v==null?null:v<=30?-2:v<=40?-1:v<60?0:v<70?1:2;
+  const sPb=v=>v==null?null:v<=0?-2:v<=0.2?-1:v<0.8?0:v<1?1:2;
+  const parts=[sDisp,sR(rsD),sR(rsM),sPb(pbM)].filter(v=>v!=null);
+  let s=parts.reduce((a,b)=>a+b,0)/parts.length; if(vix) s-=0.5;
+  return {s,sDisp,sRd:sR(rsD),sRm:sR(rsM),sPb:sPb(pbM)};
+}
+const sgLevel=s=>s<=-1.25?0:s<=-0.5?1:s<0.5?2:s<1.25?3:4;
+function sigGauge(){
+  const r=ohlc(SIGK+'_1d'), mo=ohlc(SIGK+'_1mo'), c=r.map(d=>d.c), N=r.length, m200=sma(c,200), disp=c.map((v,k)=>m200[k]==null?null:(v/m200[k]-1)*100);
+  const rsD=rsi(c), vf=vixfix(r), mc=mo.map(d=>d.c), rsM=(typeof qqqRsi==='function'?qqqRsi(mo):rsi(mc)), B=bb(mc);
+  const pbM=mc.map((v,k)=>B.up[k]==null?null:(v-B.lo[k])/(B.up[k]-B.lo[k])), mIdx=new Map(mo.map((d,k)=>[d.t.getUTCFullYear()*12+d.t.getUTCMonth(),k]));
+  const mi=k=>mIdx.get(r[k].t.getUTCFullYear()*12+r[k].t.getUTCMonth());
+  const sorted=disp.filter(v=>v!=null).sort((a,b)=>a-b), pctOf=v=>{ let lo=0,hi=sorted.length; while(lo<hi){ const m=(lo+hi)>>1; if(sorted[m]<v) lo=m+1; else hi=m; } return lo/sorted.length*100; };
+  const at=k=>{ const j=mi(k); if(disp[k]==null||j==null) return null; let vx=false; for(let q=k;q>k-5&&q>=0;q--) if(vf.sig[q]) vx=true; return sgScore(pctOf(disp[k]),rsD[k],rsM[j],pbM[j],vx); };
+  const i=N-1, S=at(i), L=sgLevel(S.s), j=mi(i);
+  // 과거 같은 단계 뒤 6개월(126거래일) 성적
+  const st=[0,1,2,3,4].map(()=>[]); for(let k=250;k<N-126;k+=5){ const q=at(k); if(q) st[sgLevel(q.s)].push((c[k+126]/c[k]-1)*100); }
+  const med=a=>{ if(!a.length) return null; const b=[...a].sort((x,y)=>x-y); return b[Math.floor(b.length/2)]; };
+  const pos=Math.max(2,Math.min(98,(S.s+2)/4*100)), f1=v=>v==null?'—':v.toFixed(1), sc=v=>v==null?'—':`<b style="color:${v<0?'#5ad445':v>0?'#ff8a65':'#8a93a3'}">${v>0?'+':''}${v}</b>`;
+  let vx=false; for(let q=i;q>i-5;q--) if(vf.sig[q]) vx=true;
+  $('#sig-body').innerHTML=`<div style="font-size:15px">${r[i].t.toISOString().slice(0,10)} 기준 · 종합 점수 <b style="font-size:20px;color:${SG_LV[L][1]}">${S.s>0?'+':''}${S.s.toFixed(2)}</b> <span class="note">(−2 바닥 ~ +2 꼭지)</span> → <b style="font-size:20px;color:${SG_LV[L][1]}">${SG_LV[L][0]}</b> <span style="color:#c9cfd8">${SG_LV[L][2]}</span></div>
+    <div class="sgbar"><i id="sgpin" style="left:50%"></i></div>
+    <div class="sg5">${SG_LV.map((l,k)=>`<div class="${k===L?'on':''}" style="--c:${l[1]};--b:${l[1]}33">${l[0]}<small>${['−2 ~ −1.25','−1.25 ~ −0.5','−0.5 ~ +0.5','+0.5 ~ +1.25','+1.25 ~ +2'][k]}</small></div>`).join('')}</div>
+    <table class="sgt" style="margin-top:8px"><tr><th>지표</th><th>지금 값</th><th>점수</th><th>기준 (−2 / −1 / 0 / +1 / +2)</th></tr>
+      <tr><td>200일선 이격도 (역대 백분위)</td><td>${f1(disp[i])}% · 백분위 ${pctOf(disp[i]).toFixed(0)}</td><td>${sc(S.sDisp)}</td><td>≤10 / ≤30 / 30~70 / ≥70 / ≥90</td></tr>
+      <tr><td>RSI 14 (일봉)</td><td>${f1(rsD[i])}</td><td>${sc(S.sRd)}</td><td>≤30 / ≤40 / 40~60 / ≥60 / ≥70</td></tr>
+      <tr><td>RSI 14 (월봉${typeof qqqRsi==='function'&&SIGK==='TQQQ'?' · QQQ 기준':''})</td><td>${f1(rsM[j])}</td><td>${sc(S.sRm)}</td><td>≤30 / ≤40 / 40~60 / ≥60 / ≥70</td></tr>
+      <tr><td>볼린저 %b (월봉)</td><td>${pbM[j]==null?'—':pbM[j].toFixed(2)}</td><td>${sc(S.sPb)}</td><td>≤0 / ≤0.2 / 0.2~0.8 / ≥0.8 / ≥1</td></tr>
+      <tr><td>Williams Vix Fix (일봉, 최근 5일)</td><td>${vx?'<b style="color:#5ad445">녹색 — 공포 투매</b>':'꺼짐'}</td><td>${vx?'<b style="color:#5ad445">−0.5</b>':'0'}</td><td>녹색이면 −0.5 가산</td></tr></table>
+    <div style="margin-top:10px;font-size:12.5px;color:#c9cfd8">과거에 같은 단계였을 때 6개월 뒤 (중간 수익률 · 오른 비율 · 표본)</div>
+    <table class="sgt"><tr>${SG_LV.map(l=>`<th style="color:${l[1]}">${l[0]}</th>`).join('')}</tr><tr>${st.map(a=>{ const m=med(a); return `<td>${m==null?'—':`<b class="${m>=0?'up':'dn'}">${m>=0?'+':''}${m.toFixed(0)}%</b> · ${(a.filter(v=>v>0).length/a.length*100).toFixed(0)}% · ${a.length}`}</td>`; }).join('')}</tr></table>
+    <div class="note" style="margin-top:6px">5거래일 간격으로 과거 전 기간을 같은 공식으로 다시 계산 · ${SIGK==='TQQQ'?'2010년 이전은 나스닥100×3 환산 · ':''}바닥·꼭지를 정확히 맞히는 도구가 아니라 지금이 역사적으로 어느 위치인지 보는 참고용 · 투자 자문 아님</div>`;
+  requestAnimationFrame(()=>setTimeout(()=>{ const p=document.getElementById('sgpin'); if(p) p.style.left=pos+'%'; },60));
 }
 function chartD(){
   const r = ohlc('KORU_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
@@ -245,7 +298,7 @@ async function init(){
     $('#today').innerHTML += ' · 데이터 ' + u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + ' 기준'
       + (hrs>26 ? ' <span class="err">(갱신이 멈춤 — 확인 필요)</span>' : '');
   }
-  safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
+  safe(sigGauge,'#sig-body'); safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
 }
 $('#m2off').addEventListener('input',e=>{ $('#m2offv').textContent=e.target.value; safe(chartB,'#sum-b'); });
 $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); init(); });
