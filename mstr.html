@@ -34,8 +34,8 @@
   .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:1060px; }
-  @media (max-width:599px){ #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:900px; } }
+  #plot-s { height:420px; } #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:1060px; }
+  @media (max-width:599px){ #plot-s { height:360px; } #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:900px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 </style>
@@ -57,6 +57,12 @@
     <h2>일봉<span class="desc">200일선 · 이격도 (100=0 · 160=+60 · 50=−50)</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-d"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Squeeze Momentum (일봉)<span class="desc">LazyBear · 가운데 점: 노랑 = 스퀴즈 ON(변동성 압축) · 회색 = 풀림 · 파랑 = 해당 없음 · 막대: 연두/진초록 = 상승 강해짐/약해짐 · 빨강/암적 = 하락 강해짐/약해짐</span></h2>
+    <div class="sum" id="sum-s">불러오는 중…</div>
+    <div class="plotbox"><div class="plot" id="plot-s"></div></div>
   </div>
 
   <div class="panel">
@@ -121,6 +127,36 @@ const cfg = { responsive:true, displaylogo:false, scrollZoom:true, modeBarButton
 const pct = (a,b) => { const p=(a/b-1)*100; return `<span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toFixed(2)}%</span>`; };
 const fmt = v => v.toLocaleString('en-US',{maximumFractionDigits:2});
 
+const SQK='MSTR_1d';
+/* Squeeze Momentum Indicator [LazyBear] — BB 20/2 · KC 20/1.5(TR) · 모멘텀 = linreg(종가 − ((20일 최고+최저)/2 + SMA20)/2, 20) */
+function sqzmom(r,len=20,mult=2,kl=20,km=1.5){
+  const N=r.length, c=r.map(d=>d.c), S=k=>{ const o=new Array(N).fill(null); let s=0; for(let i=0;i<N;i++){ s+=k[i]; if(i>=len) s-=k[i-len]; if(i>=len-1) o[i]=s/len; } return o; };
+  const ma=S(c), tr=r.map((d,i)=>i?Math.max(d.h-d.l,Math.abs(d.h-r[i-1].c),Math.abs(d.l-r[i-1].c)):d.h-d.l), rm=S(tr);
+  const dev=c.map((_,i)=>{ if(i<len-1) return null; let m=ma[i],s=0; for(let k=i-len+1;k<=i;k++) s+=(c[k]-m)**2; return mult*Math.sqrt(s/len); });
+  const on=[], off=[], val=new Array(N).fill(null), x=new Array(N).fill(null);
+  for(let i=0;i<N;i++){ if(ma[i]==null){ on.push(false); off.push(false); continue; }
+    const ub=ma[i]+dev[i], lb=ma[i]-dev[i], uk=ma[i]+rm[i]*km, lk=ma[i]-rm[i]*km;
+    on.push(lb>lk&&ub<uk); off.push(lb<lk&&ub>uk);
+    let hh=-Infinity, ll=Infinity; for(let k=i-kl+1;k<=i;k++){ hh=Math.max(hh,r[k].h); ll=Math.min(ll,r[k].l); }
+    x[i]=c[i]-((hh+ll)/2+ma[i])/2; }
+  for(let i=2*len-2;i<N;i++){ let sx=0,sy=0,sxy=0,sxx=0; for(let k=0;k<len;k++){ const y=x[i-len+1+k]; sx+=k; sy+=y; sxy+=k*y; sxx+=k*k; }
+    const b=(len*sxy-sx*sy)/(len*sxx-sx*sx), a=(sy-b*sx)/len; val[i]=a+b*(len-1); }
+  return {val,on,off};
+}
+function chartS(){
+  const r=ohlc(SQK), x=r.map(d=>d.t), Q=sqzmom(r), v=Q.val, i=r.length-1;
+  const col=v.map((y,k)=>y==null?'#5d6675':y>0?(y>(v[k-1]??y)?'#00e676':'#008f4c'):(y<(v[k-1]??y)?'#ff1744':'#8b0000'));
+  const dot=Q.on.map((s,k)=>s?'#f0b429':Q.off[k]?'#8a93a3':'#2962ff');
+  let k=i; while(k>0&&Q.on[k-1]===Q.on[i]) k--; const run=i-k+1;
+  const mom=v[i]>0?(v[i]>v[i-1]?['상승 모멘텀 강해짐','#00e676']:['상승 모멘텀 약해짐','#008f4c']):(v[i]<v[i-1]?['하락 모멘텀 강해짐','#ff1744']:['하락 모멘텀 약해짐 (바닥 신호 후보)','#e57373']);
+  const rel=Q.on[i]?`<b style="color:#f0b429">스퀴즈 ON — 변동성 압축 중 ${run}봉째</b> (풀리는 방향으로 큰 움직임 대기)`:(Q.on[i-1]?`<b style="color:#f0b429">스퀴즈 방금 풀림 (FIRE)</b> — 모멘텀 방향(${v[i]>0?'위':'아래'})으로 움직임 시작 신호`:`스퀴즈 OFF ${run}봉째`);
+  $('#sum-s').innerHTML=`${rel} · 모멘텀 <b style="color:${mom[1]}">${v[i]>=0?'+':''}${fmt(v[i])}</b> <b style="color:${mom[1]}">${mom[0]}</b>`;
+  const L=base(PH(420,360)); L.yaxis=ax({zeroline:false}); const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=(new Date().getFullYear()-2)));
+  L.xaxis.range=[x[back], new Date(x[i].getTime()+10*864e5)]; L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
+  { const vis=v.slice(back).filter(y=>y!=null), m=Math.max(...vis.map(Math.abs))*1.1; L.yaxis.range=[-m,m]; }
+  Plotly.react('plot-s',[{type:'bar',x,y:v,name:'모멘텀',marker:{color:col},hovertemplate:'%{y:.2f}'},
+    {x,y:x.map(()=>0),mode:'markers',name:'스퀴즈',marker:{color:dot,size:5,line:{color:'#8a93a3',width:.5}},hovertemplate:'%{x}<extra></extra>'}],L,cfg);
+}
 function chartD(){
   const r = ohlc('MSTR_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
   const s200=sma(c,200), ma200=s200, disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
@@ -215,7 +251,7 @@ async function init(){
     $('#today').innerHTML += ' · 데이터 ' + u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + ' 기준'
       + (hrs>26 ? ' <span class="err">(갱신이 멈춤 — 확인 필요)</span>' : '');
   }
-  safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c'); safe(chartBTC,'#sum-btc');
+  safe(chartD,'#sum-d'); safe(chartS,'#sum-s'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c'); safe(chartBTC,'#sum-btc');
 }
 $('#m2off').addEventListener('input',e=>{ $('#m2offv').textContent=e.target.value; safe(chartB,'#sum-b'); });
 $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); init(); });
