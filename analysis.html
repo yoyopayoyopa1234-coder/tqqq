@@ -35,8 +35,8 @@
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .btn.rg.on { border-color:var(--accent); color:var(--accent); }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  #plot-d { height:880px; } #plot-b { height:560px; } #plot-c { height:1060px; } #plot-n { height:640px; }
-  @media (max-width:599px){ #plot-d { height:740px; } #plot-b { height:460px; } #plot-c { height:900px; } #plot-n { height:520px; } }
+  #plot-d { height:720px; } #plot-b { height:560px; } #plot-c { height:1060px; } #plot-n { height:640px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b { height:460px; } #plot-c { height:900px; } #plot-n { height:520px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 </style>
@@ -55,7 +55,7 @@
   </header>
 
   <div class="panel">
-    <h2>일봉<span class="desc">200일선 · 가운데 막대 = 200일선 기울기(20거래일 변화율, 초록 상승·빨강 하락) · 이격도 (100=0 · 160=+60 · 50=−50)</span></h2>
+    <h2>일봉<span class="desc">200일선 · 이격도 (100=0 · 160=+60 · 50=−50)</span></h2>
     <div class="sum" id="sum-d">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-d"></div></div>
   </div>
@@ -141,11 +141,7 @@ function chartD(){
   const s200=sma(c,200), ma200=s200, disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
   const st = disp[i]>=160?' <span class="hot">과열</span>':disp[i]<=50?' <span class="on">과매도</span>':'';
   $('#sum-d').innerHTML = `<b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} · 200일선 ${fmt(ma200[i])} (${c[i]>ma200[i]?'위':'아래'}, ${pct(c[i],ma200[i])})${st}${synNote()}`;
-  const SL=20, slp=ma200.map((v,k)=>v==null||k<SL||ma200[k-SL]==null?null:(v/ma200[k-SL]-1)*100);
-  { const sv=slp[i]; let k=i; while(k>0&&slp[k-1]!=null&&(slp[k-1]>=0)===(sv>=0)) k--; const days=i-k, acc=sv-(slp[i-5]??sv);
-    const lab=sv>=1?['상승장 (200일선 우상향)','#5ad445']:sv>0?['약한 상승 (거의 평평)','#a6d96a']:sv>-1?['약한 하락 (거의 평평)','#f0a030']:['하락장 (200일선 우하향)','#f23645'];
-    $('#sum-d').innerHTML += `<br>200일선 기울기 <b style="color:${lab[1]}">${sv>=0?'+':''}${sv.toFixed(2)}%</b> <span class="note">(최근 ${SL}거래일 동안 200일선 변화)</span> · <b style="color:${lab[1]}">${lab[0]}</b> · ${sv>=0?'오름':'내림'} ${days}거래일째 · 5일 전 대비 ${acc>=0?'+':''}${acc.toFixed(2)}%p (${acc>=0?'위로 꺾이는 중 ▲':'아래로 꺾이는 중 ▼'})`; }
-  const L = base(PH(880,740)); L.yaxis=ax({domain:[0.46,1], type:isLong()?'log':'linear'}); L.yaxis2=ax({domain:[0,0.20]}); L.yaxis3=ax({domain:[0.25,0.41], ticksuffix:'%', zeroline:true, zerolinecolor:'#8a93a3'});
+  const L = base(PH(720,600)); L.yaxis=ax({domain:[0.36,1], type:isLong()?'log':'linear'}); L.yaxis2=ax({domain:[0,0.30]});
   const back=startIdx(x); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)]; if(!isLong()) L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
   { const v=r.slice(back), lo=Math.min(...v.map(d=>d.l)), hi_=Math.max(...v.map(d=>d.h)); L.yaxis.range= isLong() ? [Math.log10(lo*0.8), Math.log10(hi_*1.25)] : [lo*0.95, hi_*1.05]; }
   L.shapes=[...synShade(x), hline(60,'y2','#f23645','dash'), {type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:0,y1:0,line:{color:'#5d6675',width:1}}, hline(-50,'y2','#2962ff','dash')];
@@ -153,7 +149,6 @@ function chartD(){
   const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[-100,100]; L.yaxis2.showticklabels=false; L.yaxis2.showgrid=false; L.yaxis2.zeroline=false; L.yaxis2.fixedrange=false; L.dragmode='pan';
   Plotly.react('plot-d', [ candle(r),
     line(x,ma200,'#ff9800','200일선',{line:{color:'#ff9800',width:3.2}}),
-    { type:'bar', x, y:slp, name:'200일선 기울기(20일 %)', yaxis:'y3', marker:{color:slp.map(v=>v==null?'#5d6675':v>=1?'#5ad445':v>0?'#a6d96a':v>-1?'#f0a030':'#f23645')}, hovertemplate:'%{y:+.2f}%' },
     line(x,disp.map(v=>v==null?null:v-100),'#2bb58f','이격도',{yaxis:'y2', hovertemplate:'%{y:+.1f}%', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);
 }
 
