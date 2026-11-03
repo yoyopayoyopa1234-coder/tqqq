@@ -157,16 +157,7 @@ async function sigGauge(){
   const fromAth=(c[i]/ath-1)*100, d10=k=>r[k].t.toISOString().slice(0,10), brkRecent=brk>=0&&i-brk<=5;
   const brkTxt=atHigh?`<b style="color:#f0b429">52주 신고가</b>`:`52주 고점 ${fmt(ath)} (${d10(athI)}) 대비 ${fromAth.toFixed(1)}%`;
   const brkHtml=brkRecent?`<div style="margin:8px 0 2px;padding:8px 12px;border-radius:10px;border:1px solid #f0b429;background:rgba(240,180,41,.12);box-shadow:0 0 18px rgba(240,180,41,.35);font-weight:700">🚀 전고점 돌파 — ${d10(brk)} 종가가 직전 52주 고점 ${fmt(prevAth)}를 넘었습니다 (${i-brk}거래일 전)</div>`
-    :(()=>{ const need=(ath/c[i]-1)*100, prog=Math.max(0,Math.min(100,c[i]/ath*100)), lo52=Math.min(...c.slice(Math.max(0,i-252),i+1)), rng=Math.max(0,Math.min(100,(c[i]-lo52)/(ath-lo52)*100));
-        const P=p=>Math.max(0,Math.min(100,(ath*p/100-lo52)/(ath-lo52)*100)), stg=need<=2?['돌파 직전','#f0b429','종가 기준 2% 안 — 오늘·내일 돌파 가능']:need<=5?['돌파 임박','#ffb74d','5% 안 — 며칠 안에 돌파 가능']:need<=10?['접근 중','#90caf9','10% 안 — 고점 재도전 구간']:need<=20?['회복 중','#8a93a3','20% 안']:['멀리 있음','#5d6675','고점까지 20% 넘게 남음'];
-        let up5=0; for(let q=i;q>i-5&&q>0;q--) if(c[q]>c[q-1]) up5++; const ch5=(c[i]/c[Math.max(0,i-5)]-1)*100, ch20=(c[i]/c[Math.max(0,i-20)]-1)*100;
-        return `<div style="margin:8px 0 2px;padding:8px 12px;border-radius:10px;border:1px solid ${stg[1]}55;background:rgba(255,255,255,.02)">
-          <div style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline"><b>전고점 돌파 준비도</b><b style="color:${stg[1]};font-size:16px">${stg[0]}</b><span class="note">${stg[2]}</span></div>
-          <div style="position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,#2b313b 0%,#2b313b ${P(80)}%,rgba(144,202,249,.4) ${P(90)}%,rgba(240,180,41,.7) ${P(98)}%,#f0b429 100%);margin:10px 0 4px">
-            <i style="position:absolute;top:-5px;left:${rng}%;width:4px;height:20px;background:#fff;border-radius:2px;box-shadow:0 0 8px #fff;transform:translateX(-50%)"></i>
-            ${[80,90,95,98].map(p=>`<span style="position:absolute;top:12px;left:${P(p)}%;transform:translateX(-50%);font-size:10px;color:var(--muted)">−${100-p}%</span>`).join('')}</div>
-          <div style="font-size:12.5px;margin-top:14px;color:#c9cfd8">지금 ${fmt(c[i])} · 52주 고점 <b>${fmt(ath)}</b> (${d10(athI)}) · 52주 저점 ${fmt(lo52)} · 돌파까지 <b style="color:${stg[1]}">+${need.toFixed(1)}%</b> · 52주 범위 중 ${rng.toFixed(0)}% 위치<br>
-          최근 5일 ${ch5>=0?'+':''}${ch5.toFixed(1)}% (${up5}/5일 상승) · 20일 ${ch20>=0?'+':''}${ch20.toFixed(1)}% · 단계: 20% 안 회복 중 → 10% 안 접근 중 → 5% 안 임박 → 2% 안 직전 → 종가 돌파 🚀 · 마지막 돌파 ${brk>=0?d10(brk):'—'}</div></div>`; })();
+    :`<div class="note" style="margin:8px 0 2px">전고점 돌파 신호: ${atHigh?'신고가 갱신 중':`대기 — 종가가 ${fmt(ath)} 위로 마감하면 돌파 (지금보다 +${(ath/c[i]*100-100).toFixed(1)}%)`} · 마지막 돌파 ${brk>=0?d10(brk):'—'}</div>`;
   const C=[
    ['200일선 이격도 (역대 백분위)',`${disp[i].toFixed(1)}% · 백분위 ${dpP.toFixed(0)}`,band5(dpP,[10,30,70,90]),'≤10 / ≤30 / 30~70 / ≥70 / ≥90','가격'],
    ['200일선 방향 (20일 변화, 역대 백분위)',`${slope[i]>=0?'+':''}${slope[i].toFixed(2)}% · 백분위 ${slP.toFixed(0)}`,band5(slP,[10,30,70,90]),'≤10 / ≤30 / 30~70 / ≥70 / ≥90','가격'],
