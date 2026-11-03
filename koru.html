@@ -34,8 +34,8 @@
   .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  #plot-s { height:640px; } #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:1060px; }
-  @media (max-width:599px){ #plot-s { height:540px; } #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:900px; } }
+  #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:1500px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:1260px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 </style>
@@ -66,14 +66,9 @@
   </div>
 
   <div class="panel">
-    <h2>월봉<span class="desc">BB 20/2 · BB 밴드폭(수축=변동성 폭발 전) · RSI 14 · Williams Vix Fix 22/20/2/50/0.85</span></h2>
+    <h2>월봉<span class="desc">BB 20/2 · BB 밴드폭(수축=변동성 폭발 전) · RSI 14 · Williams Vix Fix 22/20/2/50/0.85 · Squeeze Momentum · MACD 히스토그램</span></h2>
     <div class="sum" id="sum-c">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-c"></div></div>
-  </div>
-  <div class="panel">
-    <h2>Squeeze Momentum · MACD 히스토그램 (월봉)<span class="desc">위: Squeeze Momentum (LazyBear) · 가운데 점: 노랑 = 스퀴즈 ON(변동성 압축) · 회색 = 풀림 · 파랑 = 해당 없음 · 막대: 연두/진초록 = 상승 강해짐/약해짐 · 빨강/암적 = 하락 강해짐/약해짐 · 아래: MACD(12,26,9) 히스토그램</span></h2>
-    <div class="sum" id="sum-s">불러오는 중…</div>
-    <div class="plotbox"><div class="plot" id="plot-s"></div></div>
   </div>
 
 
@@ -138,25 +133,6 @@ function sqzmom(r,len=20,mult=2,kl=20,km=1.5){
     const b=(len*sxy-sx*sy)/(len*sxx-sx*sx), a=(sy-b*sx)/len; val[i]=a+b*(len-1); }
   return {val,on,off};
 }
-function chartS(){
-  const r=ohlc(SQK), x=r.map(d=>d.t), Q=sqzmom(r), v=Q.val, i=r.length-1;
-  const col=v.map((y,k)=>y==null?'#5d6675':y>0?(y>(v[k-1]??y)?'#00e676':'#008f4c'):(y<(v[k-1]??y)?'#ff1744':'#8b0000'));
-  const dot=Q.on.map((s,k)=>s?'#f0b429':Q.off[k]?'#8a93a3':'#2962ff');
-  let k=i; while(k>0&&Q.on[k-1]===Q.on[i]) k--; const run=i-k+1;
-  const mom=v[i]>0?(v[i]>v[i-1]?['상승 모멘텀 강해짐','#00e676']:['상승 모멘텀 약해짐','#008f4c']):(v[i]<v[i-1]?['하락 모멘텀 강해짐','#ff1744']:['하락 모멘텀 약해짐 (바닥 신호 후보)','#e57373']);
-  const rel=Q.on[i]?`<b style="color:#f0b429">스퀴즈 ON — 변동성 압축 중 ${run}봉째</b> (풀리는 방향으로 큰 움직임 대기)`:(Q.on[i-1]?`<b style="color:#f0b429">스퀴즈 방금 풀림 (FIRE)</b> — 모멘텀 방향(${v[i]>0?'위':'아래'})으로 움직임 시작 신호`:`스퀴즈 OFF ${run}봉째`);
-  $('#sum-s').innerHTML=`${rel} · 모멘텀 <b style="color:${mom[1]}">${v[i]>=0?'+':''}${fmt(v[i])}</b> <b style="color:${mom[1]}">${mom[0]}</b>`;
-  const ema_=(a,n)=>{ const o=[],k=2/(n+1); let p=null; for(const v of a){ p=p==null?v:p+k*(v-p); o.push(p); } return o; }, cc=r.map(d=>d.c), f12=ema_(cc,12), s26=ema_(cc,26), mc=cc.map((_,k)=>f12[k]-s26[k]), sgl=ema_(mc,9), mh=mc.map((y,k)=>k<33?null:y-sgl[k]);
-  $('#sum-s').innerHTML+=` · MACD 히스토그램 <b style="color:${mh[i]>=0?'#26a69a':'#ef5350'}">${mh[i]>=0?'+':''}${fmt(mh[i])}</b> (${mh[i]>=0?(mh[i]>=mh[i-1]?'상승 강해짐':'상승 약해짐'):(mh[i]<=mh[i-1]?'하락 강해짐':'하락 약해짐')})`;
-  const L=base(PH(640,540)); L.yaxis=ax({zeroline:false,domain:[0.52,1]}); L.yaxis2=ax({zeroline:true,zerolinecolor:'#5d6675',domain:[0,0.44]});
-  L.annotations=[{xref:'paper',x:0,yref:'y2 domain',y:1,yanchor:'top',xanchor:'left',text:'MACD 히스토그램 (12,26,9)',showarrow:false,font:{size:10,color:'#c9cfd8'}}]; const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2012));
-  L.xaxis.range=[x[back], new Date(x[i].getTime()+60*864e5)];
-  { const vis=v.slice(back).filter(y=>y!=null), m=Math.max(...vis.map(Math.abs))*1.1; L.yaxis.range=[-m,m]; }
-  { const vis=mh.slice(back).filter(y=>y!=null), m=Math.max(...vis.map(Math.abs))*1.1; L.yaxis2.range=[-m,m]; }
-  Plotly.react('plot-s',[{type:'bar',x,y:v,name:'모멘텀',marker:{color:col},hovertemplate:'%{y:.2f}'},
-    {x,y:x.map(()=>0),mode:'markers',name:'스퀴즈',marker:{color:dot,size:5,line:{color:'#8a93a3',width:.5}},hovertemplate:'%{x}<extra></extra>'},
-    {type:'bar',x,y:mh,name:'MACD 히스토그램',yaxis:'y2',marker:{color:mh.map((y,k)=>y==null?'#5d6675':y>=0?(y>=(mh[k-1]??y)?'#26a69a':'#b2dfdb'):(y>=(mh[k-1]??y)?'#ffcdd2':'#ef5350'))},hovertemplate:'%{y:.2f}'}],L,cfg);
-}
 function chartD(){
   const r = ohlc('KORU_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
   const s200=sma(c,200), ma200=s200, disp=c.map((v,k)=>s200[k]==null?null:v/s200[k]*100);
@@ -211,13 +187,19 @@ function chartC(){
   $('#sum-c').innerHTML = `<div style="margin-bottom:4px">${bbwHtml('월봉',bw,i,120)}${dl?'<br>'+dl:''}</div><b>${fmt(c[i])}</b> ${pct(c[i],c[i-1])} (이번 달) · BB ${fmt(b.up[i])} / ${fmt(b.mid[i])} / ${fmt(b.lo[i])} (%b ${pb.toFixed(2)}) · RSI <b>${rs[i]==null?'—':rs[i].toFixed(2)}</b>${rs[i]>=70?' 과매수':rs[i]<=30?' 과매도':''} · Vix Fix ${v.w[i].toFixed(2)} / ${v.rh[i].toFixed(2)} ${v.sig[i]?'<span class="on">신호 ON</span>':'꺼짐'}`;
   const s = Math.max(0, x.findIndex(t=>t.getFullYear()>=2015));
   const visH = [...r.slice(s).map(d=>d.h), ...b.up.slice(s).filter(v=>v!=null)], visL=[...r.slice(s).map(d=>d.l), ...b.lo.slice(s).filter(v=>v!=null)];
-  const L = base(PH(1060,900)); L.yaxis=ax({domain:[0.52,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
-  L.yaxis4=ax({domain:[0.36,0.49], ticksuffix:'%'}); L.yaxis2=ax({domain:[0.19,0.33], range:[0,100]}); L.yaxis3=ax({domain:[0,0.16]});
+  const L = base(PH(1500,1260)); L.yaxis=ax({domain:[0.64,1], range:[Math.min(0,...visL)*1.05, Math.max(...visH)*1.05]});
+  L.yaxis4=ax({domain:[0.52,0.61], ticksuffix:'%'}); L.yaxis2=ax({domain:[0.39,0.49], range:[0,100]}); L.yaxis3=ax({domain:[0.26,0.36]}); L.yaxis5=ax({domain:[0.13,0.23]}); L.yaxis6=ax({domain:[0,0.10], zeroline:true, zerolinecolor:'#5d6675'});
   { const vis=bw.slice(s).filter(v=>v!=null).sort((a,b)=>a-b); if(vis.length>5) L.shapes_bw=vis[Math.floor(vis.length*0.2)]; }
   L.xaxis.range=[x[s], new Date(x[i].getTime()+60*86400000)];
   L.shapes=[ {type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:30,y1:70,fillcolor:'rgba(120,110,230,0.10)',line:{width:0}},
     hline(30,'y2','#5d6675'), hline(50,'y2','#5d6675'), hline(70,'y2','#5d6675') ];
   if(L.shapes_bw!=null){ L.shapes.push(hline(L.shapes_bw,'y4','#f0a030','dash')); L.annotations=(L.annotations||[]).concat([{xref:'paper',x:0,yref:'y4',y:L.shapes_bw,text:'하위 20%',showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:'#f0a030'}},{xref:'paper',x:0,yref:'y4',y:1,yanchor:'top',text:'BB 밴드폭 %',showarrow:false,xanchor:'left',font:{size:10,color:'#c9cfd8'},yref:'y4 domain'}]); delete L.shapes_bw; }
+  const SQ=sqzmom(r), ema_=(a,n)=>{ const o=[],k=2/(n+1); let p=null; for(const q of a){ p=p==null?q:p+k*(q-p); o.push(p); } return o; }, f12=ema_(c,12), s26=ema_(c,26), mc=c.map((_,k)=>f12[k]-s26[k]), sgl=ema_(mc,9), MH=mc.map((y,k)=>k<33?null:y-sgl[k]);
+  { const q=SQ.val; let k=i; while(k>0&&SQ.on[k-1]===SQ.on[i]) k--; const mom=q[i]>0?(q[i]>q[i-1]?'상승 강해짐':'상승 약해짐'):(q[i]<q[i-1]?'하락 강해짐':'하락 약해짐 (바닥 신호 후보)');
+    const sq=SQ.on[i]?`<b style="color:#f0b429">스퀴즈 ON ${i-k+1}개월째</b>`:SQ.on[i-1]?'<b style="color:#f0b429">스퀴즈 방금 풀림 (FIRE)</b>':`스퀴즈 OFF ${i-k+1}개월째`;
+    document.querySelector(typeof sid==='string'?sid:'#sum-c').innerHTML += `<br>Squeeze Momentum: ${sq} · 모멘텀 <b style="color:${q[i]>=0?'#00e676':'#ff1744'}">${q[i]>=0?'+':''}${fmt(q[i])}</b> ${mom} · MACD 히스토그램 <b style="color:${MH[i]>=0?'#26a69a':'#ef5350'}">${MH[i]>=0?'+':''}${fmt(MH[i])}</b> (${MH[i]>=0?(MH[i]>=MH[i-1]?'상승 강해짐':'상승 약해짐'):(MH[i]<=MH[i-1]?'하락 강해짐':'하락 약해짐')})`; }
+  { const v5=SQ.val.slice(s).filter(y=>y!=null), m5=Math.max(...v5.map(Math.abs))*1.1; L.yaxis5.range=[-m5,m5]; const v6=MH.slice(s).filter(y=>y!=null), m6=Math.max(...v6.map(Math.abs))*1.1; L.yaxis6.range=[-m6,m6]; }
+  L.annotations=(L.annotations||[]).concat([['Squeeze Momentum (노랑 점 = 스퀴즈 ON)','y5 domain'],['MACD 히스토그램 (12,26,9)','y6 domain']].map(([tx,y])=>({xref:'paper',x:0,yref:y,y:1,yanchor:'top',xanchor:'left',text:tx,showarrow:false,font:{size:10,color:'#c9cfd8'}})));
   Plotly.react('plot-c', [
     line(x,b.up,'#f23645','BB 상단',{line:{color:'#f23645',width:1.2}}),
     line(x,b.lo,'#089981','BB 하단',{line:{color:'#089981',width:1.2}, fill:'tonexty', fillcolor:'rgba(33,150,243,0.08)'}),
@@ -226,7 +208,10 @@ function chartC(){
     line(x,bw,'#f0a030','BB 밴드폭',{yaxis:'y4', line:{color:'#f0a030',width:1.8}, fill:'tozeroy', fillcolor:'rgba(240,160,48,.10)'}),
     line(x,rs,'#7c7cf0','RSI 14',{yaxis:'y2', line:{color:'#7c7cf0',width:1.8}}),
     { type:'bar', x, y:v.w, name:'Vix Fix', marker:{color:v.sig.map(g=>g?'#5ad445':'#e05a5a')}, yaxis:'y3' },
-    line(x, v.rh, '#f0a030', 'RangeHigh', { yaxis:'y3', line:{color:'#f0a030',width:2.5} }) ], L, cfg);
+    line(x, v.rh, '#f0a030', 'RangeHigh', { yaxis:'y3', line:{color:'#f0a030',width:2.5} }),
+    { type:'bar', x, y:SQ.val, name:'Squeeze Momentum', yaxis:'y5', marker:{color:SQ.val.map((y,k)=>y==null?'#5d6675':y>0?(y>(SQ.val[k-1]??y)?'#00e676':'#008f4c'):(y<(SQ.val[k-1]??y)?'#ff1744':'#8b0000'))}, hovertemplate:'%{y:.2f}' },
+    { x, y:x.map(()=>0), mode:'markers', name:'스퀴즈', yaxis:'y5', marker:{size:4, color:SQ.on.map((o,k)=>o?'#f0b429':SQ.off[k]?'#8a93a3':'#2962ff')}, hovertemplate:'%{x}<extra></extra>' },
+    { type:'bar', x, y:MH, name:'MACD 히스토그램', yaxis:'y6', marker:{color:MH.map((y,k)=>y==null?'#5d6675':y>=0?(y>=(MH[k-1]??y)?'#26a69a':'#b2dfdb'):(y>=(MH[k-1]??y)?'#ffcdd2':'#ef5350'))}, hovertemplate:'%{y:.2f}' } ], L, cfg);
 }
 
 async function alerts(){
@@ -260,7 +245,7 @@ async function init(){
     $('#today').innerHTML += ' · 데이터 ' + u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + ' 기준'
       + (hrs>26 ? ' <span class="err">(갱신이 멈춤 — 확인 필요)</span>' : '');
   }
-  safe(chartD,'#sum-d'); safe(chartS,'#sum-s'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
+  safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
 }
 $('#m2off').addEventListener('input',e=>{ $('#m2offv').textContent=e.target.value; safe(chartB,'#sum-b'); });
 $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); init(); });
