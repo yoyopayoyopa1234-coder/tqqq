@@ -125,7 +125,7 @@ function chartD(){
   const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2015)); L.xaxis.range=[x[back], new Date(x[i].getTime()+10*86400000)];
   L.shapes=[hline(60,'y2','#f23645','dash'), {type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:0,y1:0,line:{color:'#5d6675',width:1}}, hline(-50,'y2','#2962ff','dash')];
   L.annotations=[[60,'#f23645','+60'],[0,'#8a93a3','0'],[-50,'#2962ff','−50']].map(([y,col,lb])=>({xref:'paper',x:0,yref:'y2',y,text:lb||String(y),showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:col}}));
-  const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[-100,100]; L.yaxis2.dtick=10; L.yaxis2.ticksuffix='%'; L.yaxis2.zeroline=false;
+  const vis=disp.slice(back).filter(v=>v!=null); L.yaxis2.range=[-100,100]; L.yaxis2.showticklabels=false; L.yaxis2.showgrid=false; L.yaxis2.zeroline=false; L.yaxis2.fixedrange=false; L.dragmode='pan';
   Plotly.react('plot-d', [ candle(r),
     line(x,ma200,'#ff9800','200일선',{line:{color:'#ff9800',width:3.2}}),
     line(x,disp.map(v=>v==null?null:v-100),'#2bb58f','이격도',{yaxis:'y2', hovertemplate:'%{y:+.1f}%', line:{color:'#2bb58f',width:1.4}}) ], L, cfg);
