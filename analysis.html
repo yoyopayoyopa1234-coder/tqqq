@@ -64,7 +64,7 @@
   </header>
 
   <div class="panel">
-    <h2>고점·저점 신호기<span class="desc">200일선 · 이격도 · RSI(일·월) · 월봉 볼밴 · Vix Fix · 공탐 · FedWatch · Global M2 — 9개를 합쳐 5단계로</span></h2>
+    <h2>고점·저점 신호기<span class="desc">200일선 · 이격도 · RSI(일·월) · 월봉 볼밴 · Vix Fix · 공탐 · FedWatch · Global M2 · 전고점 — 10개를 합쳐 5단계로</span></h2>
     <div class="sum" id="sig-body" style="border-bottom:0">불러오는 중…</div>
   </div>
 
@@ -170,12 +170,21 @@ async function sigGauge(){
   let fwd=null, fwTxt='—'; if(FW&&FW.fw&&FW.fw.meets&&FW.fw.meets.length){ const ms=FW.fw.meets, lim=Date.now()+190*864e5, last=ms.filter(m=>new Date(m.date)<=lim).slice(-1)[0]||ms[0]; fwd=(last.exp-(FW.fw.lo+0.125))*100; fwTxt=`${last.date}까지 ${fwd>=0?'+':''}${fwd.toFixed(0)}bp (지금 ${(FW.fw.lo*100).toFixed(0)}-${(FW.fw.hi*100).toFixed(0)})`; }
   let m2c=null, m2Txt='—'; const M2=DATA&&DATA.m2&&DATA.m2.rows; if(M2&&M2.length>70){ const a=M2[M2.length-1], b=M2[Math.max(0,M2.length-66)]; m2c=(a[1]/b[1]-1)*100; m2Txt=`${a[1].toFixed(2)}조$ · 3개월 ${m2c>=0?'+':''}${m2c.toFixed(2)}%`; }
   const dpP=pct(sorted,disp[i]), slP=pct(ssorted,slope[i]);
+  // 전고점 = 직전 52주(252거래일) 최고 종가 · 돌파 = 종가가 그 위로 마감 (직전 고점에서 20거래일 넘게 지난 뒤)
+  const hi52=k=>{ let m=-Infinity, mi=-1; for(let q=Math.max(0,k-252);q<k;q++) if(c[q]>m){ m=c[q]; mi=q; } return [m,mi]; };
+  let brk=-1, prevAth=null; for(let k=Math.max(253,N-1300);k<N;k++){ const [m,mi]=hi52(k); if(c[k]>m&&c[k-1]<=hi52(k-1)[0]&&k-mi>20){ brk=k; prevAth=m; } }
+  const [h52,h52i]=hi52(i), atHigh=c[i]>=h52, ath=atHigh?c[i]:h52, athI=atHigh?i:h52i;
+  const fromAth=(c[i]/ath-1)*100, d10=k=>r[k].t.toISOString().slice(0,10), brkRecent=brk>=0&&i-brk<=5;
+  const brkTxt=atHigh?`<b style="color:#f0b429">52주 신고가</b>`:`52주 고점 ${fmt(ath)} (${d10(athI)}) 대비 ${fromAth.toFixed(1)}%`;
+  const brkHtml=brkRecent?`<div style="margin:8px 0 2px;padding:8px 12px;border-radius:10px;border:1px solid #f0b429;background:rgba(240,180,41,.12);box-shadow:0 0 18px rgba(240,180,41,.35);font-weight:700">🚀 전고점 돌파 — ${d10(brk)} 종가가 직전 52주 고점 ${fmt(prevAth)}를 넘었습니다 (${i-brk}거래일 전)</div>`
+    :`<div class="note" style="margin:8px 0 2px">전고점 돌파 신호: ${atHigh?'신고가 갱신 중':`대기 — 종가가 ${fmt(ath)} 위로 마감하면 돌파 (지금보다 +${(ath/c[i]*100-100).toFixed(1)}%)`} · 마지막 돌파 ${brk>=0?d10(brk):'—'}</div>`;
   const C=[
    ['200일선 이격도 (역대 백분위)',`${disp[i].toFixed(1)}% · 백분위 ${dpP.toFixed(0)}`,band5(dpP,[10,30,70,90]),'≤10 / ≤30 / 30~70 / ≥70 / ≥90','가격'],
    ['200일선 방향 (20일 변화, 역대 백분위)',`${slope[i]>=0?'+':''}${slope[i].toFixed(2)}% · 백분위 ${slP.toFixed(0)}`,band5(slP,[10,30,70,90]),'≤10 / ≤30 / 30~70 / ≥70 / ≥90','가격'],
    ['RSI 14 (일봉)',rsD[i].toFixed(1),band5(rsD[i],[30,40,60,70]),'≤30 / ≤40 / 40~60 / ≥60 / ≥70','가격'],
    [`RSI 14 (월봉${SIGK==='TQQQ'?' · QQQ':''})`,rsM[j].toFixed(1),band5(rsM[j],[30,40,60,70]),'≤30 / ≤40 / 40~60 / ≥60 / ≥70','가격'],
    ['볼린저 %b (월봉)',pbM.toFixed(2),band5(pbM,[0,0.2,0.8,1]),'≤0 / ≤0.2 / 0.2~0.8 / ≥0.8 / ≥1','가격'],
+   ['전고점 대비 (52주 최고 종가)',brkTxt,fromAth>=0?2:fromAth>=-5?1:fromAth>-20?0:fromAth>-40?-1:-2,'≤−40% / ≤−20 / −20~−5 / ≥−5 / 신고가','가격'],
    ['Williams Vix Fix (일봉)',vx?'녹색 — 공포 투매':vxNear?'기준선 근접':'꺼짐',vx?-2:vxNear?-1:0,'녹색 −2 · 근접 −1 · 꺼짐 0','가격'],
    ['CNN 공포·탐욕 (공탐)',fg==null?'—':fg.toFixed(0),band5(fg,[25,45,55,75]),'≤25 / ≤45 / 45~55 / ≥55 / ≥75','시장'],
    ['FedWatch (6개월 내 금리 예상 변화)',fwTxt,band5(fwd,[-50,-20,20,50]),'≤−50bp / ≤−20 / ±20 / ≥+20 / ≥+50 (인하=바닥 쪽, 인상=꼭지 쪽)','시장'],
@@ -185,11 +194,12 @@ async function sigGauge(){
   const sub=g=>{ const a=got.filter(x=>x[4]===g); return a.length?a.reduce((s,x)=>s+x[2],0)/a.length:null; }, sp=sub('가격'), sm=sub('시장');
   $('#sig-body').innerHTML=`<div style="font-size:15px">${r[i].t.toISOString().slice(0,10)} 기준 · 종합 <b style="font-size:20px;color:${SG_LV[L][1]}">${S>0?'+':''}${S.toFixed(2)}</b> <span class="note">(−2 바닥 ~ +2 꼭지 · ${got.length}개 지표 평균)</span> → <b style="font-size:20px;color:${SG_LV[L][1]}">${SG_LV[L][0]}</b> <span style="color:#c9cfd8">${SG_LV[L][2]}</span></div>
     <div class="note" style="margin-top:2px">가격 지표 ${sp==null?'—':(sp>0?'+':'')+sp.toFixed(2)} · 시장 지표 ${sm==null?'—':(sm>0?'+':'')+sm.toFixed(2)}</div>
+    ${brkHtml}
     <div class="sgbar"><i id="sgpin" style="left:50%"></i></div>
     <div class="sg5">${SG_LV.map((l,k)=>`<div class="${k===L?'on':''}" style="--c:${l[1]};--b:${l[1]}33">${l[0]}<small>${['−2 ~ −1.25','−1.25 ~ −0.5','−0.5 ~ +0.5','+0.5 ~ +1.25','+1.25 ~ +2'][k]}</small></div>`).join('')}</div>
     <div style="overflow-x:auto"><table class="sgt" style="margin-top:8px"><tr><th>지표</th><th>지금 값</th><th>점수</th><th>기준 (−2 / −1 / 0 / +1 / +2)</th></tr>
       ${C.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${sc(x[2])}</td><td class="note">${x[3]}</td></tr>`).join('')}</table></div>
-    <div class="note" style="margin-top:6px">가격 지표 6개는 ${SIGK} 자체, 시장 지표 3개(공탐·FedWatch·M2)는 모든 종목 공통 · 공탐·FedWatch는 과거 기록이 짧아 백테스트 없이 지금 값만 봅니다 · 바닥·꼭지를 맞히는 도구가 아니라 지금 위치를 보는 참고용 · 투자 자문 아님</div>`;
+    <div class="note" style="margin-top:6px">가격 지표 7개는 ${SIGK} 자체, 시장 지표 3개(공탐·FedWatch·M2)는 모든 종목 공통 · 공탐·FedWatch는 과거 기록이 짧아 백테스트 없이 지금 값만 봅니다 · 바닥·꼭지를 맞히는 도구가 아니라 지금 위치를 보는 참고용 · 투자 자문 아님</div>`;
   requestAnimationFrame(()=>setTimeout(()=>{ const p=document.getElementById('sgpin'); if(p) p.style.left=pos+'%'; },60));
  }catch(e){ $('#sig-body').innerHTML='<span class="err">신호기 오류: '+e.message+'</span>'; }
 }
