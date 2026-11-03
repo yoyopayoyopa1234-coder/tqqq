@@ -34,8 +34,8 @@
   .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
   .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
   .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
-  #plot-s { height:420px; } #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:1060px; }
-  @media (max-width:599px){ #plot-s { height:360px; } #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:900px; } }
+  #plot-s { height:640px; } #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:1060px; }
+  @media (max-width:599px){ #plot-s { height:540px; } #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:900px; } }
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 </style>
@@ -43,7 +43,7 @@
 <body>
 <div class="wrap">
   <header>
-    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html" class="cur">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="koru.html">KORU</a><a href="turn.html">전환 확인</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html" class="cur">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="koru.html">KORU</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
     <span style="flex-basis:100%;height:0"></span>
     <h1>SOXL 분석</h1>
     <span class="date" id="today"></span>
@@ -59,12 +59,6 @@
   </div>
 
   <div class="panel">
-    <h2>Squeeze Momentum (월봉)<span class="desc">LazyBear · 가운데 점: 노랑 = 스퀴즈 ON(변동성 압축) · 회색 = 풀림 · 파랑 = 해당 없음 · 막대: 연두/진초록 = 상승 강해짐/약해짐 · 빨강/암적 = 하락 강해짐/약해짐</span></h2>
-    <div class="sum" id="sum-s">불러오는 중…</div>
-    <div class="plotbox"><div class="plot" id="plot-s"></div></div>
-  </div>
-
-  <div class="panel">
     <h2>3일봉 · Global M2 3일 평균
       <span class="tools">오프셋 <input type="range" id="m2off" min="0" max="120" value="0"> <span id="m2offv">0</span>일</span></h2>
     <div class="sum" id="sum-b">불러오는 중…</div>
@@ -76,6 +70,12 @@
     <div class="sum" id="sum-c">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-c"></div></div>
   </div>
+  <div class="panel">
+    <h2>Squeeze Momentum · MACD 히스토그램 (월봉)<span class="desc">위: Squeeze Momentum (LazyBear) · 가운데 점: 노랑 = 스퀴즈 ON(변동성 압축) · 회색 = 풀림 · 파랑 = 해당 없음 · 막대: 연두/진초록 = 상승 강해짐/약해짐 · 빨강/암적 = 하락 강해짐/약해짐 · 아래: MACD(12,26,9) 히스토그램</span></h2>
+    <div class="sum" id="sum-s">불러오는 중…</div>
+    <div class="plotbox"><div class="plot" id="plot-s"></div></div>
+  </div>
+
 
   <div class="status">데이터: Yahoo Finance(SOXL, 달러) · 15분마다 갱신 · Global M2는 MSTR 대시보드와 같은 데이터를 씁니다.</div>
 </div>
@@ -146,11 +146,16 @@ function chartS(){
   const mom=v[i]>0?(v[i]>v[i-1]?['상승 모멘텀 강해짐','#00e676']:['상승 모멘텀 약해짐','#008f4c']):(v[i]<v[i-1]?['하락 모멘텀 강해짐','#ff1744']:['하락 모멘텀 약해짐 (바닥 신호 후보)','#e57373']);
   const rel=Q.on[i]?`<b style="color:#f0b429">스퀴즈 ON — 변동성 압축 중 ${run}봉째</b> (풀리는 방향으로 큰 움직임 대기)`:(Q.on[i-1]?`<b style="color:#f0b429">스퀴즈 방금 풀림 (FIRE)</b> — 모멘텀 방향(${v[i]>0?'위':'아래'})으로 움직임 시작 신호`:`스퀴즈 OFF ${run}봉째`);
   $('#sum-s').innerHTML=`${rel} · 모멘텀 <b style="color:${mom[1]}">${v[i]>=0?'+':''}${fmt(v[i])}</b> <b style="color:${mom[1]}">${mom[0]}</b>`;
-  const L=base(PH(420,360)); L.yaxis=ax({zeroline:false}); const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2012));
+  const ema_=(a,n)=>{ const o=[],k=2/(n+1); let p=null; for(const v of a){ p=p==null?v:p+k*(v-p); o.push(p); } return o; }, cc=r.map(d=>d.c), f12=ema_(cc,12), s26=ema_(cc,26), mc=cc.map((_,k)=>f12[k]-s26[k]), sgl=ema_(mc,9), mh=mc.map((y,k)=>k<33?null:y-sgl[k]);
+  $('#sum-s').innerHTML+=` · MACD 히스토그램 <b style="color:${mh[i]>=0?'#26a69a':'#ef5350'}">${mh[i]>=0?'+':''}${fmt(mh[i])}</b> (${mh[i]>=0?(mh[i]>=mh[i-1]?'상승 강해짐':'상승 약해짐'):(mh[i]<=mh[i-1]?'하락 강해짐':'하락 약해짐')})`;
+  const L=base(PH(640,540)); L.yaxis=ax({zeroline:false,domain:[0.52,1]}); L.yaxis2=ax({zeroline:true,zerolinecolor:'#5d6675',domain:[0,0.44]});
+  L.annotations=[{xref:'paper',x:0,yref:'y2 domain',y:1,yanchor:'top',xanchor:'left',text:'MACD 히스토그램 (12,26,9)',showarrow:false,font:{size:10,color:'#c9cfd8'}}]; const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2012));
   L.xaxis.range=[x[back], new Date(x[i].getTime()+60*864e5)];
   { const vis=v.slice(back).filter(y=>y!=null), m=Math.max(...vis.map(Math.abs))*1.1; L.yaxis.range=[-m,m]; }
+  { const vis=mh.slice(back).filter(y=>y!=null), m=Math.max(...vis.map(Math.abs))*1.1; L.yaxis2.range=[-m,m]; }
   Plotly.react('plot-s',[{type:'bar',x,y:v,name:'모멘텀',marker:{color:col},hovertemplate:'%{y:.2f}'},
-    {x,y:x.map(()=>0),mode:'markers',name:'스퀴즈',marker:{color:dot,size:5,line:{color:'#8a93a3',width:.5}},hovertemplate:'%{x}<extra></extra>'}],L,cfg);
+    {x,y:x.map(()=>0),mode:'markers',name:'스퀴즈',marker:{color:dot,size:5,line:{color:'#8a93a3',width:.5}},hovertemplate:'%{x}<extra></extra>'},
+    {type:'bar',x,y:mh,name:'MACD 히스토그램',yaxis:'y2',marker:{color:mh.map((y,k)=>y==null?'#5d6675':y>=0?(y>=(mh[k-1]??y)?'#26a69a':'#b2dfdb'):(y>=(mh[k-1]??y)?'#ffcdd2':'#ef5350'))},hovertemplate:'%{y:.2f}'}],L,cfg);
 }
 function chartD(){
   const r = ohlc('SOXL_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
