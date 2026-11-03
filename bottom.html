@@ -63,13 +63,13 @@
   <div class="panel"><h2>조건<span class="desc">카드를 누르면 종목이 바뀝니다</span></h2><div class="conds" id="conds">불러오는 중…</div></div>
   <div class="panel"><h2>차트<span class="desc">확대·드래그 가능 · ▲ 표시 = 과거 신호</span></h2><div class="plotbox"><div class="plot" id="plot-x"></div></div></div>
   <div class="panel"><h2>과거 신호 뒤 성적</h2><div class="body" style="padding:12px" id="hist">불러오는 중…</div></div>
-  <div class="panel"><h2>규칙</h2><div class="sum" style="border:0;line-height:1.8"><b>①</b> CM Williams Vix Fix (22/20/2/50/0.85) 녹색 막대가 최근 5거래일(주봉 3주) 안에 있음 — 공포 투매<br><b>②</b> RSI 14 상승 다이버전스가 최근 10거래일(주봉 4주) 안에 확인됨 — 가격은 저점을 낮췄는데 RSI 저점은 높아짐 (TradingView RSI Divergence 기본: 피벗 좌5·우5, 간격 5~60봉, 피벗은 5봉 뒤 확정)<br><b>③</b> MACD(12,26,9) 히스토그램이 0 아래인데 3봉 연속 줄어듦 — 하락 힘 약해짐<br><span class="note">3개 중 2개 이상 = 바닥 후보, 3개 = 강함. 바닥 후보는 "떨어지는 칼"일 수 있어 전환 확인 페이지 신호와 함께 분할 매수가 안전합니다.</span></div></div>
+  <div class="panel"><h2>규칙</h2><div class="sum" style="border:0;line-height:1.8"><b>①</b> CM Williams Vix Fix (22/20/2/50/0.85) 녹색 막대가 최근 5거래일(주봉 3주 · 월봉 2개월) 안에 있음 — 공포 투매<br><b>②</b> RSI 14 상승 다이버전스가 최근 10거래일(주봉 4주 · 월봉 3개월) 안에 확인됨 — 가격은 저점을 낮췄는데 RSI 저점은 높아짐 (TradingView RSI Divergence 기본: 피벗 좌5·우5, 간격 5~60봉, 피벗은 5봉 뒤 확정)<br><b>③</b> MACD(12,26,9) 히스토그램이 0 아래인데 3봉 연속 줄어듦 — 하락 힘 약해짐<br><span class="note">3개 중 2개 이상 = 바닥 후보, 3개 = 강함. 바닥 후보는 "떨어지는 칼"일 수 있어 전환 확인 페이지 신호와 함께 분할 매수가 안전합니다.</span></div></div>
   <div class="status">데이터: Yahoo Finance · 15분마다 갱신 · TradingView 기본 지표와 같은 공식 · 투자 자문 아님</div>
 </div>
 <script>
 
 const PG='bottom';
-const WIN={ '1d':{vf:5,div:10}, '1wk':{vf:3,div:4} };
+const WIN={ '1d':{vf:5,div:10}, '1wk':{vf:3,div:4}, '1mo':{vf:2,div:3} };
 function analyze(r){ const c=r.map(d=>d.c), rs=rsi(c), v=vixfix(r), M=macd(c), dv=bullDiv(rs,r), N=r.length, W=WIN[TF];
   const divAt=new Array(N).fill(false); dv.forEach(x=>{ if(x.at<N) divAt[x.at]=true; });
   const recent=(arr,i,w)=>{ for(let k=i;k>i-w&&k>=0;k--) if(arr[k]) return k; return -1; };
@@ -80,22 +80,22 @@ function lbl(n){ return n===3?['바닥 후보 강함','#5ad445','rgba(90,212,69,
 function renderCards(){ $('#cards').innerHTML=TK.map(t=>{ const r=rows(t,TF); if(!r) return `<div class="card" data-t="${t}"><div class="n">${t}</div><div class="note">데이터 준비 중</div></div>`;
   const A=analyze(r), s=A.st(A.N-1), L=lbl(s.n); return `<div class="card ${t===CUR?'sel':''} ${s.n>=2?'hot':''}" data-t="${t}" style="--glow:${L[2]||'transparent'}"><div class="n">${t}</div><div class="sc" style="color:${L[1]}">${s.n}<span style="font-size:14px;color:var(--muted)"> / 3</span></div><div class="st" style="color:${L[1]}">${L[0]}</div><div class="note">${fmt(r[A.N-1].c)} · ${sg((r[A.N-1].c/r[A.N-2].c-1)*100)}</div></div>`; }).join(''); }
 function renderDetail(){ const r=rows(CUR,TF); if(!r){ $('#conds').innerHTML='<div class="note">데이터 준비 중</div>'; return; }
-  const A=analyze(r), i=A.N-1, s=A.st(i), W=WIN[TF], u=TF==='1d'?'거래일':'주', ago=k=>k<0?'':(i-k===0?'이번 봉':`${i-k}${u} 전`);
+  const A=analyze(r), i=A.N-1, s=A.st(i), W=WIN[TF], u=({'1d':'거래일','1wk':'주','1mo':'개월'})[TF], ago=k=>k<0?'':(i-k===0?'이번 봉':`${i-k}${u} 전`);
   const last=A.dv.filter(x=>x.at<=i).slice(-1)[0];
   const C=[[s.a>=0,'CM Williams Vix Fix 녹색 (공포 바닥)',`최근 ${W.vf}${u} 안 · ${s.a>=0?ago(s.a):'없음'} · 지금 ${A.v.w[i].toFixed(1)} / 기준 ${Math.min(A.v.up[i]??1e9,A.v.rh[i]).toFixed(1)}`],
     [s.b>=0,'RSI 상승 다이버전스 (가격 저점↓ · RSI 저점↑)',`최근 ${W.div}${u} 안 · ${s.b>=0?ago(s.b):'없음'}${last?` · 마지막: RSI ${A.rs[last.a].toFixed(0)}→${A.rs[last.b].toFixed(0)}, 저가 ${fmt(r[last.a].l)}→${fmt(r[last.b].l)}`:''}`],
     [s.m,'MACD 히스토그램 축소 (음수인데 3봉 연속 줄어듦)',`히스토그램 ${A.M.h[i]==null?'—':A.M.h[i].toFixed(2)} (전 ${A.M.h[i-1]?.toFixed(2)}, 전전 ${A.M.h[i-2]?.toFixed(2)})`]];
   const L=lbl(s.n);
-  $('#conds').innerHTML=`<div style="font-size:15px;padding:4px 0 8px"><b>${CUR} ${TF==='1d'?'일봉':'주봉'}</b> · 바닥 조건 <b style="color:${L[1]};font-size:20px">${s.n}/3</b> <b style="color:${L[1]}">${L[0]}</b></div>`+C.map(([ok,n,v])=>`<div class="r"><span class="${ok?'ok':'no'}">${ok?'●':'○'}</span><span>${n}</span><span class="v">${v}</span></div>`).join('');
+  $('#conds').innerHTML=`<div style="font-size:15px;padding:4px 0 8px"><b>${CUR} ${({'1d':'일봉','1wk':'주봉','1mo':'월봉'})[TF]}</b> · 바닥 조건 <b style="color:${L[1]};font-size:20px">${s.n}/3</b> <b style="color:${L[1]}">${L[0]}</b></div>`+C.map(([ok,n,v])=>`<div class="r"><span class="${ok?'ok':'no'}">${ok?'●':'○'}</span><span>${n}</span><span class="v">${v}</span></div>`).join('');
   // 과거: 2개 이상 겹친 첫 봉
-  const ev=[]; let prev=0; for(let k=60;k<A.N;k++){ const n=A.st(k).n; if(n>=2&&prev<2) ev.push(k); prev=n; }
-  const H=TF==='1d'?[21,63,126]:[4,13,26], HL=TF==='1d'?['1개월','3개월','6개월']:['1개월','3개월','6개월'];
+  const ev=[]; let prev=0; for(let k=(TF==='1mo'?24:60);k<A.N;k++){ const n=A.st(k).n; if(n>=2&&prev<2) ev.push(k); prev=n; }
+  const H=({'1d':[21,63,126],'1wk':[4,13,26],'1mo':[1,3,6]})[TF], HL=TF==='1d'?['1개월','3개월','6개월']:['1개월','3개월','6개월'];
   const st=H.map(h=>{ const xs=ev.map(k=>fwd(r,k,h)).filter(v=>v!=null); return xs.length?{w:xs.filter(v=>v>0).length/xs.length*100,m:xs.sort((a,b)=>a-b)[Math.floor(xs.length/2)],n:xs.length}:null; });
-  $('#hist').innerHTML=`<div class="note" style="padding:0 2px 6px">${CUR} ${TF==='1d'?'일봉':'주봉'}에서 바닥 조건이 2개 이상 처음 겹친 날 ${ev.length}번 · 그날 종가에 샀다면</div><table class="h"><tr><th>기간</th>${HL.map(x=>`<th>${x} 뒤</th>`).join('')}</tr><tr><td>오른 비율</td>${st.map(x=>`<td>${x?x.w.toFixed(0)+'%':'—'}</td>`).join('')}</tr><tr><td>중간 수익률</td>${st.map(x=>`<td>${x?sg(x.m,0):'—'}</td>`).join('')}</tr></table>
+  $('#hist').innerHTML=`<div class="note" style="padding:0 2px 6px">${CUR} ${({'1d':'일봉','1wk':'주봉','1mo':'월봉'})[TF]}에서 바닥 조건이 2개 이상 처음 겹친 날 ${ev.length}번 · 그날 종가에 샀다면</div><table class="h"><tr><th>기간</th>${HL.map(x=>`<th>${x} 뒤</th>`).join('')}</tr><tr><td>오른 비율</td>${st.map(x=>`<td>${x?x.w.toFixed(0)+'%':'—'}</td>`).join('')}</tr><tr><td>중간 수익률</td>${st.map(x=>`<td>${x?sg(x.m,0):'—'}</td>`).join('')}</tr></table>
    <div class="tw" style="margin-top:8px"><table class="h"><tr><th>날짜</th><th>조건</th><th>가격</th>${HL.map(x=>`<th>${x} 뒤</th>`).join('')}</tr>${ev.slice(-12).reverse().map(k=>{ const q=A.st(k); return `<tr><td>${r[k].t.toISOString().slice(0,10)}</td><td>${q.n}/3</td><td>${fmt(r[k].c)}</td>${H.map(h=>{ const f=fwd(r,k,h); return `<td class="${f==null?'':f>=0?'up':'dn'}">${f==null?'진행 중':sg(f,0)}</td>`; }).join('')}</tr>`; }).join('')}</table></div>`;
   if(!window.Plotly) return;
-  const x=r.map(d=>d.t), from=x[Math.max(0,A.N-(TF==='1d'?500:260))], mk=ev.map(k=>k);
-  const lay=LAYOUT(window.innerWidth<600?820:980); lay.xaxis.range=[from,new Date(x[i].getTime()+(TF==='1d'?10:40)*864e5)]; if(TF==='1d') lay.xaxis.rangebreaks=[{bounds:['sat','mon']}];
+  const x=r.map(d=>d.t), from=x[Math.max(0,A.N-({'1d':500,'1wk':260,'1mo':400})[TF])], mk=ev.map(k=>k);
+  const lay=LAYOUT(window.innerWidth<600?820:980); lay.xaxis.range=[from,new Date(x[i].getTime()+({'1d':10,'1wk':40,'1mo':120})[TF]*864e5)]; if(TF==='1d') lay.xaxis.rangebreaks=[{bounds:['sat','mon']}];
   lay.yaxis=AX({domain:[0.55,1],type:'log'}); lay.yaxis2=AX({domain:[0.37,0.51],range:[0,100]}); lay.yaxis3=AX({domain:[0.19,0.33]}); lay.yaxis4=AX({domain:[0,0.15]});
   lay.shapes=[30,70].map(y=>({type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:y,y1:y,line:{color:'#5d6675',width:1,dash:'dot'}})).concat(A.dv.map(d=>({type:'line',xref:'x',yref:'y2',x0:x[d.a],x1:x[d.b],y0:A.rs[d.a],y1:A.rs[d.b],line:{color:'#5ad445',width:2}})));
   lay.annotations=[['RSI 14 · 초록선 = 상승 다이버전스','y2 domain'],['MACD 히스토그램','y3 domain'],['Vix Fix','y4 domain']].map(([t,y])=>({xref:'paper',x:0,yref:y,y:1,yanchor:'top',xanchor:'left',text:t,showarrow:false,font:{size:10,color:'#c9cfd8'}}));
@@ -130,7 +130,7 @@ function dmi(r,n=14,sm=14){ const pd=[0],md=[0]; for(let i=1;i<r.length;i++){ co
   const a=atr(r,n), P=rma(pd,n), M=rma(md,n), pdi=P.map((v,i)=>v==null||!a[i]?null:100*v/a[i]), mdi=M.map((v,i)=>v==null||!a[i]?null:100*v/a[i]);
   const dx=pdi.map((v,i)=>v==null||mdi[i]==null||v+mdi[i]===0?null:100*Math.abs(v-mdi[i])/(v+mdi[i])); return {pdi,mdi,adx:rma(dx,sm)}; }
 /* RSI 상승 다이버전스 (TradingView 'RSI Divergence Indicator' 기본: 피벗 좌5·우5, 간격 5~60봉) */
-function bullDiv(rs,r,L=5,R=5,mn=5,mx=60){ const out=[], piv=[]; for(let i=L;i<rs.length-R;i++){ const v=rs[i]; if(v==null) continue; let ok=true; for(let k=i-L;k<=i+R;k++) if(k!==i&&(rs[k]==null||rs[k]<=v)){ ok=false; break; } if(ok) piv.push(i); }
+function bullDiv(rs,r,L=(TF==='1mo'?3:5),R=(TF==='1mo'?2:5),mn=(TF==='1mo'?3:5),mx=60){ const out=[], piv=[]; for(let i=L;i<rs.length-R;i++){ const v=rs[i]; if(v==null) continue; let ok=true; for(let k=i-L;k<=i+R;k++) if(k!==i&&(rs[k]==null||rs[k]<=v)){ ok=false; break; } if(ok) piv.push(i); }
   for(let j=1;j<piv.length;j++){ const a=piv[j-1], b=piv[j], gap=b-a; if(gap<mn||gap>mx) continue; if(rs[b]>rs[a]&&r[b].l<r[a].l) out.push({a,b,at:b+R}); } return out; }
 function loadScript(src){ return new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
 async function load(){ const q='?'+Math.floor(Date.now()/600000);
@@ -139,7 +139,7 @@ function rows(t,tf){ const k=DATA[t]&&DATA[t].ohlc[t+'_'+tf]; return k?k.map(a=>
 const fwd=(r,i,n)=>i+n<r.length?(r[i+n].c/r[i].c-1)*100:null;
 function draw(){ for(const t of TK){ const r=rows(t,TF); if(!r) continue; } renderCards(); renderDetail(); }
 function ui(){
-  $('#tf').innerHTML=[['1d','일봉'],['1wk','주봉']].map(([k,n])=>`<button class="${k===TF?'on':''}" data-k="${k}">${n}</button>`).join('');
+  $('#tf').innerHTML=[['1d','일봉'],['1wk','주봉'],['1mo','월봉']].map(([k,n])=>`<button class="${k===TF?'on':''}" data-k="${k}">${n}</button>`).join('');
   $('#tf').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; TF=b.dataset.k; try{localStorage.setItem(PG+'-tf',TF);}catch(e){} ui(); draw(); };
   $('#cards').onclick=e=>{ const c=e.target.closest('.card'); if(!c) return; CUR=c.dataset.t; try{localStorage.setItem(PG+'-tk',CUR);}catch(e){} draw(); };
 }

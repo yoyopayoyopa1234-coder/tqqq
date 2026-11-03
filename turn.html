@@ -63,13 +63,13 @@
   <div class="panel"><h2>조건<span class="desc">카드를 누르면 종목이 바뀝니다</span></h2><div class="conds" id="conds">불러오는 중…</div></div>
   <div class="panel"><h2>차트<span class="desc">확대·드래그 가능 · ▲ 표시 = 과거 신호</span></h2><div class="plotbox"><div class="plot" id="plot-x"></div></div></div>
   <div class="panel"><h2>과거 신호 뒤 성적</h2><div class="body" style="padding:12px" id="hist">불러오는 중…</div></div>
-  <div class="panel"><h2>규칙</h2><div class="sum" style="border:0;line-height:1.8"><b>①</b> Supertrend (ATR 10, 배수 3 — TradingView 기본) 초록이면 상승, 빨강이면 하락. 색이 바뀐 날이 전환 신호<br><b>②</b> DMI (14, ADX 14): +DI가 −DI 위면 상승 쪽 우세, 교차한 날이 전환. ADX가 20 아래면 추세 자체가 약함, ADX가 오르면 추세가 강해지는 중<br><b>③</b> 200일선(주봉은 40주선) 위 — 큰 흐름 상승<br><span class="note">3개 모두 = 상승 전환 확인. 최근 5봉 안에 Supertrend 전환이나 DI 교차가 있으면 카드가 빛납니다. 레버리지 ETF는 일봉 헛신호가 많아 주봉을 함께 보세요.</span></div></div>
+  <div class="panel"><h2>규칙</h2><div class="sum" style="border:0;line-height:1.8"><b>①</b> Supertrend (ATR 10, 배수 3 — TradingView 기본) 초록이면 상승, 빨강이면 하락. 색이 바뀐 날이 전환 신호<br><b>②</b> DMI (14, ADX 14): +DI가 −DI 위면 상승 쪽 우세, 교차한 날이 전환. ADX가 20 아래면 추세 자체가 약함, ADX가 오르면 추세가 강해지는 중<br><b>③</b> 200일선(주봉 40주선 · 월봉 10개월선) 위 — 큰 흐름 상승<br><span class="note">3개 모두 = 상승 전환 확인. 최근 5봉 안에 Supertrend 전환이나 DI 교차가 있으면 카드가 빛납니다. 레버리지 ETF는 일봉 헛신호가 많아 주봉을 함께 보세요.</span></div></div>
   <div class="status">데이터: Yahoo Finance · 15분마다 갱신 · TradingView 기본 지표와 같은 공식 · 투자 자문 아님</div>
 </div>
 <script>
 
 const PG='turn';
-function analyze(r){ const c=r.map(d=>d.c), S=supertrend(r), D=dmi(r), m200=sma(c,TF==='1d'?200:40), N=r.length;
+function analyze(r){ const c=r.map(d=>d.c), S=supertrend(r), D=dmi(r), m200=sma(c,({'1d':200,'1wk':40,'1mo':10})[TF]), N=r.length;
   const flip=i=>i>0&&S.dir[i]!==S.dir[i-1], cross=i=>i>0&&D.pdi[i]!=null&&D.mdi[i]!=null&&D.pdi[i-1]!=null&&(D.pdi[i]>D.mdi[i])!==(D.pdi[i-1]>D.mdi[i-1]);
   const since=(f,i)=>{ let k=i; while(k>0&&f(k-1)===f(i)) k--; return k; };
   const st=i=>{ const s=S.dir[i]===1, d=D.pdi[i]>D.mdi[i], a=c[i]>(m200[i]??Infinity); return {s,d,a,n:s+d+a,adx:D.adx[i],adxUp:D.adx[i]>(D.adx[i-3]??D.adx[i])}; };
@@ -80,27 +80,27 @@ function renderCards(){ $('#cards').innerHTML=TK.map(t=>{ const r=rows(t,TF); if
   for(let k=i;k>i-5&&k>0;k--){ if(A.flip(k)) fresh.push('Supertrend '+(A.S.dir[k]===1?'초록':'빨강')+' 전환'); if(A.cross(k)) fresh.push((A.D.pdi[k]>A.D.mdi[k]?'+DI↑':'−DI↑')+' 교차'); }
   return `<div class="card ${t===CUR?'sel':''} ${fresh.length?'hot':''}" data-t="${t}" style="--glow:${L[1]}"><div class="n">${t}</div><div class="sc" style="color:${L[1]}">${s.n}<span style="font-size:14px;color:var(--muted)"> / 3</span></div><div class="st" style="color:${L[1]}">${L[0]}</div><div class="note">${fresh.length?'<b style="color:#f0b429">최근 5봉: '+[...new Set(fresh)].join(' · ')+'</b>':fmt(r[i].c)+' · '+sg((r[i].c/r[i-1].c-1)*100)}</div></div>`; }).join(''); }
 function renderDetail(){ const r=rows(CUR,TF); if(!r){ $('#conds').innerHTML='<div class="note">데이터 준비 중</div>'; return; }
-  const A=analyze(r), i=A.N-1, s=A.st(i), L=lbl(s.n), u=TF==='1d'?'거래일':'주', d10=r=>r.t.toISOString().slice(0,10);
-  const ks=A.since(k=>A.S.dir[k],i), kd=A.since(k=>A.D.pdi[k]>A.D.mdi[k],i), ka=A.since(k=>A.c[k]>(A.m200[k]??Infinity),i), ma=TF==='1d'?'200일선':'40주선(≈200일)';
+  const A=analyze(r), i=A.N-1, s=A.st(i), L=lbl(s.n), u=({'1d':'거래일','1wk':'주','1mo':'개월'})[TF], d10=r=>r.t.toISOString().slice(0,10);
+  const ks=A.since(k=>A.S.dir[k],i), kd=A.since(k=>A.D.pdi[k]>A.D.mdi[k],i), ka=A.since(k=>A.c[k]>(A.m200[k]??Infinity),i), ma=({'1d':'200일선','1wk':'40주선(≈200일)','1mo':'10개월선(≈200일)'})[TF];
   const C=[[s.s,`Supertrend (10, 3) ${s.s?'초록 — 상승':'빨강 — 하락'}`,`${d10(r[ks])}부터 ${i-ks}${u}째 · 전환선 ${fmt(A.S.line[i])} (${sg((A.S.line[i]/A.c[i]-1)*100)})`],
     [s.d,`DMI: +DI ${s.d?'>':'<'} −DI`,`+DI ${A.D.pdi[i].toFixed(1)} / −DI ${A.D.mdi[i].toFixed(1)} · ${d10(r[kd])}부터 ${i-kd}${u}째 · ADX ${s.adx.toFixed(1)} ${s.adxUp?'↑ 추세 강해짐':'↓ 추세 약해짐'}${s.adx<20?' (추세 약함)':''}`],
     [s.a,`${ma} ${s.a?'위':'아래'} (큰 흐름)`,`${ma} ${fmt(A.m200[i])} (${sg((A.c[i]/A.m200[i]-1)*100)}) · ${d10(r[ka])}부터`]];
-  $('#conds').innerHTML=`<div style="font-size:15px;padding:4px 0 8px"><b>${CUR} ${TF==='1d'?'일봉':'주봉'}</b> · 상승 조건 <b style="color:${L[1]};font-size:20px">${s.n}/3</b> <b style="color:${L[1]}">${L[0]}</b></div>`+C.map(([ok,n,v])=>`<div class="r"><span class="${ok?'ok':'no'}">${ok?'●':'○'}</span><span>${n}</span><span class="v">${v}</span></div>`).join('');
-  const ev=[]; for(let k=60;k<A.N;k++) if(A.flip(k)) ev.push(k);
-  const H=TF==='1d'?[21,63,126]:[4,13,26], HL=['1개월','3개월','6개월'];
+  $('#conds').innerHTML=`<div style="font-size:15px;padding:4px 0 8px"><b>${CUR} ${({'1d':'일봉','1wk':'주봉','1mo':'월봉'})[TF]}</b> · 상승 조건 <b style="color:${L[1]};font-size:20px">${s.n}/3</b> <b style="color:${L[1]}">${L[0]}</b></div>`+C.map(([ok,n,v])=>`<div class="r"><span class="${ok?'ok':'no'}">${ok?'●':'○'}</span><span>${n}</span><span class="v">${v}</span></div>`).join('');
+  const ev=[]; for(let k=(TF==='1mo'?24:60);k<A.N;k++) if(A.flip(k)) ev.push(k);
+  const H=({'1d':[21,63,126],'1wk':[4,13,26],'1mo':[1,3,6]})[TF], HL=['1개월','3개월','6개월'];
   const grp=dir=>{ const e=ev.filter(k=>A.S.dir[k]===dir); return H.map(h=>{ const xs=e.map(k=>fwd(r,k,h)).filter(v=>v!=null); return xs.length?{w:xs.filter(v=>v>0).length/xs.length*100,m:xs.sort((a,b)=>a-b)[Math.floor(xs.length/2)],n:xs.length}:null; }); };
   const g1=grp(1), g2=grp(-1), row=(n,g)=>`<tr><td>${n}</td>${g.map(x=>`<td>${x?`${x.w.toFixed(0)}% · ${sg(x.m,0)}`:'—'}</td>`).join('')}</tr>`;
-  $('#hist').innerHTML=`<div class="note" style="padding:0 2px 6px">${CUR} ${TF==='1d'?'일봉':'주봉'} Supertrend 전환 ${ev.length}번 · 전환일 종가 기준 (오른 비율 · 중간 수익률)</div><table class="h"><tr><th>전환</th>${HL.map(x=>`<th>${x} 뒤</th>`).join('')}</tr>${row('초록 전환 (상승)',g1)}${row('빨강 전환 (하락)',g2)}</table>
+  $('#hist').innerHTML=`<div class="note" style="padding:0 2px 6px">${CUR} ${({'1d':'일봉','1wk':'주봉','1mo':'월봉'})[TF]} Supertrend 전환 ${ev.length}번 · 전환일 종가 기준 (오른 비율 · 중간 수익률)</div><table class="h"><tr><th>전환</th>${HL.map(x=>`<th>${x} 뒤</th>`).join('')}</tr>${row('초록 전환 (상승)',g1)}${row('빨강 전환 (하락)',g2)}</table>
    <div class="tw" style="margin-top:8px"><table class="h"><tr><th>날짜</th><th>전환</th><th>가격</th>${HL.map(x=>`<th>${x} 뒤</th>`).join('')}</tr>${ev.slice(-12).reverse().map(k=>`<tr><td>${d10(r[k])}</td><td style="color:${A.S.dir[k]===1?'#5ad445':'#f23645'};font-weight:700">${A.S.dir[k]===1?'▲ 초록':'▼ 빨강'}</td><td>${fmt(r[k].c)}</td>${H.map(h=>{ const f=fwd(r,k,h); return `<td class="${f==null?'':f>=0?'up':'dn'}">${f==null?'진행 중':sg(f,0)}</td>`; }).join('')}</tr>`).join('')}</table></div>`;
   if(!window.Plotly) return;
-  const x=r.map(d=>d.t), from=x[Math.max(0,A.N-(TF==='1d'?500:260))];
-  const lay=LAYOUT(window.innerWidth<600?820:980); lay.xaxis.range=[from,new Date(x[i].getTime()+(TF==='1d'?10:40)*864e5)]; if(TF==='1d') lay.xaxis.rangebreaks=[{bounds:['sat','mon']}];
+  const x=r.map(d=>d.t), from=x[Math.max(0,A.N-({'1d':500,'1wk':260,'1mo':400})[TF])];
+  const lay=LAYOUT(window.innerWidth<600?820:980); lay.xaxis.range=[from,new Date(x[i].getTime()+({'1d':10,'1wk':40,'1mo':120})[TF]*864e5)]; if(TF==='1d') lay.xaxis.rangebreaks=[{bounds:['sat','mon']}];
   lay.yaxis=AX({domain:[0.42,1],type:'log'}); lay.yaxis2=AX({domain:[0,0.36]});
   lay.shapes=[{type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:20,y1:20,line:{color:'#5d6675',width:1,dash:'dot'}}];
   lay.annotations=[{xref:'paper',x:0,yref:'y2 domain',y:1,yanchor:'top',xanchor:'left',text:'DMI 14 · 초록 +DI · 빨강 −DI · 노랑 ADX (20 아래 = 추세 약함)',showarrow:false,font:{size:10,color:'#c9cfd8'}}];
   const segU=A.S.line.map((v,k)=>A.S.dir[k]===1?v:null), segD=A.S.line.map((v,k)=>A.S.dir[k]===-1?v:null), fl=ev;
   Plotly.react('plot-x',[CANDLE(r,CUR),
-    {x,y:A.m200,mode:'lines',name:TF==='1d'?'200일선':'40주선',line:{color:'#ff9800',width:2.5}},
+    {x,y:A.m200,mode:'lines',name:({'1d':'200일선','1wk':'40주선','1mo':'10개월선'})[TF],line:{color:'#ff9800',width:2.5}},
     {x,y:segU,mode:'lines',name:'Supertrend 상승',line:{color:'#5ad445',width:2}},{x,y:segD,mode:'lines',name:'Supertrend 하락',line:{color:'#f23645',width:2}},
     {x:fl.map(k=>x[k]),y:fl.map(k=>A.S.dir[k]===1?r[k].l*0.93:r[k].h*1.07),mode:'markers',name:'전환',marker:{symbol:fl.map(k=>A.S.dir[k]===1?'triangle-up':'triangle-down'),size:13,color:fl.map(k=>A.S.dir[k]===1?'#5ad445':'#f23645')},hovertemplate:'%{x}<extra></extra>'},
     {x,y:A.D.pdi,mode:'lines',name:'+DI',yaxis:'y2',line:{color:'#5ad445',width:1.4}},{x,y:A.D.mdi,mode:'lines',name:'−DI',yaxis:'y2',line:{color:'#f23645',width:1.4}},{x,y:A.D.adx,mode:'lines',name:'ADX',yaxis:'y2',line:{color:'#f0b429',width:2}}],lay,CFG);
@@ -139,7 +139,7 @@ function rows(t,tf){ const k=DATA[t]&&DATA[t].ohlc[t+'_'+tf]; return k?k.map(a=>
 const fwd=(r,i,n)=>i+n<r.length?(r[i+n].c/r[i].c-1)*100:null;
 function draw(){ for(const t of TK){ const r=rows(t,TF); if(!r) continue; } renderCards(); renderDetail(); }
 function ui(){
-  $('#tf').innerHTML=[['1d','일봉'],['1wk','주봉']].map(([k,n])=>`<button class="${k===TF?'on':''}" data-k="${k}">${n}</button>`).join('');
+  $('#tf').innerHTML=[['1d','일봉'],['1wk','주봉'],['1mo','월봉']].map(([k,n])=>`<button class="${k===TF?'on':''}" data-k="${k}">${n}</button>`).join('');
   $('#tf').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; TF=b.dataset.k; try{localStorage.setItem(PG+'-tf',TF);}catch(e){} ui(); draw(); };
   $('#cards').onclick=e=>{ const c=e.target.closest('.card'); if(!c) return; CUR=c.dataset.t; try{localStorage.setItem(PG+'-tk',CUR);}catch(e){} draw(); };
 }
