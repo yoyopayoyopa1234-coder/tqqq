@@ -39,14 +39,6 @@
   /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
   @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
 
-  .sg5 { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin:6px 0 4px; }
-  .sg5 > div { border-radius:10px; padding:10px 4px; text-align:center; font-weight:800; font-size:14px; color:rgba(255,255,255,.45); background:var(--b); opacity:.35; transition:all .6s; border:1px solid transparent; }
-  .sg5 > div small { display:block; font-size:10.5px; font-weight:500; margin-top:2px; }
-  .sg5 > div.on { opacity:1; color:#fff; border-color:var(--c); box-shadow:0 0 22px var(--c); animation:sgp 1.8s ease-in-out infinite; transform:translateY(-2px); }
-  @keyframes sgp { 0%,100%{ box-shadow:0 0 8px var(--c);} 50%{ box-shadow:0 0 28px var(--c);} }
-  .sgbar { position:relative; height:8px; border-radius:4px; background:linear-gradient(90deg,#1b5e20,#5ad445,#5d6675,#ff8a65,#c62828); margin:18px 2px 6px; }
-  .sgbar i { position:absolute; top:-7px; width:4px; height:22px; border-radius:2px; background:#fff; box-shadow:0 0 10px #fff; transform:translateX(-50%); transition:left 1.4s cubic-bezier(.2,.9,.2,1); }
-  table.sgt { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; } table.sgt td, table.sgt th { padding:5px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; } table.sgt td:first-child, table.sgt th:first-child { text-align:left; } table.sgt th { color:var(--muted); font-weight:500; }
 </style>
 </head>
 <body>
@@ -60,11 +52,6 @@
       <button class="btn" id="refresh" type="button">새로고침</button>
     </span>
   </header>
-
-  <div class="panel">
-    <h2>고점·저점 신호기<span class="desc">200일선 · 이격도 · RSI(일·월) · 월봉 볼밴 · Vix Fix · 공탐 · FedWatch · Global M2 — 9개를 합쳐 5단계로</span></h2>
-    <div class="sum" id="sig-body" style="border-bottom:0">불러오는 중…</div>
-  </div>
 
   <div class="panel">
     <h2>일봉<span class="desc">200일선 · 이격도 (100=0 · 160=+60 · 50=−50)</span></h2>
@@ -130,49 +117,6 @@ const hline = (y,yref,color,dash='dot') => ({type:'line',xref:'paper',x0:0,x1:1,
 const cfg = { responsive:true, displaylogo:false, scrollZoom:true, modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d','toImage'] };
 const pct = (a,b) => { const p=(a/b-1)*100; return `<span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toFixed(2)}%</span>`; };
 const fmt = v => v.toLocaleString('en-US',{maximumFractionDigits:2});
-
-const SIGK='SOXL';
-/* ── 고점·저점 신호기 v2: 가격(200일선·이격도·RSI·월봉 볼밴·Vix Fix) + 시장(공탐·FedWatch·Global M2) — 각 −2(바닥)~+2(꼭지) 평균 ── */
-const SG_LV=[['최저점','#1b8e3a','바닥권 — 공포·과매도가 겹친 구간'],['저점','#5ad445','눌림 — 분할 매수 검토 구간'],['보통','#8a93a3','중립'],['고점','#ff8a65','과열 시작 — 신규 매수 자제'],['최고점','#f23645','꼭지권 — 과열·탐욕이 겹친 구간']];
-const sgLevel=s=>s<=-1.25?0:s<=-0.5?1:s<0.5?2:s<1.25?3:4;
-const band5=(v,cuts)=>v==null?null:v<=cuts[0]?-2:v<=cuts[1]?-1:v<cuts[2]?0:v<cuts[3]?1:2;
-async function sigGauge(){
- try{
-  const q='?'+Math.floor(Date.now()/600000);
-  const [TQ,FW]=await Promise.all([fetch('tq.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('fedwatch.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
-  const r=ohlc(SIGK+'_1d'), mo=ohlc(SIGK+'_1mo'), c=r.map(d=>d.c), N=r.length, i=N-1, m200=sma(c,200);
-  const disp=c.map((v,k)=>m200[k]==null?null:(v/m200[k]-1)*100), sorted=disp.filter(v=>v!=null).sort((a,b)=>a-b);
-  const pct=(arr,v)=>{ let lo=0,hi=arr.length; while(lo<hi){ const m=(lo+hi)>>1; if(arr[m]<v) lo=m+1; else hi=m; } return lo/arr.length*100; };
-  const slope=m200.map((v,k)=>v==null||k<20||m200[k-20]==null?null:(v/m200[k-20]-1)*100), ssorted=slope.filter(v=>v!=null).sort((a,b)=>a-b);
-  const rsD=rsi(c), vf=vixfix(r), mc=mo.map(d=>d.c), j=mo.length-1, rsM=(typeof qqqRsi==='function'?qqqRsi(mo):rsi(mc)), B=bb(mc), pbM=(mc[j]-B.lo[j])/(B.up[j]-B.lo[j]);
-  let vx=false; for(let k=i;k>i-5;k--) if(vf.sig[k]) vx=true; const vxNear=vf.w[i]>=vf.rh[i]*0.85;
-  const fg=TQ&&TQ.fg&&TQ.fg.score;
-  let fwd=null, fwTxt='—'; if(FW&&FW.fw&&FW.fw.meets&&FW.fw.meets.length){ const ms=FW.fw.meets, lim=Date.now()+190*864e5, last=ms.filter(m=>new Date(m.date)<=lim).slice(-1)[0]||ms[0]; fwd=(last.exp-(FW.fw.lo+0.125))*100; fwTxt=`${last.date}까지 ${fwd>=0?'+':''}${fwd.toFixed(0)}bp (지금 ${(FW.fw.lo*100).toFixed(0)}-${(FW.fw.hi*100).toFixed(0)})`; }
-  let m2c=null, m2Txt='—'; const M2=DATA&&DATA.m2&&DATA.m2.rows; if(M2&&M2.length>70){ const a=M2[M2.length-1], b=M2[Math.max(0,M2.length-66)]; m2c=(a[1]/b[1]-1)*100; m2Txt=`${a[1].toFixed(2)}조$ · 3개월 ${m2c>=0?'+':''}${m2c.toFixed(2)}%`; }
-  const dpP=pct(sorted,disp[i]), slP=pct(ssorted,slope[i]);
-  const C=[
-   ['200일선 이격도 (역대 백분위)',`${disp[i].toFixed(1)}% · 백분위 ${dpP.toFixed(0)}`,band5(dpP,[10,30,70,90]),'≤10 / ≤30 / 30~70 / ≥70 / ≥90','가격'],
-   ['200일선 방향 (20일 변화, 역대 백분위)',`${slope[i]>=0?'+':''}${slope[i].toFixed(2)}% · 백분위 ${slP.toFixed(0)}`,band5(slP,[10,30,70,90]),'≤10 / ≤30 / 30~70 / ≥70 / ≥90','가격'],
-   ['RSI 14 (일봉)',rsD[i].toFixed(1),band5(rsD[i],[30,40,60,70]),'≤30 / ≤40 / 40~60 / ≥60 / ≥70','가격'],
-   [`RSI 14 (월봉${SIGK==='TQQQ'?' · QQQ':''})`,rsM[j].toFixed(1),band5(rsM[j],[30,40,60,70]),'≤30 / ≤40 / 40~60 / ≥60 / ≥70','가격'],
-   ['볼린저 %b (월봉)',pbM.toFixed(2),band5(pbM,[0,0.2,0.8,1]),'≤0 / ≤0.2 / 0.2~0.8 / ≥0.8 / ≥1','가격'],
-   ['Williams Vix Fix (일봉)',vx?'녹색 — 공포 투매':vxNear?'기준선 근접':'꺼짐',vx?-2:vxNear?-1:0,'녹색 −2 · 근접 −1 · 꺼짐 0','가격'],
-   ['CNN 공포·탐욕 (공탐)',fg==null?'—':fg.toFixed(0),band5(fg,[25,45,55,75]),'≤25 / ≤45 / 45~55 / ≥55 / ≥75','시장'],
-   ['FedWatch (6개월 내 금리 예상 변화)',fwTxt,band5(fwd,[-50,-20,20,50]),'≤−50bp / ≤−20 / ±20 / ≥+20 / ≥+50 (인하=바닥 쪽, 인상=꼭지 쪽)','시장'],
-   ['Global M2 (3개월 변화)',m2Txt,band5(m2c,[-3,-1,1,3]),'≤−3% / ≤−1 / ±1 / ≥+1 / ≥+3 (위축=바닥 쪽, 과잉=꼭지 쪽)','시장']];
-  const got=C.filter(x=>x[2]!=null), S=got.reduce((a,x)=>a+x[2],0)/got.length, L=sgLevel(S), pos=Math.max(2,Math.min(98,(S+2)/4*100));
-  const sc=v=>v==null?'—':`<b style="color:${v<0?'#5ad445':v>0?'#ff8a65':'#8a93a3'}">${v>0?'+':''}${v}</b>`;
-  const sub=g=>{ const a=got.filter(x=>x[4]===g); return a.length?a.reduce((s,x)=>s+x[2],0)/a.length:null; }, sp=sub('가격'), sm=sub('시장');
-  $('#sig-body').innerHTML=`<div style="font-size:15px">${r[i].t.toISOString().slice(0,10)} 기준 · 종합 <b style="font-size:20px;color:${SG_LV[L][1]}">${S>0?'+':''}${S.toFixed(2)}</b> <span class="note">(−2 바닥 ~ +2 꼭지 · ${got.length}개 지표 평균)</span> → <b style="font-size:20px;color:${SG_LV[L][1]}">${SG_LV[L][0]}</b> <span style="color:#c9cfd8">${SG_LV[L][2]}</span></div>
-    <div class="note" style="margin-top:2px">가격 지표 ${sp==null?'—':(sp>0?'+':'')+sp.toFixed(2)} · 시장 지표 ${sm==null?'—':(sm>0?'+':'')+sm.toFixed(2)}</div>
-    <div class="sgbar"><i id="sgpin" style="left:50%"></i></div>
-    <div class="sg5">${SG_LV.map((l,k)=>`<div class="${k===L?'on':''}" style="--c:${l[1]};--b:${l[1]}33">${l[0]}<small>${['−2 ~ −1.25','−1.25 ~ −0.5','−0.5 ~ +0.5','+0.5 ~ +1.25','+1.25 ~ +2'][k]}</small></div>`).join('')}</div>
-    <div style="overflow-x:auto"><table class="sgt" style="margin-top:8px"><tr><th>지표</th><th>지금 값</th><th>점수</th><th>기준 (−2 / −1 / 0 / +1 / +2)</th></tr>
-      ${C.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${sc(x[2])}</td><td class="note">${x[3]}</td></tr>`).join('')}</table></div>
-    <div class="note" style="margin-top:6px">가격 지표 6개는 ${SIGK} 자체, 시장 지표 3개(공탐·FedWatch·M2)는 모든 종목 공통 · 공탐·FedWatch는 과거 기록이 짧아 백테스트 없이 지금 값만 봅니다 · 바닥·꼭지를 맞히는 도구가 아니라 지금 위치를 보는 참고용 · 투자 자문 아님</div>`;
-  requestAnimationFrame(()=>setTimeout(()=>{ const p=document.getElementById('sgpin'); if(p) p.style.left=pos+'%'; },60));
- }catch(e){ $('#sig-body').innerHTML='<span class="err">신호기 오류: '+e.message+'</span>'; }
-}
 
 function chartD(){
   const r = ohlc('SOXL_1d'), x=r.map(d=>d.t), c=r.map(d=>d.c), i=r.length-1;
@@ -265,7 +209,7 @@ async function init(){
     $('#today').innerHTML += ' · 데이터 ' + u.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + ' 기준'
       + (hrs>26 ? ' <span class="err">(갱신이 멈춤 — 확인 필요)</span>' : '');
   }
-  safe(sigGauge,'#sig-body'); safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
+  safe(chartD,'#sum-d'); safe(chartB,'#sum-b'); safe(chartC,'#sum-c');
 }
 $('#m2off').addEventListener('input',e=>{ $('#m2offv').textContent=e.target.value; safe(chartB,'#sum-b'); });
 $('#refresh').addEventListener('click',()=>{ DATA=null; $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); init(); });
