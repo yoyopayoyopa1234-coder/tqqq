@@ -60,7 +60,7 @@
   </div>
 
   <div class="panel">
-    <h2>Squeeze Momentum (일봉)<span class="desc">LazyBear · 가운데 점: 노랑 = 스퀴즈 ON(변동성 압축) · 회색 = 풀림 · 파랑 = 해당 없음 · 막대: 연두/진초록 = 상승 강해짐/약해짐 · 빨강/암적 = 하락 강해짐/약해짐</span></h2>
+    <h2>Squeeze Momentum (월봉)<span class="desc">LazyBear · 가운데 점: 노랑 = 스퀴즈 ON(변동성 압축) · 회색 = 풀림 · 파랑 = 해당 없음 · 막대: 연두/진초록 = 상승 강해짐/약해짐 · 빨강/암적 = 하락 강해짐/약해짐</span></h2>
     <div class="sum" id="sum-s">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-s"></div></div>
   </div>
@@ -127,7 +127,7 @@ const cfg = { responsive:true, displaylogo:false, scrollZoom:true, modeBarButton
 const pct = (a,b) => { const p=(a/b-1)*100; return `<span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toFixed(2)}%</span>`; };
 const fmt = v => v.toLocaleString('en-US',{maximumFractionDigits:2});
 
-const SQK='MSTR_1d';
+const SQK='MSTR_1mo';
 /* Squeeze Momentum Indicator [LazyBear] — BB 20/2 · KC 20/1.5(TR) · 모멘텀 = linreg(종가 − ((20일 최고+최저)/2 + SMA20)/2, 20) */
 function sqzmom(r,len=20,mult=2,kl=20,km=1.5){
   const N=r.length, c=r.map(d=>d.c), S=k=>{ const o=new Array(N).fill(null); let s=0; for(let i=0;i<N;i++){ s+=k[i]; if(i>=len) s-=k[i-len]; if(i>=len-1) o[i]=s/len; } return o; };
@@ -151,8 +151,8 @@ function chartS(){
   const mom=v[i]>0?(v[i]>v[i-1]?['상승 모멘텀 강해짐','#00e676']:['상승 모멘텀 약해짐','#008f4c']):(v[i]<v[i-1]?['하락 모멘텀 강해짐','#ff1744']:['하락 모멘텀 약해짐 (바닥 신호 후보)','#e57373']);
   const rel=Q.on[i]?`<b style="color:#f0b429">스퀴즈 ON — 변동성 압축 중 ${run}봉째</b> (풀리는 방향으로 큰 움직임 대기)`:(Q.on[i-1]?`<b style="color:#f0b429">스퀴즈 방금 풀림 (FIRE)</b> — 모멘텀 방향(${v[i]>0?'위':'아래'})으로 움직임 시작 신호`:`스퀴즈 OFF ${run}봉째`);
   $('#sum-s').innerHTML=`${rel} · 모멘텀 <b style="color:${mom[1]}">${v[i]>=0?'+':''}${fmt(v[i])}</b> <b style="color:${mom[1]}">${mom[0]}</b>`;
-  const L=base(PH(420,360)); L.yaxis=ax({zeroline:false}); const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=(new Date().getFullYear()-2)));
-  L.xaxis.range=[x[back], new Date(x[i].getTime()+10*864e5)]; L.xaxis.rangebreaks=[{bounds:['sat','mon']}];
+  const L=base(PH(420,360)); L.yaxis=ax({zeroline:false}); const back=Math.max(0,x.findIndex(t=>t.getFullYear()>=2012));
+  L.xaxis.range=[x[back], new Date(x[i].getTime()+60*864e5)];
   { const vis=v.slice(back).filter(y=>y!=null), m=Math.max(...vis.map(Math.abs))*1.1; L.yaxis.range=[-m,m]; }
   Plotly.react('plot-s',[{type:'bar',x,y:v,name:'모멘텀',marker:{color:col},hovertemplate:'%{y:.2f}'},
     {x,y:x.map(()=>0),mode:'markers',name:'스퀴즈',marker:{color:dot,size:5,line:{color:'#8a93a3',width:.5}},hovertemplate:'%{x}<extra></extra>'}],L,cfg);
