@@ -69,7 +69,7 @@
   </div>
 
   <div class="panel">
-    <h2>월봉<span class="desc">BB 20/2 · RSI 14 (QQQ) + 주황 = RSI의 200일선(10개월 평균) · Williams Vix Fix 22/20/2/50/0.85</span></h2>
+    <h2>월봉<span class="desc">BB 20/2 · RSI 14 (QQQ) · Williams Vix Fix 22/20/2/50/0.85</span></h2>
     <div class="sum" id="sum-c">불러오는 중…</div>
     <div class="plotbox"><div class="plot" id="plot-c"></div></div>
   </div>
@@ -215,7 +215,6 @@ function chartC(){
     line(x,b.mid,'#2962ff','BB 중심',{line:{color:'#2962ff',width:1.2}}),
     candle(r),
     line(x,rs,'#7c7cf0','QQQ RSI 14',{yaxis:'y2', line:{color:'#7c7cf0',width:1.8}}),
-    line(x,(()=>{ const o=new Array(rs.length).fill(null); let s=0,n=0; for(let k=0;k<rs.length;k++){ if(rs[k]!=null){ s+=rs[k]; n++; } if(k>=10&&rs[k-10]!=null){ s-=rs[k-10]; n--; } if(n===10) o[k]=s/10; } return o; })(),'#ff9800','RSI 200일선(10개월)',{yaxis:'y2', line:{color:'#ff9800',width:2.4}}),
     { type:'bar', x, y:v.w, name:'Vix Fix', marker:{color:v.sig.map(g=>g?'#5ad445':'#e05a5a')}, yaxis:'y3' },
     line(x, v.rh, '#f0a030', 'RangeHigh', { yaxis:'y3', line:{color:'#f0a030',width:2.5} }) ], L, cfg);
 }
