@@ -1,6 +1,6 @@
 {
- "at": "2026-11-05T02:14+00:00",
- "at_kst": "11/05 11:14",
+ "at": "2026-11-05T02:28+00:00",
+ "at_kst": "11/05 11:28",
  "data": {
   "date": "2026-11-04",
   "bar_final": true,
@@ -9,7 +9,7 @@
   "qqq": 691.95,
   "spx": 7688.6201171875,
   "sp200": 7320.35,
-  "tqqq": 33.708887,
+  "tqqq": 62.24,
   "dd52": -8.93,
   "dis": 1.67,
   "spm": 5.03
@@ -42,19 +42,17 @@
   },
   {
    "name": "TQQQ 종가 (40년 파일 ↔ 실시간 파일)",
-   "ok": false,
-   "detail": "33.71 / 62.24"
+   "ok": true,
+   "detail": "62.24 / 62.24"
   },
   {
    "name": "경계 근처 지표",
-   "ok": false,
-   "detail": "TQQQ 신호판 TS선 46.68 — TQQQ 33.71, -27.8% 위"
+   "ok": true,
+   "detail": "모든 지표가 기준선에서 1%p 이상 떨어져 있음"
   }
  ],
  "notes": [],
- "near": [
-  "TQQQ 신호판 TS선 46.68 — TQQQ 33.71, -27.8% 위"
- ],
+ "near": [],
  "signals": {
   "종합형": {
    "text": "QQQ",
@@ -77,16 +75,16 @@
    "ts_line": null
   },
   "절충형": {
-   "text": "SPYM 40% + SGOV 60%",
+   "text": "TQQQ 60% + SPYM 40%",
    "level": "T",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 46.68
   },
   "반반형": {
-   "text": "SPYM 50% + SGOV 50%",
+   "text": "TQQQ 50% + SPYM 50%",
    "level": "T",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 46.68
   },
   "과열형": {
    "text": "QQQ",
@@ -95,32 +93,32 @@
    "ts_line": null
   },
   "상시형": {
-   "text": "SPYM 20% + SGOV 80%",
+   "text": "TQQQ 80% + SPYM 20%",
    "level": "T",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 46.68
   },
   "삼단형": {
-   "text": "SGOV (TS)",
+   "text": "TQQQ",
    "level": "T",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 46.68
   },
   "고점형": {
-   "text": "SPYM 50% + SGOV 50%",
+   "text": "TQQQ 50% + SPYM 50%",
    "level": "T",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 46.68
   },
   "최고점형": {
-   "text": "SPYM 50% + SGOV 50%",
+   "text": "TQQQ 50% + SPYM 50%",
    "level": "T",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 52.9
   },
   "분산형": {
-   "text": "TQQQ 0% + SPYM 17% + SGOV 83%",
-   "level": "Mc/Tc/Tc",
+   "text": "TQQQ 53% + SPYM 17% + SGOV 30%",
+   "level": "M/T/Tc",
    "cut": null,
    "ts_line": null
   },
@@ -148,18 +146,18 @@
    "mdd_to": "2023-04-25"
   },
   "절충형": {
-   "c": 23.6,
+   "c": 24.61,
    "m": -40.96,
    "n": 24,
-   "win": 70.8,
+   "win": 75.0,
    "mdd_from": "2000-03-09",
    "mdd_to": "2000-05-23"
   },
   "반반형": {
-   "c": 21.99,
+   "c": 22.79,
    "m": -37.16,
    "n": 24,
-   "win": 75.0,
+   "win": 79.2,
    "mdd_from": "2000-03-09",
    "mdd_to": "2000-05-23"
   },
@@ -172,31 +170,31 @@
    "mdd_to": "2006-07-21"
   },
   "상시형": {
-   "c": 29.1,
+   "c": 30.59,
    "m": -52.82,
    "n": 20,
-   "win": 80.0,
+   "win": 85.0,
    "mdd_from": "2021-11-19",
    "mdd_to": "2023-03-10"
   },
   "삼단형": {
-   "c": 31.13,
-   "m": -58.51,
+   "c": 33.15,
+   "m": -56.9,
    "n": 24,
-   "win": 70.8,
-   "mdd_from": "2026-10-06",
-   "mdd_to": "2026-11-04"
+   "win": 75.0,
+   "mdd_from": "2021-11-19",
+   "mdd_to": "2022-04-22"
   },
   "고점형": {
-   "c": 24.68,
+   "c": 25.49,
    "m": -44.9,
    "n": 20,
-   "win": 80.0,
+   "win": 85.0,
    "mdd_from": "2021-11-19",
    "mdd_to": "2023-03-10"
   },
   "최고점형": {
-   "c": 21.14,
+   "c": 21.94,
    "m": -32.42,
    "n": 18,
    "win": 88.9,
@@ -204,14 +202,14 @@
    "mdd_to": "1998-08-31"
   },
   "분산형": {
-   "c": 28.43,
+   "c": 30.1,
    "m": -57.04,
    "n": 20,
-   "win": 75.0,
+   "win": 80.0,
    "mdd_from": "2021-11-19",
    "mdd_to": "2023-03-10"
   }
  },
- "level": "err",
- "verdict": "데이터 경고: TQQQ 종가 (40년 파일 ↔ 실시간 파일) · 경계 근처 지표"
+ "level": "ok",
+ "verdict": "데이터 이상 없음"
 }
