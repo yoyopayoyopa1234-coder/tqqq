@@ -1,19 +1,19 @@
 {
- "at": "2026-11-06T18:22+00:00",
- "at_kst": "11/07 03:22",
+ "at": "2026-11-06T18:31+00:00",
+ "at_kst": "11/07 03:31",
  "market": "unknown",
  "verdict": "신호 판단은 일치, 수치 2건 차이 — 매수·탈출 판단에는 영향이 없습니다.",
  "level": "minor",
  "checks": [
   {
    "name": "SPX 가격",
-   "ok": false,
-   "detail": "-0.031%"
+   "ok": true,
+   "detail": "+0.008%"
   },
   {
    "name": "SPX 200일선",
    "ok": true,
-   "detail": "-0.001%"
+   "detail": "-0.000%"
   },
   {
    "name": "SPX 밴드 위치",
@@ -32,81 +32,75 @@
   },
   {
    "name": "SPX TQQQ 고점 대비 (AgiTQ)",
-   "ok": true,
-   "detail": "-16.1% / -16.2%"
+   "ok": false,
+   "detail": "-15.8% / -16.2%"
   },
   {
    "name": "TQQQ 가격",
    "ok": false,
-   "detail": "+0.173%"
+   "detail": "-0.306%"
   },
   {
    "name": "공포·탐욕 지수",
    "ok": true,
-   "detail": "AgiTQ 22 / 사이트 22"
+   "detail": "AgiTQ 23 / 사이트 22"
   }
  ],
  "notes": [
-  "SPX: TradingView 기준 밴드 안 (상단 대비 -1.57%, 하단 대비 +3.48%).",
-  "차이: SPX 가격 — -0.031%",
-  "차이: TQQQ 가격 — +0.173%",
+  "SPX: TradingView 기준 밴드 안 (상단 대비 -1.58%, 하단 대비 +3.46%).",
+  "차이: SPX TQQQ 고점 대비 (AgiTQ) — -15.8% / -16.2%",
+  "차이: TQQQ 가격 — -0.306%",
   "AgiTQ의 'SPYM 추가 매수'는 보내주신 규칙에 없는 항목이라 대조하지 않았습니다."
  ],
  "items": {
   "spx": {
-   "tv_px": 7390.3,
-   "tv_ma": 7325.15,
-   "my_px": 7388.01,
-   "my_ma": 7325.11,
+   "tv_px": 7389.31,
+   "tv_ma": 7325.13,
+   "my_px": 7389.89,
+   "my_ma": 7325.12,
    "my_zone": "band",
    "my_state": "IN",
-   "tv_up": 7508.28,
-   "tv_lo": 7142.02,
+   "tv_up": 7508.26,
+   "tv_lo": 7142.0,
    "tv_zone": "band",
-   "tv_dist_up": -1.57,
-   "tv_dist_lo": 3.48,
-   "px_diff_pct": -0.031,
-   "ma_diff_pct": -0.001,
+   "tv_dist_up": -1.58,
+   "tv_dist_lo": 3.46,
+   "px_diff_pct": 0.008,
+   "ma_diff_pct": -0.0,
    "zone_match": true,
    "ag_state": "IN",
    "ag_days": 146.0,
-   "ag_dd": -16.1,
+   "ag_dd": -15.8,
    "my_days": 146,
-   "my_dd": -16.23,
+   "my_dd": -16.2,
    "ag_ts": false,
    "my_ts": false
   }
  },
- "tqqq_tv": 52.05,
- "tqqq_my": 52.14,
+ "tqqq_tv": 52.32,
+ "tqqq_my": 52.16,
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
-  "26.11.07. 03:20 기준",
+  "26.11.07. 03:29 기준",
   "TQQQ 보유 유지",
   "SPYM 추가 매수",
   "상단 밴드 위 146일 차 (추세 유지)",
-  "TQQQ 최고점 대비 -16.1%",
+  "TQQQ 최고점 대비 -15.8%",
   "아기티큐 200큐큐단 (QQQ)",
   "v3.0-γ (26.08.12)",
-  "26.11.07. 03:20 기준",
+  "26.11.07. 03:29 기준",
   "TQQQ·SPYM 전량 매도",
   "SGOV 대피 완료",
   "하단 밴드 이탈 (전량 탈출)",
   "TQQQ 최고점 대비 N/A",
   "공포와 탐욕 지수 (CNN FGI)",
   "극공포 (Extreme Fear)",
-  "현재 22",
+  "현재 23",
   "/",
   "30일 평균 31"
  ],
  "history": [
-  {
-   "at": "11/06 14:36",
-   "level": "ok",
-   "ok": 8,
-   "n": 8
-  },
   {
    "at": "11/06 14:44",
    "level": "ok",
@@ -385,6 +379,12 @@
   },
   {
    "at": "11/07 03:22",
+   "level": "minor",
+   "ok": 6,
+   "n": 8
+  },
+  {
+   "at": "11/07 03:31",
    "level": "minor",
    "ok": 6,
    "n": 8
