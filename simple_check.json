@@ -1,6 +1,6 @@
 {
- "at": "2026-11-07T01:26+00:00",
- "at_kst": "11/07 10:26",
+ "at": "2026-11-07T01:41+00:00",
+ "at_kst": "11/07 10:41",
  "data": {
   "date": "2026-11-06",
   "bar_final": true,
@@ -9,7 +9,7 @@
   "qqq": 656.1,
   "spx": 7376.85986328125,
   "sp200": 7325.05,
-  "tqqq": 28.370207,
+  "tqqq": 52.25,
   "dd52": -13.56,
   "dis": -3.55,
   "spm": 0.71
@@ -42,19 +42,17 @@
   },
   {
    "name": "TQQQ 종가 (40년 파일 ↔ 실시간 파일)",
-   "ok": false,
-   "detail": "28.37 / 52.25"
+   "ok": true,
+   "detail": "52.25 / 52.25"
   },
   {
    "name": "경계 근처 지표",
-   "ok": false,
-   "detail": "TQQQ 신호판 TS선 46.68 — TQQQ 28.37, -39.2% 위"
+   "ok": true,
+   "detail": "모든 지표가 기준선에서 1%p 이상 떨어져 있음"
   }
  ],
  "notes": [],
- "near": [
-  "TQQQ 신호판 TS선 46.68 — TQQQ 28.37, -39.2% 위"
- ],
+ "near": [],
  "signals": {
   "종합형": {
    "text": "QQQ",
@@ -95,10 +93,10 @@
    "ts_line": null
   },
   "상시형": {
-   "text": "SPYM 50% + SGOV 50%",
+   "text": "TQQQ 50% + SPYM 50%",
    "level": "M",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 39.19
   },
   "삼단형": {
    "text": "QLD",
@@ -107,20 +105,20 @@
    "ts_line": null
   },
   "고점형": {
-   "text": "SPYM 50% + SGOV 50%",
+   "text": "TQQQ 50% + SPYM 50%",
    "level": "M",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 39.19
   },
   "최고점형": {
-   "text": "SPYM 50% + SGOV 50%",
+   "text": "TQQQ 50% + SPYM 50%",
    "level": "M",
-   "cut": true,
-   "ts_line": null
+   "cut": false,
+   "ts_line": 44.41
   },
   "분산형": {
-   "text": "TQQQ 0% + SPYM 30% + SGOV 70%",
-   "level": "Mc/Mc/Mc",
+   "text": "TQQQ 70% + SPYM 30%",
+   "level": "M/M/M",
    "cut": null,
    "ts_line": null
   },
@@ -172,10 +170,10 @@
    "mdd_to": "2006-07-21"
   },
   "상시형": {
-   "c": 29.22,
+   "c": 30.07,
    "m": -52.82,
    "n": 20,
-   "win": 80.0,
+   "win": 85.0,
    "mdd_from": "2021-11-19",
    "mdd_to": "2023-03-10"
   },
@@ -188,30 +186,30 @@
    "mdd_to": "2022-04-22"
   },
   "고점형": {
-   "c": 24.34,
+   "c": 25.16,
    "m": -44.9,
    "n": 20,
-   "win": 80.0,
+   "win": 85.0,
    "mdd_from": "2021-11-19",
    "mdd_to": "2023-03-10"
   },
   "최고점형": {
-   "c": 20.81,
-   "m": -36.72,
+   "c": 21.61,
+   "m": -32.42,
    "n": 18,
-   "win": 83.3,
-   "mdd_from": "2026-10-06",
-   "mdd_to": "2026-11-06"
+   "win": 88.9,
+   "mdd_from": "1998-08-18",
+   "mdd_to": "1998-08-31"
   },
   "분산형": {
-   "c": 28.32,
+   "c": 29.57,
    "m": -57.04,
    "n": 20,
-   "win": 75.0,
+   "win": 80.0,
    "mdd_from": "2021-11-19",
    "mdd_to": "2023-03-10"
   }
  },
- "level": "err",
- "verdict": "데이터 경고: TQQQ 종가 (40년 파일 ↔ 실시간 파일) · 경계 근처 지표"
+ "level": "ok",
+ "verdict": "데이터 이상 없음"
 }
