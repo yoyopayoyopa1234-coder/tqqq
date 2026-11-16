@@ -427,7 +427,7 @@ def main():
     now = datetime.now(timezone.utc)
     try: old = json.load(open(OUT))
     except Exception: old = {}
-    for fn in (google_news, bing_news, lambda: kr_search(now), lambda: web_search(now), lambda: dcinside(now), lambda: fmk_via_search(now)):
+    for fn in (google_news, bing_news, lambda: kr_search(now), lambda: web_search(now)):
         try: fn()
         except Exception as e: note("출처 실패", type(e).__name__, str(e)[:120])
     # 같은 글 합치기 (제목 앞부분, 없으면 문장)

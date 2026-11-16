@@ -115,7 +115,7 @@
   </div>
 
   <div class="panel">
-    <h2>교차 확인 — 뉴스·커뮤니티가 인용한 FedWatch <span class="desc">계산값과 언론·커뮤니티에 돈 숫자 비교</span></h2>
+    <h2>교차 확인 — 뉴스가 인용한 FedWatch <span class="desc">계산값과 언론에 돈 숫자 비교</span></h2>
     <div class="body">
       <div class="tbl"><table id="cross"></table></div>
       <details><summary>인용된 숫자 원문</summary><div class="in"><div class="tbl"><table id="figs"></table></div></div></details>
@@ -127,7 +127,6 @@
     <div class="body">
       <div class="fwc" id="cards"></div>
       <details><summary>검색어별 기사 수</summary><div class="in"><div class="tbl"><table id="byq"></table></div></div></details>
-      <details open><summary>커뮤니티 (디시 · 에펨)</summary><div class="in"><div class="news" id="comm"></div></div></details>
       <details><summary>뉴스</summary><div class="in"><div class="news" id="news"></div></div></details>
     </div>
   </div>
@@ -136,7 +135,7 @@
     <h2>어떻게 구하나</h2>
     <div class="body">
       <div><b>표·큰 숫자</b>: CME 사이트는 직접 못 열어서, 같은 원재료인 연방기금 30일 선물(ZQ) 가격을 받아 CME FedWatch와 같은 방법으로 계산합니다. 100 − 가격 = 그 달 평균 금리 → 회의가 있는 달은 회의 전·후 날짜 비율로 '회의 직후 금리'를 풀고(다음 달에 회의가 없으면 그 달 선물을 그대로) → 0.25%p 한 번으로 나눠 확률 → 회의를 차례로 이어 붙여 구간별 확률을 냅니다. 2026-10-28 화면 캡처 값과 비교하면 ±0.5%p 안으로 맞습니다(출발 금리 반올림 차이).</div>
-      <div><b>교차 확인</b>: 뉴스(Google·Bing·네이버·다음), 검색(DuckDuckGo), 커뮤니티(디시, 에펨은 검색엔진 경유)에 인용된 FedWatch 숫자의 가운데값.</div>
+      <div><b>교차 확인</b>: 뉴스(Google·Bing·네이버·다음), 검색(DuckDuckGo)에 인용된 FedWatch 숫자의 가운데값.</div>
       <div class="fine">선물 가격은 Yahoo 지연 시세(10~20분), 출발 금리는 뉴욕 연은이 발표한 전날 실효금리(EFFR)입니다. 15분마다 다시 계산하며, 페이지를 열어 두면 자동으로 새 값을 불러옵니다. 투자 판단은 본인 몫입니다.</div>
       <div class="fine" id="ts"></div>
     </div>
@@ -196,18 +195,16 @@ function render(){
   }
   // 교차 확인
   const Q=FW.meets||[];
-  $('#cross').innerHTML='<tr><th>회의</th><th class="r">선물 계산 인상</th><th class="r">뉴스·커뮤니티 인용 인상</th><th class="r">차이</th><th>인용</th></tr>'+M.slice(0,3).map(x=>{ const q=Q.find(y=>y.date===x.date); const qv=q?q.hike_est:null; const d=qv!=null?qv-x.hike:null;
+  $('#cross').innerHTML='<tr><th>회의</th><th class="r">선물 계산 인상</th><th class="r">뉴스 인용 인상</th><th class="r">차이</th><th>인용</th></tr>'+M.slice(0,3).map(x=>{ const q=Q.find(y=>y.date===x.date); const qv=q?q.hike_est:null; const d=qv!=null?qv-x.hike:null;
     return `<tr><td>${x.date}</td><td class="r" style="color:var(--hike)">${f1(x.hike)}%</td><td class="r">${qv!=null?(q.derived?'≈':'')+f1(qv)+'%':'—'}</td><td class="r ${d==null?'':Math.abs(d)<=5?'flat':'up'}">${d==null?'—':(d>0?'+':'')+d.toFixed(1)+'%p'}</td><td class="muted">${q&&q.window?`${q.hike_n+q.hold_n+q.cut_n}개 · 마지막 ${kst(q.latest)}`:'없음'}</td></tr>`; }).join('');
   const FG=FW.figs||[];
   $('#figs').innerHTML='<tr><th>시각</th><th>회의</th><th>숫자</th><th>출처 · 문장</th></tr>'+(FG.length?FG.slice(0,40).map(f=>`<tr><td class="r">${kst(f.ts)}</td><td>${md(f.meet)}</td><td class="${f.kind==='hike'?'up':f.kind==='cut'?'dn':''}" style="white-space:nowrap;font-weight:700">${KN[f.kind]} ${f.v}%</td><td><a href="${esc(f.link)}" target="_blank" rel="noopener" style="color:var(--fg)">${esc((f.title||'').replace(/\s+-\s+[^-]+$/,'').slice(0,100))}</a> <span class="muted">${esc(f.src)}</span>${f.text&&f.text!==f.title?`<div class="snip">${esc(f.text.slice(0,150))}…</div>`:''}</td></tr>`).join(''):'<tr><td colspan="4" class="muted">없음</td></tr>');
   // 언급 수
   const cnt=FW.counts||{}, heat=(h,d7)=>d7?h/(d7/7):null, hs=(h,d7)=>{ const r=heat(h,d7); return r?`평소의 <b class="${r>=2?'up':''}">${r.toFixed(1)}배</b> · 7일 ${d7}건`:`7일 ${d7??0}건`; };
   $('#cards').innerHTML=`<div><div class="k">'FedWatch·페드워치' 뉴스 (24시간)</div><div class="v">${cnt.fw24??'—'}건</div><div class="s">${hs(cnt.fw24,cnt.fw7d)}</div></div>
-    <div><div class="k">금리 확률 뉴스 전체 (24시간)</div><div class="v">${cnt.n24??'—'}건</div><div class="s">${hs(cnt.n24,cnt.n7d)}</div></div>
-    <div><div class="k">커뮤니티 글 (24시간)</div><div class="v">${cnt.c24??'—'}건</div><div class="s">${hs(cnt.c24,cnt.c7d)}</div></div>`;
+    <div><div class="k">금리 확률 뉴스 전체 (24시간)</div><div class="v">${cnt.n24??'—'}건</div><div class="s">${hs(cnt.n24,cnt.n7d)}</div></div>`;
   $('#byq').innerHTML='<tr><th>검색어 (Google 뉴스)</th><th class="r">24시간</th><th class="r">7일</th><th class="r">평소 대비</th></tr>'+Object.entries(cnt.byq||{}).map(([q,v])=>{ const r=heat(v.h24,v.d7); return `<tr><td>${esc(q)}</td><td class="r">${v.h24}</td><td class="r">${v.d7}</td><td class="r ${r>=2?'up':''}">${r?r.toFixed(1)+'배':'—'}</td></tr>`; }).join('');
   const row=(x,title)=>`<div class="row"><div class="tm">${kst(x.ts)}</div><div><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(title)}</a> <span class="src">${esc(x.src)}</span>${(x.probs||[]).map(p=>`<span class="tag ${p[0]}">${KN[p[0]]} ${p[1]}%</span>`).join('')}${x.text&&x.text!==x.title?`<div class="snip">${esc(x.text.slice(0,150))}…</div>`:''}</div></div>`;
-  $('#comm').innerHTML=(FW.comm||[]).slice(0,10).map(c=>row(c,c.title||c.text.slice(0,60))).join('')||'<span class="muted">최근 7일 글 없음</span>';
   const rel=/fed|fomc|rate|연준|금리|페드워치|treasury|yield|powell|warsh/i;
   $('#news').innerHTML=(FW.news||[]).filter(n=>rel.test(n.title)).slice(0,20).map(n=>row(n,n.title.replace(/\s+-\s+[^-]+$/,''))).join('')||'<span class="muted">기사 없음</span>';
   tick();
