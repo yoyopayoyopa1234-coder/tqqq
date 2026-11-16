@@ -1,14 +1,14 @@
 {
- "at": "2026-11-16T21:08+00:00",
- "at_kst": "11/17 06:08",
- "market": "extended",
- "verdict": "신호 판단은 일치, 수치 1건 차이 — 매수·탈출 판단에는 영향이 없습니다.",
- "level": "minor",
+ "at": "2026-11-16T21:24+00:00",
+ "at_kst": "11/17 06:24",
+ "market": "closed",
+ "verdict": "전부 일치 (8/8) — 신호판 수치와 판단을 그대로 믿어도 됩니다.",
+ "level": "ok",
  "checks": [
   {
    "name": "SPX 가격",
-   "ok": false,
-   "detail": "+0.059%"
+   "ok": true,
+   "detail": "+0.000%"
   },
   {
    "name": "SPX 200일선",
@@ -38,33 +38,32 @@
   {
    "name": "TQQQ 가격",
    "ok": true,
-   "detail": "-0.038%"
+   "detail": "+0.000%"
   },
   {
    "name": "공포·탐욕 지수",
    "ok": true,
-   "detail": "AgiTQ 30 / 사이트 30"
+   "detail": "AgiTQ 31 / 사이트 31"
   }
  ],
  "notes": [
-  "SPX: TradingView 기준 밴드 안 (상단 대비 -1.51%, 하단 대비 +3.54%).",
-  "차이: SPX 가격 — +0.059%",
+  "SPX: TradingView 기준 밴드 안 (상단 대비 -1.46%, 하단 대비 +3.60%).",
   "AgiTQ의 'SPYM 추가 매수'는 보내주신 규칙에 없는 항목이라 대조하지 않았습니다."
  ],
  "items": {
   "spx": {
-   "tv_px": 7412.23,
-   "tv_ma": 7342.68,
+   "tv_px": 7416.59,
+   "tv_ma": 7342.71,
    "my_px": 7416.59,
    "my_ma": 7342.71,
    "my_zone": "band",
    "my_state": "IN",
-   "tv_up": 7526.25,
-   "tv_lo": 7159.11,
+   "tv_up": 7526.28,
+   "tv_lo": 7159.14,
    "tv_zone": "band",
-   "tv_dist_up": -1.51,
-   "tv_dist_lo": 3.54,
-   "px_diff_pct": 0.059,
+   "tv_dist_up": -1.46,
+   "tv_dist_lo": 3.6,
+   "px_diff_pct": 0.0,
    "ma_diff_pct": 0.0,
    "zone_match": true,
    "ag_state": "IN",
@@ -76,12 +75,12 @@
    "my_ts": false
   }
  },
- "tqqq_tv": 53.05,
+ "tqqq_tv": 53.03,
  "tqqq_my": 53.03,
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
-  "26.11.17. 06:07 기준",
+  "26.11.17. 06:20 기준",
   "TQQQ 보유 유지",
   "SPYM 추가 매수",
   "상단 밴드 위 152일 차 (추세 유지)",
@@ -95,17 +94,11 @@
   "TQQQ 최고점 대비 N/A",
   "공포와 탐욕 지수 (CNN FGI)",
   "공포 (Fear)",
-  "현재 30",
+  "현재 31",
   "/",
   "30일 평균 31"
  ],
  "history": [
-  {
-   "at": "11/16 18:11",
-   "level": "ok",
-   "ok": 8,
-   "n": 8
-  },
   {
    "at": "11/16 18:17",
    "level": "ok",
@@ -386,6 +379,12 @@
    "at": "11/17 06:08",
    "level": "minor",
    "ok": 7,
+   "n": 8
+  },
+  {
+   "at": "11/17 06:24",
+   "level": "ok",
+   "ok": 8,
    "n": 8
   }
  ]
