@@ -1,6 +1,6 @@
 {
- "at": "2026-11-17T15:01+00:00",
- "at_kst": "11/18 00:01",
+ "at": "2026-11-17T15:16+00:00",
+ "at_kst": "11/18 00:16",
  "market": "extended",
  "verdict": "신호 판단은 일치, 수치 3건 차이 — 매수·탈출 판단에는 영향이 없습니다.",
  "level": "minor",
@@ -8,12 +8,12 @@
   {
    "name": "SPX 가격",
    "ok": false,
-   "detail": "+0.128%"
+   "detail": "+0.059%"
   },
   {
    "name": "SPX 200일선",
    "ok": true,
-   "detail": "+0.001%"
+   "detail": "-0.000%"
   },
   {
    "name": "SPX 밴드 위치",
@@ -33,12 +33,12 @@
   {
    "name": "SPX TQQQ 고점 대비 (AgiTQ)",
    "ok": false,
-   "detail": "-14.5% / -14.8%"
+   "detail": "-14.5% / -15.3%"
   },
   {
    "name": "TQQQ 가격",
    "ok": false,
-   "detail": "+0.341%"
+   "detail": "+0.803%"
   },
   {
    "name": "공포·탐욕 지수",
@@ -47,39 +47,39 @@
   }
  ],
  "notes": [
-  "SPX: TradingView 기준 밴드 안 (상단 대비 -1.67%, 하단 대비 +3.38%).",
-  "차이: SPX 가격 — +0.128%",
-  "차이: SPX TQQQ 고점 대비 (AgiTQ) — -14.5% / -14.8%",
-  "차이: TQQQ 가격 — +0.341%",
+  "SPX: TradingView 기준 밴드 안 (상단 대비 -1.83%, 하단 대비 +3.21%).",
+  "차이: SPX 가격 — +0.059%",
+  "차이: SPX TQQQ 고점 대비 (AgiTQ) — -14.5% / -15.3%",
+  "차이: TQQQ 가격 — +0.803%",
   "AgiTQ의 'SPYM 추가 매수'는 보내주신 규칙에 없는 항목이라 대조하지 않았습니다."
  ],
  "items": {
   "spx": {
-   "tv_px": 7402.98,
+   "tv_px": 7390.83,
    "tv_ma": 7344.82,
-   "my_px": 7412.42,
-   "my_ma": 7344.89,
+   "my_px": 7395.19,
+   "my_ma": 7344.8,
    "my_zone": "band",
    "my_state": "IN",
    "tv_up": 7528.44,
    "tv_lo": 7161.2,
    "tv_zone": "band",
-   "tv_dist_up": -1.67,
-   "tv_dist_lo": 3.38,
-   "px_diff_pct": 0.128,
-   "ma_diff_pct": 0.001,
+   "tv_dist_up": -1.83,
+   "tv_dist_lo": 3.21,
+   "px_diff_pct": 0.059,
+   "ma_diff_pct": -0.0,
    "zone_match": true,
    "ag_state": "IN",
    "ag_days": 153.0,
    "ag_dd": -14.5,
    "my_days": 153,
-   "my_dd": -14.81,
+   "my_dd": -15.26,
    "ag_ts": false,
    "my_ts": false
   }
  },
- "tqqq_tv": 52.84,
- "tqqq_my": 53.02,
+ "tqqq_tv": 52.32,
+ "tqqq_my": 52.74,
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
@@ -99,15 +99,10 @@
   "공포 (Fear)",
   "현재 32",
   "/",
-  "30일 평균 31"
+  "30일 평균 31",
+  "새 데이터 연결 지연: 마지막 정상 데이터를 표시합니다."
  ],
  "history": [
-  {
-   "at": "11/17 12:40",
-   "level": "ok",
-   "ok": 8,
-   "n": 8
-  },
   {
    "at": "11/17 12:48",
    "level": "ok",
@@ -386,6 +381,12 @@
   },
   {
    "at": "11/18 00:01",
+   "level": "minor",
+   "ok": 5,
+   "n": 8
+  },
+  {
+   "at": "11/18 00:16",
    "level": "minor",
    "ok": 5,
    "n": 8
