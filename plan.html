@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>목표 계획서</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1650px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .panel h2 { margin:0; padding:9px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; border-bottom:1px solid var(--line); }
+  .panel h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .panel h2 .tools { margin-left:auto; display:flex; gap:4px; align-items:center; font-weight:400; font-size:12px; color:var(--muted); }
+  .sum { padding:8px 12px; font-size:13px; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--line); line-height:1.6; }
+  .sum b { font-weight:600; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:#5ad445; font-weight:600; } .hot { color:#f23645; font-weight:600; }
+  .plot { width:100%; }
+  .status { font-size:12px; color:var(--muted); padding:6px 2px; line-height:1.6; }
+  .err { color:#f23645; }
+  .note { color:var(--muted); font-size:11px; }
+  input[type=range] { width:90px; vertical-align:middle; }
+  .al { display:grid; gap:4px; }
+  .al .row { display:flex; gap:8px; align-items:baseline; }
+  .al .ok { color:#5ad445; } .al .no { color:#5d6675; } .al .wr { color:#f0a030; }
+  .al .v { color:var(--muted); font-size:12px; margin-left:auto; text-align:right; }
+  .stage { display:inline-block; padding:1px 9px; border-radius:999px; font-weight:700; font-size:12px; margin-right:6px; }
+  .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
+  .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:920px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:780px; } }
+  /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
+  @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
+
+  #plot-e { height:620px; } @media (max-width:599px){ #plot-e { height:520px; } }
+  table.t { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  table.t th, table.t td { padding:7px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  table.t th:first-child, table.t td:first-child { text-align:left; } table.t th { color:var(--muted); font-weight:500; }
+  table.t tr.me td { color:var(--accent); font-weight:700; } .tw { overflow-x:auto; padding:0 4px; }
+  .sig { font-size:22px; font-weight:800; } .rl { padding:10px 12px; font-size:13px; line-height:1.75; }
+
+  .body { padding:12px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.6; }
+  .hero { position:relative; margin-bottom:14px; border-radius:14px; padding:16px; border:1px solid var(--hc); background:radial-gradient(120% 140% at 0% 0%, var(--hg), transparent 60%), var(--panel); overflow:hidden; }
+  .hero .row1 { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; }
+  .live { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--hc); }
+  .live i { width:9px; height:9px; border-radius:50%; background:var(--hc); animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 var(--hg2)} 70%{box-shadow:0 0 0 10px rgba(0,0,0,0)} 100%{box-shadow:0 0 0 0 rgba(0,0,0,0)} }
+  .big { font-size:34px; font-weight:900; letter-spacing:.5px; color:var(--hc); text-shadow:0 0 18px var(--hg2); animation:glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 0%,100%{ text-shadow:0 0 8px var(--hg2);} 50%{ text-shadow:0 0 26px var(--hg2);} }
+  .days { font-size:13px; color:#c9cfd8; } .days b { font-size:20px; color:#fff; font-variant-numeric:tabular-nums; }
+  .action { margin-top:12px; padding:10px 12px; border-radius:10px; background:rgba(240,180,41,.08); border:1px solid rgba(240,180,41,.28); font-size:13.5px; line-height:1.65; } .action b { color:var(--accent); }
+  .gauge { position:relative; height:14px; border-radius:7px; margin:34px 4px 30px; background:linear-gradient(90deg, rgba(242,54,69,.45) 0 var(--lo), rgba(138,147,163,.25) var(--lo) var(--up), rgba(90,212,69,.45) var(--up) 100%); }
+  .gauge .pin { position:absolute; top:-26px; transform:translateX(-50%); text-align:center; font-size:11px; white-space:nowrap; transition:left 1.4s cubic-bezier(.2,.9,.2,1); }
+  .gauge .pin b { display:block; font-size:12px; color:#fff; }
+  .gauge .pin::after { content:''; display:block; margin:1px auto 0; width:3px; height:24px; background:#fff; border-radius:2px; box-shadow:0 0 10px #fff; }
+  .gauge .tk { position:absolute; top:18px; transform:translateX(-50%); font-size:10.5px; color:var(--muted); white-space:nowrap; text-align:center; }
+  .gauge .ln { position:absolute; top:-3px; width:2px; height:20px; background:var(--c); transform:translateX(-50%); }
+  .kv4 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; } @media (max-width:640px){ .kv4 { grid-template-columns:repeat(2,1fr); } }
+  .kv4 > div { border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.02); } .kv4 .l { font-size:11px; color:var(--muted); } .kv4 .v { font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; } .kv4 .s { font-size:11.5px; color:#c9cfd8; }
+  #plot-s { height:560px; } @media (max-width:599px){ #plot-s { height:460px; } }
+  .vf { display:grid; gap:2px; } .vf .r { display:grid; grid-template-columns:22px 1fr auto; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; } .vf .ok { color:#5ad445; } .vf .no { color:#f23645; } .vf .d { color:var(--muted); font-variant-numeric:tabular-nums; text-align:right; }
+  .vhead { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; } .vbadge { font-weight:800; padding:3px 10px; border-radius:8px; }
+
+  .pc { border:1px solid var(--line); border-left:5px solid var(--c); border-radius:12px; padding:14px; background:rgba(255,255,255,.02); margin:12px; }
+  .pc .top { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:baseline; } .pc .tk { font-size:22px; font-weight:900; } .pc .px { font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .pc .st { font-weight:800; padding:3px 12px; border-radius:999px; color:var(--c); background:var(--bg2); border:1px solid var(--c); }
+  .pc.hot { box-shadow:0 0 20px var(--c); animation:pglow 2s ease-in-out infinite; } @keyframes pglow { 0%,100%{ box-shadow:0 0 6px var(--c);} 50%{ box-shadow:0 0 24px var(--c);} }
+  .pbar { position:relative; height:12px; border-radius:6px; margin:34px 6px 34px; background:linear-gradient(90deg,#5ad445 0%,#5ad445 var(--b),#3a4150 var(--b),#3a4150 var(--s),#f0b429 var(--s),#f0b429 100%); }
+  .pbar .pin { position:absolute; top:-27px; transform:translateX(-50%); font-size:11px; text-align:center; white-space:nowrap; transition:left 1.4s cubic-bezier(.2,.9,.2,1); } .pbar .pin b { display:block; color:#fff; font-size:12px; }
+  .pbar .pin::after { content:''; display:block; margin:1px auto 0; width:3px; height:24px; background:#fff; border-radius:2px; box-shadow:0 0 10px #fff; }
+  .pbar .mk { position:absolute; top:16px; transform:translateX(-50%); font-size:11px; color:var(--muted); text-align:center; white-space:nowrap; } .pbar .mk b { color:var(--fg); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="btc.html">BTC</a><a href="plan.html" class="cur">목표 계획서</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <span style="flex-basis:100%;height:0"></span>
+    <h1>목표 계획서</h1>
+    <span class="date" id="today"></span>
+  </header>
+  <div class="panel">
+    <h2>매수·매도 목표<span class="desc">매수 목표가 근처에서 사서 매도 목표가에 파는 계획 · 세 종목 모두 목표 수익 5배(+400%)</span></h2>
+    <div id="cards"><div class="sum">불러오는 중…</div></div>
+    <div class="rl note">현재가는 정규장 종가(장중엔 실시간가) · 15분마다 갱신 · 막대는 로그 눈금(같은 비율 = 같은 길이) · "마지막으로 그 가격이었던 날"은 종가 기준 · TQQQ·SOXL 과거 가격은 액면분할 반영 · 본인이 정한 목표를 표시하는 화면이며 투자 자문 아님</div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const PLAN=[{t:'SOXL',src:'soxl_data.json',buy:40,sell:200,c:'#5aa9ff',link:'soxl.html'},{t:'MSTR',src:'../dashboard/data.json',buy:80,sell:400,c:'#f0b429',link:'mstr.html'},{t:'TQQQ',src:'tqqq_data.json',buy:40,sell:200,c:'#5ad445',link:'analysis.html'}];
+const f2=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}), pc=(v,d=1)=>(v>=0?'+':'−')+Math.abs(v).toFixed(d)+'%', d10=t=>new Date(t*1000).toISOString().slice(0,10);
+(async()=>{
+  const q='?'+Math.floor(Date.now()/600000); let html='';
+  for(const p of PLAN){
+    let r=null; try{ const j=await fetch(p.src+q).then(x=>x.ok?x.json():null); r=j&&j.ohlc&&j.ohlc[p.t+'_1d']; }catch(e){}
+    if(!r||!r.length){ html+=`<div class="pc" style="--c:${p.c}"><span class="tk">${p.t}</span> <span class="note">데이터 준비 중</span></div>`; continue; }
+    const n=r.length, c=r[n-1][4], prev=r[n-2][4], y=r.slice(-252), hi52=Math.max(...y.map(a=>a[4])), lo52=Math.min(...y.map(a=>a[4]));
+    let lastBuy=null, lastSell=null; for(let k=n-1;k>=0;k--){ if(lastBuy==null&&r[k][4]<=p.buy) lastBuy=k; if(lastSell==null&&r[k][4]>=p.sell) lastSell=k; if(lastBuy!=null&&lastSell!=null) break; }
+    const toBuy=(p.buy/c-1)*100, toSell=(p.sell/c-1)*100, zone=c<=p.buy*1.1&&c>=p.buy*0.9;
+    const st=c>=p.sell?['매도 목표 도달 — 매도','#f0b429']:c<=p.buy?['매수 목표가 이하 — 매수 구간','#5ad445']:zone?['매수 목표 근처 (±10%)','#a6d96a']:c<p.sell*0.9&&c>p.buy*1.1?['매수 대기 / 보유 중이면 유지','#8a93a3']:['매도 목표 근처','#ffb74d'];
+    const lo=Math.log(Math.min(p.buy*0.6,c*0.9)), hi=Math.log(Math.max(p.sell*1.25,c*1.1)), P=v=>Math.max(1,Math.min(99,(Math.log(v)-lo)/(hi-lo)*100));
+    html+=`<div class="pc ${c<=p.buy*1.1||c>=p.sell*0.9?'hot':''}" style="--c:${st[1]};--bg2:${st[1]}22">
+      <div class="top"><a class="tk" href="${p.link}" style="color:${p.c};text-decoration:none">${p.t}</a><span class="px">$${f2(c)}</span><span class="${c>=prev?'up':'dn'}">${pc((c/prev-1)*100,2)}</span><span class="st">${st[0]}</span><span class="note">${d10(r[n-1][0])} 기준</span></div>
+      <div class="pbar" style="--b:${P(p.buy)}%;--s:${P(p.sell)}%">
+        <span class="mk" style="left:${P(p.buy)}%">매수 <b>$${p.buy}</b></span><span class="mk" style="left:${P(p.sell)}%">매도 <b>$${p.sell}</b></span>
+        <span class="pin" data-l="${P(c)}" style="left:${P(p.buy)}%"><b>$${f2(c)}</b>지금</span></div>
+      <div class="kv4">
+        <div><div class="l" style="color:#5ad445">매수 목표 $${p.buy}</div><div class="v">${c<=p.buy?'도달':pc(toBuy)}</div><div class="s">${c<=p.buy?'목표가보다 '+pc((c/p.buy-1)*100)+' 쌈':'이만큼 더 빠져야 함'}</div></div>
+        <div><div class="l" style="color:#f0b429">매도 목표 $${p.sell}</div><div class="v">${c>=p.sell?'도달':pc(toSell)}</div><div class="s">${c>=p.sell?'':'지금 가격에서 이만큼 올라야 함'}</div></div>
+        <div><div class="l">계획 수익 ($${p.buy} → $${p.sell})</div><div class="v">+${((p.sell/p.buy-1)*100).toFixed(0)}%</div><div class="s">${(p.sell/p.buy).toFixed(0)}배 · 지금 사면 ${(p.sell/c).toFixed(1)}배</div></div>
+        <div><div class="l">52주 저 / 고 (종가)</div><div class="v" style="font-size:15px">$${f2(lo52)} / $${f2(hi52)}</div><div class="s">고점 대비 ${pc((c/hi52-1)*100)}</div></div>
+      </div>
+      <div class="note" style="margin-top:8px">마지막으로 $${p.buy} 이하였던 날: <b style="color:#c9cfd8">${lastBuy==null?'데이터 기간 안에 없음':d10(r[lastBuy][0])+' ($'+f2(r[lastBuy][4])+')'}</b> · 마지막으로 $${p.sell} 이상이었던 날: <b style="color:#c9cfd8">${lastSell==null?'데이터 기간('+d10(r[0][0]).slice(0,4)+'~) 안에 없음':d10(r[lastSell][0])+' ($'+f2(r[lastSell][4])+')'}</b></div></div>`;
+  }
+  $('#cards').innerHTML=html;
+  requestAnimationFrame(()=>setTimeout(()=>document.querySelectorAll('.pbar .pin').forEach(e=>e.style.left=e.dataset.l+'%'),60));
+})();
+</script>
+</body>
+</html>
