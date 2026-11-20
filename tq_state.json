@@ -1,13 +1,9 @@
 {
  "spx": {
-  "state": "IN",
-  "entry": "2026-04-13",
-  "ts_n": 2,
-  "small": [
-   10,
-   25,
-   50
-  ],
+  "state": "OUT",
+  "entry": null,
+  "ts_n": 0,
+  "small": [],
   "big": []
  }
 }
