@@ -1,1 +1,135 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=fedwatch.html"><title>FedWatch</title><style>body{background:#0f1216;color:#e6e9ee;font-family:system-ui,sans-serif;padding:20px}a{color:#ff8c42}</style></head><body>이 페이지는 <a href="fedwatch.html">FedWatch</a> 페이지로 바뀌었습니다.</body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>코로나급 폭락 가능성</title>
+<style>
+  :root { --bg:#0f1216; --panel:#171b21; --line:#262c35; --fg:#e6e9ee; --muted:#8a93a3; --accent:#f0b429; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif; }
+  .wrap { padding:12px 12px 40px; max-width:1650px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin-bottom:10px; }
+  h1 { font-size:18px; margin:0; }
+  .date { color:var(--muted); font-size:12px; }
+  .btn { font:inherit; font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .right { margin-left:auto; display:flex; gap:6px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .panel h2 { margin:0; padding:9px 12px; font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; border-bottom:1px solid var(--line); }
+  .panel h2 .desc { color:var(--muted); font-weight:400; font-size:12px; }
+  .panel h2 .tools { margin-left:auto; display:flex; gap:4px; align-items:center; font-weight:400; font-size:12px; color:var(--muted); }
+  .sum { padding:8px 12px; font-size:13px; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--line); line-height:1.6; }
+  .sum b { font-weight:600; }
+  .up { color:#089981; } .dn { color:#f23645; } .on { color:#5ad445; font-weight:600; } .hot { color:#f23645; font-weight:600; }
+  .plot { width:100%; }
+  .status { font-size:12px; color:var(--muted); padding:6px 2px; line-height:1.6; }
+  .err { color:#f23645; }
+  .note { color:var(--muted); font-size:11px; }
+  input[type=range] { width:90px; vertical-align:middle; }
+  .al { display:grid; gap:4px; }
+  .al .row { display:flex; gap:8px; align-items:baseline; }
+  .al .ok { color:#5ad445; } .al .no { color:#5d6675; } .al .wr { color:#f0a030; }
+  .al .v { color:var(--muted); font-size:12px; margin-left:auto; text-align:right; }
+  .stage { display:inline-block; padding:1px 9px; border-radius:999px; font-weight:700; font-size:12px; margin-right:6px; }
+  .s-투매 { background:rgba(90,212,69,.15); color:#8be37a; } .s-회복 { background:rgba(90,212,69,.22); color:#a6f095; }
+  .s-전환 { background:rgba(41,98,255,.2); color:#8fb0ff; } .s-과열 { background:rgba(242,54,69,.18); color:#ff8a8d; } .s-관망 { background:rgba(139,148,162,.18); color:#c9cfd8; }
+  .nav { display:flex; flex-wrap:wrap; gap:4px; } .nav a { font-size:12px; padding:5px 10px; border-radius:6px; color:var(--muted); text-decoration:none; border:1px solid transparent; } .nav a.cur { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  #plot-d { height:720px; } #plot-b, #plot-btc { height:560px; } #plot-c { height:920px; }
+  @media (max-width:599px){ #plot-d { height:600px; } #plot-b, #plot-btc { height:460px; } #plot-c { height:780px; } }
+  /* 휴대폰: 그래프를 화면의 3배 너비로 — 옆으로 밀어서 봄 */
+  @media (max-width:599px){ .plotbox { overflow-x:auto; -webkit-overflow-scrolling:touch; } .plotbox .plot { width:300%; } }
+
+  #plot-e { height:620px; } @media (max-width:599px){ #plot-e { height:520px; } }
+  table.t { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  table.t th, table.t td { padding:7px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  table.t th:first-child, table.t td:first-child { text-align:left; } table.t th { color:var(--muted); font-weight:500; }
+  table.t tr.me td { color:var(--accent); font-weight:700; } .tw { overflow-x:auto; padding:0 4px; }
+  .sig { font-size:22px; font-weight:800; } .rl { padding:10px 12px; font-size:13px; line-height:1.75; }
+
+  .body { padding:12px; display:flex; flex-direction:column; gap:12px; font-size:13.5px; line-height:1.6; }
+  .hero { position:relative; margin-bottom:14px; border-radius:14px; padding:16px; border:1px solid var(--hc); background:radial-gradient(120% 140% at 0% 0%, var(--hg), transparent 60%), var(--panel); overflow:hidden; }
+  .hero .row1 { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; }
+  .live { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--hc); }
+  .live i { width:9px; height:9px; border-radius:50%; background:var(--hc); animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 var(--hg2)} 70%{box-shadow:0 0 0 10px rgba(0,0,0,0)} 100%{box-shadow:0 0 0 0 rgba(0,0,0,0)} }
+  .big { font-size:34px; font-weight:900; letter-spacing:.5px; color:var(--hc); text-shadow:0 0 18px var(--hg2); animation:glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 0%,100%{ text-shadow:0 0 8px var(--hg2);} 50%{ text-shadow:0 0 26px var(--hg2);} }
+  .days { font-size:13px; color:#c9cfd8; } .days b { font-size:20px; color:#fff; font-variant-numeric:tabular-nums; }
+  .action { margin-top:12px; padding:10px 12px; border-radius:10px; background:rgba(240,180,41,.08); border:1px solid rgba(240,180,41,.28); font-size:13.5px; line-height:1.65; } .action b { color:var(--accent); }
+  .gauge { position:relative; height:14px; border-radius:7px; margin:34px 4px 30px; background:linear-gradient(90deg, rgba(242,54,69,.45) 0 var(--lo), rgba(138,147,163,.25) var(--lo) var(--up), rgba(90,212,69,.45) var(--up) 100%); }
+  .gauge .pin { position:absolute; top:-26px; transform:translateX(-50%); text-align:center; font-size:11px; white-space:nowrap; transition:left 1.4s cubic-bezier(.2,.9,.2,1); }
+  .gauge .pin b { display:block; font-size:12px; color:#fff; }
+  .gauge .pin::after { content:''; display:block; margin:1px auto 0; width:3px; height:24px; background:#fff; border-radius:2px; box-shadow:0 0 10px #fff; }
+  .gauge .tk { position:absolute; top:18px; transform:translateX(-50%); font-size:10.5px; color:var(--muted); white-space:nowrap; text-align:center; }
+  .gauge .ln { position:absolute; top:-3px; width:2px; height:20px; background:var(--c); transform:translateX(-50%); }
+  .kv4 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; } @media (max-width:640px){ .kv4 { grid-template-columns:repeat(2,1fr); } }
+  .kv4 > div { border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.02); } .kv4 .l { font-size:11px; color:var(--muted); } .kv4 .v { font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; } .kv4 .s { font-size:11.5px; color:#c9cfd8; }
+  #plot-s { height:560px; } @media (max-width:599px){ #plot-s { height:460px; } }
+  .vf { display:grid; gap:2px; } .vf .r { display:grid; grid-template-columns:22px 1fr auto; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; } .vf .ok { color:#5ad445; } .vf .no { color:#f23645; } .vf .d { color:var(--muted); font-variant-numeric:tabular-nums; text-align:right; }
+  .vhead { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; } .vbadge { font-weight:800; padding:3px 10px; border-radius:8px; }
+
+  .gz { position:relative; height:16px; border-radius:8px; margin:34px 6px 26px; background:linear-gradient(90deg,#1b8e3a 0%,#5ad445 25%,#f0b429 50%,#ff8a65 75%,#f23645 100%); }
+  .gz i { position:absolute; top:-8px; width:5px; height:32px; border-radius:3px; background:#fff; box-shadow:0 0 12px #fff; transform:translateX(-50%); transition:left 1.6s cubic-bezier(.2,.9,.2,1); }
+  .gz span { position:absolute; top:22px; transform:translateX(-50%); font-size:10.5px; color:var(--muted); white-space:nowrap; }
+  .nl { display:grid; gap:2px; padding:4px 12px 12px; } .nl .r { display:grid; grid-template-columns:86px 1fr; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; line-height:1.5; } .nl .tm { color:var(--muted); font-variant-numeric:tabular-nums; } .nl a { color:var(--fg); text-decoration:none; } .nl .s { color:var(--muted); font-size:11px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:0; } @media (max-width:760px){ .cols { grid-template-columns:1fr; } }
+  #plot-h { height:360px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="btc.html">BTC</a><a href="plan.html">목표 계획서</a><a href="crash.html" class="cur">폭락 가능성</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <span style="flex-basis:100%;height:0"></span>
+    <h1>코로나급 폭락 가능성</h1>
+    <span class="date" id="today"></span>
+  </header>
+  <div id="hero" class="hero" style="--hc:#8a93a3;--hg:rgba(138,147,163,.12);--hg2:rgba(138,147,163,.5)"><div class="muted">불러오는 중…</div></div>
+  <div class="panel"><h2>두 가지 숫자<span class="desc">최근 24시간 · 괄호는 최근 7일</span></h2><div class="body"><div class="kv4" id="nums"></div><div class="tw"><table class="t" id="tbl"></table></div></div></div>
+  <div class="panel"><h2>지수 추이<span class="desc">1시간마다 기록 · 쌓일수록 길어집니다</span></h2><div class="plotbox"><div class="plot" id="plot-h"></div></div></div>
+  <div class="panel"><h2>폭락 단어가 들어간 뉴스<span class="desc">최근 24시간 · 최신 15건</span></h2><div class="nl" id="l-crash"></div></div>
+  <div class="panel"><h2>의견<span class="desc">최근 24시간 · 왼쪽 비관(폭락 경고) · 오른쪽 낙관(반등·저가매수)</span></h2><div class="cols"><div class="nl" id="l-bear"></div><div class="nl" id="l-bull"></div></div></div>
+  <div class="panel"><h2>계산 방법과 한계</h2><div class="rl">
+    <b>① 뉴스 숫자</b> — Google 뉴스·Bing 뉴스에서 시장 뉴스 제목(영어·한국어)을 모아 중복을 지우고, '폭락·급락·패닉·붕괴·crash·plunge·sell-off…' 단어가 든 제목의 비율을 셉니다. 5%면 0점, 45% 이상이면 100점.<br>
+    <b>② 의견 숫자</b> — 전망·경고·분석이 담긴 제목을 비관(폭락·침체·추가 하락 경고)과 낙관(반등·바닥·저가매수)으로 나눠 비관 비율을 셉니다. 40%면 0점, 85% 이상이면 100점. 의견이 10건 미만이면 뉴스 점수만 씁니다.<br>
+    <b>지수</b> = 두 점수의 평균 (0~100).<br>
+    <span class="note">통계로 계산한 확률이 아니라 뉴스 분위기를 숫자로 옮긴 지수입니다. 제목 속 단어만 세기 때문에 "폭락은 없다"는 기사도 폭락 뉴스로 잡힐 수 있고, 점수 기준(5~45% 등)은 임의로 정한 값입니다. 뉴스는 주가가 빠진 뒤에 늘어나는 후행 지표라 폭락을 미리 알려 주지 못합니다. 2020년 코로나 때는 뉴스가 쏟아질 무렵 이미 S&amp;P500이 −20% 넘게 빠져 있었습니다. 투자 자문 아님.</span></div></div>
+  <div class="status">데이터: Google 뉴스 RSS · Bing 뉴스 RSS · 15분마다 갱신</div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const LV=[[20,'낮음','#5ad445','평소 수준 — 폭락 뉴스가 드묾'],[40,'보통','#a6d96a','하락 뉴스가 있지만 일상적인 수준'],[60,'주의','#f0b429','폭락 뉴스·비관 의견이 눈에 띄게 많음'],[80,'높음','#ff8a65','시장 뉴스 상당수가 폭락 얘기'],[101,'매우 높음','#f23645','뉴스 대부분이 폭락·패닉 — 코로나 때와 비슷한 분위기']];
+const lv=v=>LV.find(l=>v<l[0]);
+const ago=ts=>{ const m=Math.round((Date.now()-new Date(ts))/6e4); return m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전'; };
+const row=x=>`<div class="r"><span class="tm">${ago(x.ts)}</span><span><a href="${x.link}" target="_blank" rel="noopener">${x.t.replace(/</g,'&lt;')}</a> <span class="s">${x.src}</span></span></div>`;
+(async()=>{
+  const q='?'+Math.floor(Date.now()/60000); let C=null, J=null;
+  try{ C=await fetch('crash.json'+q).then(r=>r.ok?r.json():null); }catch(e){}
+  try{ J=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null); }catch(e){}
+  if(!C||!C.s24){ $('#hero').innerHTML='<span class="note">데이터 준비 중 — 15분 안에 첫 수집이 끝납니다.</span>'; return; }
+  const s=C.s24, d=C.d24, d7=C.d7, s7=C.s7, L=lv(s.total), el=$('#hero'), mins=Math.round((Date.now()/1000-C.ts)/60);
+  el.style.setProperty('--hc',L[2]); el.style.setProperty('--hg',L[2]+'22'); el.style.setProperty('--hg2',L[2]+'88');
+  let ref=''; if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const dd=(sp[n-1]/hi-1)*100;
+    ref=`<div class="zone" style="margin-top:10px;color:#c9cfd8">참고 — 실제 주가: S&amp;P500 52주 고점 대비 <b style="color:${dd<=-20?'#f23645':dd<=-10?'#f0b429':'#5ad445'}">${dd.toFixed(1)}%</b> (${J.d[n-1]}) · 코로나 폭락은 2020년 2~3월 33일 만에 <b>−34%</b></div>`; }
+  el.innerHTML=`<div class="row1"><span class="live"><i></i>LIVE · ${C.at_kst} 수집 (${mins<1?'방금':mins+'분 전'})</span><span class="big">${s.total.toFixed(0)}<span style="font-size:18px"> / 100</span></span><span class="days"><b style="color:${L[2]}">${L[1]}</b> — ${L[3]}</span></div>
+    <div class="gz"><i id="gpin" style="left:0%"></i>${[[10,'낮음'],[30,'보통'],[50,'주의'],[70,'높음'],[90,'매우 높음']].map(([p,t])=>`<span style="left:${p}%">${t}</span>`).join('')}</div>
+    <div class="zone" style="color:#c9cfd8">뉴스 점수 <b>${s.news.toFixed(0)}</b> · 의견 점수 <b>${s.opin==null?'— (의견 10건 미만)':s.opin.toFixed(0)}</b> · 7일 기준 지수 ${s7.total.toFixed(0)}</div>${ref}`;
+  requestAnimationFrame(()=>setTimeout(()=>{ $('#gpin').style.left=Math.max(1,Math.min(99,s.total))+'%'; },60));
+  $('#nums').innerHTML=[['① 폭락 뉴스 수',d.crash+'건',`시장 뉴스 ${d.n}건 중 ${s.crash_share}% (7일 ${d7.crash}/${d7.n}건 · ${s7.crash_share}%)`],['② 비관 의견 수',d.bear+'건',`7일 ${d7.bear}건`],['② 낙관 의견 수',d.bull+'건',`7일 ${d7.bull}건`],['비관 의견 비율',s.bear_share==null?'—':s.bear_share+'%',`7일 ${s7.bear_share==null?'—':s7.bear_share+'%'} · 의견 담긴 제목 ${d.op}건`]]
+    .map(([l,v,x])=>`<div><div class="l">${l}</div><div class="v">${v}</div><div class="s">${x}</div></div>`).join('');
+  $('#tbl').innerHTML=`<tr><th>기간</th><th>시장 뉴스</th><th>폭락 뉴스</th><th>비율</th><th>비관 의견</th><th>낙관 의견</th><th>비관 비율</th><th>지수</th></tr>`+[['최근 24시간',d,s],['최근 7일',d7,s7]].map(([n,a,b])=>`<tr><td>${n}</td><td>${a.n}</td><td>${a.crash}</td><td>${b.crash_share}%</td><td>${a.bear}</td><td>${a.bull}</td><td>${b.bear_share==null?'—':b.bear_share+'%'}</td><td><b>${b.total.toFixed(0)}</b></td></tr>`).join('');
+  $('#l-crash').innerHTML=(C.crash||[]).map(row).join('')||'<span class="note">최근 24시간 없음</span>';
+  $('#l-bear').innerHTML='<div class="note" style="padding:6px 0;color:#ff8a65;font-weight:700">비관 '+d.bear+'건</div>'+((C.bear||[]).map(row).join('')||'<span class="note">없음</span>');
+  $('#l-bull').innerHTML='<div class="note" style="padding:6px 0;color:#5ad445;font-weight:700">낙관 '+d.bull+'건</div>'+((C.bull||[]).map(row).join('')||'<span class="note">없음</span>');
+  const H=C.hist||[]; if(H.length<2){ $('#plot-h').innerHTML='<div class="note" style="padding:14px">기록이 쌓이는 중입니다 (지금 '+H.length+'개).</div>'; $('#plot-h').style.height='auto'; return; }
+  const ld=src=>new Promise((ok,no)=>{ const e=document.createElement('script'); e.src=src; e.onload=ok; e.onerror=no; document.head.appendChild(e); });
+  for(const u of ['https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://cdn.plot.ly/plotly-2.35.2.min.js']){ try{ await ld(u); if(window.Plotly) break; }catch(e){} }
+  if(!window.Plotly) return; const x=H.map(h=>new Date(h[0]*1000));
+  Plotly.react('plot-h',[{x,y:H.map(h=>h[1]),mode:'lines',name:'지수',line:{color:'#f0b429',width:2.2}},{x,y:H.map(h=>h[3]),type:'bar',name:'폭락 뉴스 수',yaxis:'y2',marker:{color:'rgba(242,54,69,.35)'}}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:36,r:44,t:10,b:28},legend:{orientation:'h',y:1.1,x:0},hovermode:'x unified',
+     xaxis:{gridcolor:'#262c35'},yaxis:{range:[0,100],gridcolor:'#262c35',title:{text:'지수',font:{size:10}}},yaxis2:{overlaying:'y',side:'right',showgrid:false,rangemode:'tozero',title:{text:'건',font:{size:10}}}},{displayModeBar:false,responsive:true});
+})();
+</script>
+</body>
+</html>
