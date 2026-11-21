@@ -87,7 +87,7 @@
     <span class="date" id="today"></span>
   </header>
   <div class="panel">
-    <h2>매수·매도 목표<span class="desc">매수 목표가 근처에서 사서 매도 목표가에 파는 계획 · SOXL 35→210달러(6배) · TQQQ 35→193달러(5.5배) · MSTR 83→389달러(4.7배)</span></h2>
+    <h2>매수·매도 목표<span class="desc">매수 목표가 근처에서 사서 매도 목표가에 파는 계획 · SOXL 25→210달러(8.4배) · TQQQ 35→193달러(5.5배) · MSTR 83→389달러(4.7배)</span></h2>
     <div id="cards"><div class="sum">불러오는 중…</div></div>
     <div class="rl note">현재가는 정규장 종가(장중엔 실시간가) · 15분마다 갱신 · 막대는 로그 눈금(같은 비율 = 같은 길이) · "마지막으로 그 가격이었던 날"은 종가 기준 · TQQQ·SOXL 과거 가격은 액면분할 반영 · 본인이 정한 목표를 표시하는 화면이며 투자 자문 아님</div>
   </div>
@@ -95,7 +95,7 @@
 <script>
 const $=s=>document.querySelector(s);
 $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-const PLAN=[{t:'SOXL',src:'soxl_data.json',buy:35,sell:210,c:'#5aa9ff',link:'soxl.html'},{t:'MSTR',src:'../dashboard/data.json',buy:83,sell:389,c:'#f0b429',link:'mstr.html'},{t:'TQQQ',src:'tqqq_data.json',buy:35,sell:193,c:'#5ad445',link:'analysis.html'}];
+const PLAN=[{t:'SOXL',src:'soxl_data.json',buy:25,sell:210,c:'#5aa9ff',link:'soxl.html'},{t:'MSTR',src:'../dashboard/data.json',buy:83,sell:389,c:'#f0b429',link:'mstr.html'},{t:'TQQQ',src:'tqqq_data.json',buy:35,sell:193,c:'#5ad445',link:'analysis.html'}];
 const f2=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}), pc=(v,d=1)=>(v>=0?'+':'−')+Math.abs(v).toFixed(d)+'%', d10=t=>new Date(t*1000).toISOString().slice(0,10);
 (async()=>{
   const q='?'+Math.floor(Date.now()/600000); let html='';
