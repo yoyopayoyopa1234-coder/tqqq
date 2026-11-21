@@ -18,6 +18,7 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "crash.json")
 KST = timezone(timedelta(hours=9))
 Q = [("en", "stock market"), ("en", "Wall Street stocks"), ("en", "Nasdaq"), ("en", "S&P 500"), ("en", "stock market crash"), ("en", "stock market outlook"),
      ("ko", "증시"), ("ko", "뉴욕증시"), ("ko", "나스닥"), ("ko", "증시 폭락"), ("ko", "증시 전망")]
+BIASED = {"stock market crash", "증시 폭락"}   # 폭락 기사만 나오는 검색어 — 의견 집계에만 쓰고 뉴스 비율에서는 뺌
 MARKET = re.compile(r"stock|wall street|nasdaq|s&p|dow|market|equit|shares|investor|증시|주식|나스닥|다우|코스피|코스닥|뉴욕|월가|시장|투자", re.I)
 CRASH = re.compile(r"crash|plunge|plummet|meltdown|collapse|rout|bloodbath|panic|free ?fall|sell-?off|tumble|wipe ?out|black monday|circuit breaker|bear market|worst (day|week|month)|"
                    r"폭락|급락|패닉|붕괴|투매|서킷브레이커|블랙먼데이|검은 ?(월|화|수|목|금)요일|약세장|쇼크|추락", re.I)
@@ -36,13 +37,14 @@ def note(*a):
 
 def collect(now):
     items = {}
-    def add(title, src, link, ts, lang):
+    def add(title, src, link, ts, lang, neutral=True):
         t = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", title or ""))).strip()
         t = re.sub(r"\s[-|–]\s[^-|–]{2,40}$", "", t)          # 끝의 ' - 매체명' 제거
         k = re.sub(r"[^0-9a-z가-힣]", "", t.lower())[:60]
         if len(k) < 8 or k in items or not MARKET.search(t): return
-        items[k] = dict(t=t, src=src, link=link, ts=ts, lang=lang)
+        items[k] = dict(t=t, src=src, link=link, ts=ts, lang=lang, neutral=neutral)
     for lang, q in Q:
+        neu = q not in BIASED
         for when in ("1d", "7d"):
             url = (f"https://news.google.com/rss/search?q={quote(q)}+when:{when}&hl=en-US&gl=US&ceid=US:en" if lang == "en"
                    else f"https://news.google.com/rss/search?q={quote(q)}+when:{when}&hl=ko&gl=KR&ceid=KR:ko")
@@ -52,23 +54,24 @@ def collect(now):
             for it in root.iter("item"):
                 try: ts = parsedate_to_datetime(it.findtext("pubDate")).astimezone(timezone.utc)
                 except Exception: continue
-                s = it.find("source"); add(it.findtext("title"), (s.text if s is not None else "") or "Google 뉴스", it.findtext("link") or "", ts, lang); n += 1
+                s = it.find("source"); add(it.findtext("title"), (s.text if s is not None else "") or "Google 뉴스", it.findtext("link") or "", ts, lang, neu); n += 1
             note("구글뉴스", q, when, n)
         try:
             root = ET.fromstring(get(f"https://www.bing.com/news/search?q={quote(q)}&format=rss&qft=sortbydate%3d%221%22")); n = 0
             for it in root.iter("item"):
                 try: ts = parsedate_to_datetime(it.findtext("pubDate")).astimezone(timezone.utc)
                 except Exception: continue
-                src = next((ch.text for ch in it if ch.tag.endswith("Source") and ch.text), "Bing 뉴스"); add(it.findtext("title"), src, it.findtext("link") or "", ts, lang); n += 1
+                src = next((ch.text for ch in it if ch.tag.endswith("Source") and ch.text), "Bing 뉴스"); add(it.findtext("title"), src, it.findtext("link") or "", ts, lang, neu); n += 1
             note("빙뉴스", q, n)
         except Exception as e: note("빙뉴스 실패", q, type(e).__name__, str(e)[:80])
     return list(items.values())
 
 
 def stats(items, now, hours):
-    w = [x for x in items if timedelta(0) <= now - x["ts"] <= timedelta(hours=hours)]
+    allw = [x for x in items if timedelta(0) <= now - x["ts"] <= timedelta(hours=hours)]
+    w = [x for x in allw if x.get("neutral", True)]          # 뉴스 비율은 일반 검색어로 모은 제목만
     crash = [x for x in w if CRASH.search(x["t"])]
-    op = [x for x in w if OPIN.search(x["t"])]
+    op = [x for x in allw if OPIN.search(x["t"])]
     bear, bull = [], []
     for x in op:
         b, u = len(BEAR.findall(x["t"])), len(BULL.findall(x["t"]))
