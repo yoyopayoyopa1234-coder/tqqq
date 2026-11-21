@@ -82,15 +82,7 @@
 <body>
 <div class="wrap">
   <header>
-    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="btc.html">BTC</a><a href="plan.html">목표 계획서</a><a href="crash.html" class="cur">폭락 가능성</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>
-const $=s=>document.querySelector(s);
-$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-(async()=>{
-  let J=null; try{ J=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null); }catch(e){}
-  if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const tg=hi*0.66, dd=(sp[n-1]/hi-1)*100;
-    $('#live-sp').innerHTML=`지금(${J.d[n-1]}): S&amp;P500 <b>${sp[n-1].toLocaleString('en-US',{maximumFractionDigits:0})}</b> · 52주 고점 대비 <b>${dd.toFixed(1)}%</b> · −34%선 <b>${tg.toLocaleString('en-US',{maximumFractionDigits:0})}</b>까지 여기서 <b>${((tg/sp[n-1]-1)*100).toFixed(1)}%</b>`; }
-})();
-</script>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="btc.html">BTC</a><a href="plan.html">목표 계획서</a><a href="crash.html" class="cur">폭락 가능성</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
     <span style="flex-basis:100%;height:0"></span>
     <h1>코로나급 폭락 가능성</h1>
     <span class="date" id="today"></span>
@@ -132,38 +124,10 @@ $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:
 <script>
 const $=s=>document.querySelector(s);
 $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-const LV=[[20,'낮음','#5ad445','평소 수준 — 폭락 뉴스가 드묾'],[40,'보통','#a6d96a','하락 뉴스가 있지만 일상적인 수준'],[60,'주의','#f0b429','폭락 뉴스·비관 의견이 눈에 띄게 많음'],[80,'높음','#ff8a65','시장 뉴스 상당수가 폭락 얘기'],[101,'매우 높음','#f23645','뉴스 대부분이 폭락·패닉']];
-const lv=v=>LV.find(l=>v<l[0]);
-const ago=ts=>{ const m=Math.round((Date.now()-new Date(ts))/6e4); return m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전'; };
-const row=x=>`<div class="r"><span class="tm">${ago(x.ts)}</span><span><a href="${x.link}" target="_blank" rel="noopener">${x.t.replace(/</g,'&lt;')}</a> <span class="s">${x.src}</span></span></div>`;
 (async()=>{
-  const q='?'+Math.floor(Date.now()/60000); let C=null, J=null;
-  try{ C=await fetch('crash.json'+q).then(r=>r.ok?r.json():null); }catch(e){}
-  try{ J=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null); }catch(e){}
+  let J=null; try{ J=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null); }catch(e){}
   if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const tg=hi*0.66, dd=(sp[n-1]/hi-1)*100;
     $('#live-sp').innerHTML=`지금(${J.d[n-1]}): S&amp;P500 <b>${sp[n-1].toLocaleString('en-US',{maximumFractionDigits:0})}</b> · 52주 고점 대비 <b>${dd.toFixed(1)}%</b> · −34%선 <b>${tg.toLocaleString('en-US',{maximumFractionDigits:0})}</b>까지 여기서 <b>${((tg/sp[n-1]-1)*100).toFixed(1)}%</b>`; }
-  if(!C||!C.s24){ $('#hero').innerHTML='<span class="note">데이터 준비 중 — 15분 안에 첫 수집이 끝납니다.</span>'; return; }
-  const s=C.s24, d=C.d24, d7=C.d7, s7=C.s7, L=lv(s.total), el=$('#hero'), mins=Math.round((Date.now()/1000-C.ts)/60);
-  el.style.setProperty('--hc',L[2]); el.style.setProperty('--hg',L[2]+'22'); el.style.setProperty('--hg2',L[2]+'88');
-  let ref=''; if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const dd=(sp[n-1]/hi-1)*100;
-    ref=`<div class="zone" style="margin-top:10px;color:#c9cfd8">참고 — 실제 주가: S&amp;P500 52주 고점 대비 <b style="color:${dd<=-20?'#f23645':dd<=-10?'#f0b429':'#5ad445'}">${dd.toFixed(1)}%</b> (${J.d[n-1]}) · 코로나 폭락은 2020년 2~3월 33일 만에 <b>−34%</b></div>`; }
-  el.innerHTML=`<div class="row1"><span class="live"><i></i>뉴스 분위기 지수 (참고) · ${C.at_kst} 수집 (${mins<1?'방금':mins+'분 전'})</span><span class="big">${s.total.toFixed(0)}<span style="font-size:18px"> / 100</span></span><span class="days"><b style="color:${L[2]}">${L[1]}</b> — ${L[3]}</span></div>
-    <div class="gz"><i id="gpin" style="left:0%"></i>${[[10,'낮음'],[30,'보통'],[50,'주의'],[70,'높음'],[90,'매우 높음']].map(([p,t])=>`<span style="left:${p}%">${t}</span>`).join('')}</div>
-    <div class="zone" style="color:#c9cfd8">뉴스 점수 <b>${s.news.toFixed(0)}</b> · 의견 점수 <b>${s.opin==null?'— (의견 10건 미만)':s.opin.toFixed(0)}</b> · 7일 기준 지수 ${s7.total.toFixed(0)}</div>${ref}`;
-  requestAnimationFrame(()=>setTimeout(()=>{ $('#gpin').style.left=Math.max(1,Math.min(99,s.total))+'%'; },60));
-  $('#nums').innerHTML=[['① 폭락 뉴스 수',d.crash+'건',`시장 뉴스 ${d.n}건 중 ${s.crash_share}% (7일 ${d7.crash}/${d7.n}건 · ${s7.crash_share}%)`],['② 비관 의견 수',d.bear+'건',`7일 ${d7.bear}건`],['② 낙관 의견 수',d.bull+'건',`7일 ${d7.bull}건`],['비관 의견 비율',s.bear_share==null?'—':s.bear_share+'%',`7일 ${s7.bear_share==null?'—':s7.bear_share+'%'} · 의견 담긴 제목 ${d.op}건`]]
-    .map(([l,v,x])=>`<div><div class="l">${l}</div><div class="v">${v}</div><div class="s">${x}</div></div>`).join('');
-  $('#tbl').innerHTML=`<tr><th>기간</th><th>시장 뉴스</th><th>폭락 뉴스</th><th>비율</th><th>비관 의견</th><th>낙관 의견</th><th>비관 비율</th><th>지수</th></tr>`+[['최근 24시간',d,s],['최근 7일',d7,s7]].map(([n,a,b])=>`<tr><td>${n}</td><td>${a.n}</td><td>${a.crash}</td><td>${b.crash_share}%</td><td>${a.bear}</td><td>${a.bull}</td><td>${b.bear_share==null?'—':b.bear_share+'%'}</td><td><b>${b.total.toFixed(0)}</b></td></tr>`).join('');
-  $('#l-crash').innerHTML=(C.crash||[]).map(row).join('')||'<span class="note">최근 24시간 없음</span>';
-  $('#l-bear').innerHTML='<div class="note" style="padding:6px 0;color:#ff8a65;font-weight:700">비관 '+d.bear+'건</div>'+((C.bear||[]).map(row).join('')||'<span class="note">없음</span>');
-  $('#l-bull').innerHTML='<div class="note" style="padding:6px 0;color:#5ad445;font-weight:700">낙관 '+d.bull+'건</div>'+((C.bull||[]).map(row).join('')||'<span class="note">없음</span>');
-  const H=C.hist||[]; if(H.length<2){ $('#plot-h').innerHTML='<div class="note" style="padding:14px">기록이 쌓이는 중입니다 (지금 '+H.length+'개).</div>'; $('#plot-h').style.height='auto'; return; }
-  const ld=src=>new Promise((ok,no)=>{ const e=document.createElement('script'); e.src=src; e.onload=ok; e.onerror=no; document.head.appendChild(e); });
-  for(const u of ['https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://cdn.plot.ly/plotly-2.35.2.min.js']){ try{ await ld(u); if(window.Plotly) break; }catch(e){} }
-  if(!window.Plotly) return; const x=H.map(h=>new Date(h[0]*1000));
-  Plotly.react('plot-h',[{x,y:H.map(h=>h[1]),mode:'lines',name:'지수',line:{color:'#f0b429',width:2.2}},{x,y:H.map(h=>h[3]),type:'bar',name:'폭락 뉴스 수',yaxis:'y2',marker:{color:'rgba(242,54,69,.35)'}}],
-    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:36,r:44,t:10,b:28},legend:{orientation:'h',y:1.1,x:0},hovermode:'x unified',
-     xaxis:{gridcolor:'#262c35'},yaxis:{range:[0,100],gridcolor:'#262c35',title:{text:'지수',font:{size:10}}},yaxis2:{overlaying:'y',side:'right',showgrid:false,rangemode:'tozero',title:{text:'건',font:{size:10}}}},{displayModeBar:false,responsive:true});
 })();
 </script>
 </body>
