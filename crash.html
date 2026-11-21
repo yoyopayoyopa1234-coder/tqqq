@@ -74,6 +74,9 @@
   .nl { display:grid; gap:2px; padding:4px 12px 12px; } .nl .r { display:grid; grid-template-columns:86px 1fr; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; line-height:1.5; } .nl .tm { color:var(--muted); font-variant-numeric:tabular-nums; } .nl a { color:var(--fg); text-decoration:none; } .nl .s { color:var(--muted); font-size:11px; }
   .cols { display:grid; grid-template-columns:1fr 1fr; gap:0; } @media (max-width:760px){ .cols { grid-template-columns:1fr; } }
   #plot-h { height:360px; }
+  .pr { display:grid; gap:12px; margin:14px 0 10px; } .pr .top { display:flex; justify-content:space-between; font-size:13px; color:#c9cfd8; } .pr .top b { color:#fff; font-variant-numeric:tabular-nums; }
+  .pr .trk { position:relative; height:14px; border-radius:4px; background:rgba(255,255,255,.07); margin-top:4px; } .pr .trk i { position:absolute; top:0; height:100%; background:rgba(90,169,255,.35); border-radius:4px; } .pr .trk u { position:absolute; top:-3px; width:4px; height:20px; background:#5aa9ff; border-radius:2px; transform:translateX(-2px); }
+  .pr .ax { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -84,22 +87,54 @@
     <h1>코로나급 폭락 가능성</h1>
     <span class="date" id="today"></span>
   </header>
+  <div class="hero" style="--hc:#5aa9ff;--hg:rgba(90,169,255,.14);--hg2:rgba(90,169,255,.5)">
+    <div class="row1"><span class="live" style="color:#5aa9ff"><i style="animation:none"></i>추정 기준일 2026-11-21 (미국 11/20 종가 반영)</span><span class="big">약 25%</span><span class="days">범위 <b>20~30%</b></span></div>
+    <div class="zone" style="margin-top:6px;color:#c9cfd8">기준: S&amp;P500이 앞으로 1년 안에 10월 6일 고점 대비 <b>−34%</b>(코로나 때 낙폭, 지수 약 5,160선)까지 내려가는 경우</div>
+    <div class="pr">
+      <div><div class="top"><span>S&amp;P500이 1년 안에 −34%</span><b>20~30%</b></div><div class="trk"><i style="left:20%;width:10%"></i><u style="left:25%"></u></div></div>
+      <div><div class="top"><span>나스닥이 1년 안에 −34%</span><b>35~40%</b></div><div class="trk"><i style="left:35%;width:5%"></i><u style="left:37.5%"></u></div></div>
+      <div><div class="top"><span>속도까지 코로나급 (한 달여 만에 −34%)</span><b>10% 미만</b></div><div class="trk"><i style="left:0;width:10%"></i><u style="left:5%"></u></div></div>
+      <div class="ax"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    </div>
+    <div class="zone" id="live-sp" style="color:#c9cfd8"></div>
+    <div class="action">뉴스에 나온 숫자와 전문가 의견을 종합한 <b>판단값</b>입니다. 계산으로 증명한 확률이 아니고, 자동으로 바뀌지 않습니다(기준일 고정). 아래 "뉴스 분위기 지수"만 15분마다 갱신됩니다.</div>
+  </div>
+
+  <div class="panel"><h2>숫자를 만든 재료<span class="desc">뉴스 숫자 · 의견 숫자</span></h2><div class="tw"><table class="t">
+    <tr><th>재료</th><th>숫자</th><th style="text-align:left">어떻게 썼나</th></tr>
+    <tr><td>폴리마켓</td><td>18% 선</td><td style="text-align:left;white-space:normal">하한선. 올해 안 AI 거품 붕괴 확률(기준에 따라 16~24%). 11/20 급락 이전 수치</td></tr>
+    <tr><td>스티브 행키</td><td>50% 미만</td><td style="text-align:left;white-space:normal">상한선. 11월 초 대형 위기 가능성 경고</td></tr>
+    <tr><td>TS 롬바드</td><td>확률 없음</td><td style="text-align:left;white-space:normal">미국 주식 30% 이상 하락 시나리오 — 낙폭이 코로나급과 비슷해 기준점으로 삼음</td></tr>
+    <tr><td>오언 라몬트</td><td>70%</td><td style="text-align:left;white-space:normal">참고만. 버블 상태일 확률이지 폭락 확률이 아님</td></tr>
+    <tr><td>현재 위치</td><td>−11.6%</td><td style="text-align:left;white-space:normal">S&amp;P500 종가 6,910.39 — 5,160선까지 여기서 약 25% 더 내려야 함</td></tr></table></div>
+    <div class="rl"><b>계산 흐름</b><br>① <b>기본값 15% 안팎</b> — 과거에 10%대 조정이 −20% 약세장으로 번진 경우가 대략 3분의 1, 그중 −34%까지 간 경우가 절반 이하 (일반 지식으로 잡은 대략값)<br>
+    ② <b>올린 이유</b> — 연준 금리 인상 중이고 12월 추가 인상이 거의 확실 · 실러 CAPE 40 초과 · 코어위브 채권 수익률 16% 초과 등 AI 부채 스트레스 · 금요일 VIX 종가 39.5<br>
+    ③ <b>40% 이상으로 올리지 않은 이유</b> — 엔비디아 분기 매출이 예상을 넘는 등 이익이 실제로 있음 · 고수익채 스프레드 3.47%로 위기 수준 아님 · TS 롬바드도 2008년식 연쇄 부도는 예상하지 않음</div></div>
+
+  <div class="panel"><h2>이 숫자가 움직이는 조건</h2><div class="tw"><table class="t">
+    <tr><th>지표</th><th style="text-align:left">확률이 올라가는 경우</th><th style="text-align:left">확률이 내려가는 경우</th></tr>
+    <tr><td>12월 FOMC</td><td style="text-align:left;white-space:normal">0.5%p 인상 또는 추가 인상 예고</td><td style="text-align:left;white-space:normal">0.25%p 인상 뒤 속도 조절 신호</td></tr>
+    <tr><td>엔비디아 SEC 건</td><td style="text-align:left;white-space:normal">정식 조사로 확대, 매출 인식 문제 확인</td><td style="text-align:left;white-space:normal">단순 문의로 마무리, 후임 CEO 확정</td></tr>
+    <tr><td>고수익채 스프레드</td><td style="text-align:left;white-space:normal">계속 확대</td><td style="text-align:left;white-space:normal">3%대 중반에서 안정</td></tr>
+    <tr><td>하이퍼스케일러 설비투자</td><td style="text-align:left;white-space:normal">가이던스 하향, 데이터센터 취소 확대</td><td style="text-align:left;white-space:normal">가이던스 유지</td></tr></table></div>
+    <div class="rl note">12월 FOMC와 엔비디아 SEC 건은 결과에 따라 한 번에 10%p씩 움직일 수 있는 변수 · 출처: <a href="https://www.blockmedia.co.kr/archives/1117864" target="_blank" rel="noopener" style="color:var(--accent)">블록미디어(폴리마켓)</a> · <a href="https://finbold.com/analyst-warns-ai-bubble-is-about-to-burst-as-sp-500-plummets/" target="_blank" rel="noopener" style="color:var(--accent)">Finbold(행키)</a> · <a href="https://www.fool.com/investing/2026/11/01/a-wall-street-firm-modeled-out-an-ai-crash-s-and-p-500-down-30-usd20-trillion-gone-but-here-s-what-happens-next/" target="_blank" rel="noopener" style="color:var(--accent)">Motley Fool(TS 롬바드)</a> · <a href="https://www.upi.com/Top_News/US/2026/11/20/stocks-dow-jones-nasdaq-correction-territory/1061795214998/" target="_blank" rel="noopener" style="color:var(--accent)">UPI(11/20 종가)</a> · <a href="https://claude.ai/artifact/FrH32DfWPFqhDh4vwPNRtD" target="_blank" rel="noopener" style="color:var(--accent)">원문 추정 리포트</a> · 투자 자문 아님</div></div>
+
   <div id="hero" class="hero" style="--hc:#8a93a3;--hg:rgba(138,147,163,.12);--hg2:rgba(138,147,163,.5)"><div class="muted">불러오는 중…</div></div>
-  <div class="panel"><h2>두 가지 숫자<span class="desc">최근 24시간 · 괄호는 최근 7일</span></h2><div class="body"><div class="kv4" id="nums"></div><div class="tw"><table class="t" id="tbl"></table></div></div></div>
+  <div class="panel"><h2>뉴스 분위기 — 두 가지 숫자<span class="desc">최근 24시간 · 괄호는 최근 7일</span></h2><div class="body"><div class="kv4" id="nums"></div><div class="tw"><table class="t" id="tbl"></table></div></div></div>
   <div class="panel"><h2>지수 추이<span class="desc">1시간마다 기록 · 쌓일수록 길어집니다</span></h2><div class="plotbox"><div class="plot" id="plot-h"></div></div></div>
   <div class="panel"><h2>폭락 단어가 들어간 뉴스<span class="desc">최근 24시간 · 최신 15건</span></h2><div class="nl" id="l-crash"></div></div>
   <div class="panel"><h2>의견<span class="desc">최근 24시간 · 왼쪽 비관(폭락 경고) · 오른쪽 낙관(반등·저가매수)</span></h2><div class="cols"><div class="nl" id="l-bear"></div><div class="nl" id="l-bull"></div></div></div>
-  <div class="panel"><h2>계산 방법과 한계</h2><div class="rl">
+  <div class="panel"><h2>뉴스 분위기 지수 계산 방법과 한계</h2><div class="rl">
     <b>① 뉴스 숫자</b> — Google 뉴스·Bing 뉴스에서 시장 뉴스 제목(영어·한국어)을 모아 중복을 지우고, '폭락·급락·패닉·붕괴·crash·plunge·sell-off…' 단어가 든 제목의 비율을 셉니다('증시'·'나스닥' 같은 일반 검색어로 모은 제목만 대상). 5%면 0점, 45% 이상이면 100점.<br>
     <b>② 의견 숫자</b> — 전망·경고·분석이 담긴 제목을 비관(폭락·침체·추가 하락 경고)과 낙관(반등·바닥·저가매수)으로 나눠 비관 비율을 셉니다. 40%면 0점, 85% 이상이면 100점. 의견이 10건 미만이면 뉴스 점수만 씁니다.<br>
-    <b>지수</b> = 두 점수의 평균 (0~100).<br>
+    <b>지수</b> = 두 점수의 평균 (0~100). 맨 위 확률 추정(약 25%)과는 별개로, 오늘 뉴스가 얼마나 시끄러운지만 보여 줍니다.<br>
     <span class="note">통계로 계산한 확률이 아니라 뉴스 분위기를 숫자로 옮긴 지수입니다. 제목 속 단어만 세기 때문에 "폭락은 없다"는 기사도 폭락 뉴스로 잡힐 수 있고, 점수 기준(5~45% 등)은 임의로 정한 값입니다. 뉴스는 주가가 빠진 뒤에 늘어나는 후행 지표라 폭락을 미리 알려 주지 못합니다. 2020년 코로나 때는 뉴스가 쏟아질 무렵 이미 S&amp;P500이 −20% 넘게 빠져 있었습니다. 투자 자문 아님.</span></div></div>
   <div class="status">데이터: Google 뉴스 RSS · Bing 뉴스 RSS · 15분마다 갱신</div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
 $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-const LV=[[20,'낮음','#5ad445','평소 수준 — 폭락 뉴스가 드묾'],[40,'보통','#a6d96a','하락 뉴스가 있지만 일상적인 수준'],[60,'주의','#f0b429','폭락 뉴스·비관 의견이 눈에 띄게 많음'],[80,'높음','#ff8a65','시장 뉴스 상당수가 폭락 얘기'],[101,'매우 높음','#f23645','뉴스 대부분이 폭락·패닉 — 코로나 때와 비슷한 분위기']];
+const LV=[[20,'낮음','#5ad445','평소 수준 — 폭락 뉴스가 드묾'],[40,'보통','#a6d96a','하락 뉴스가 있지만 일상적인 수준'],[60,'주의','#f0b429','폭락 뉴스·비관 의견이 눈에 띄게 많음'],[80,'높음','#ff8a65','시장 뉴스 상당수가 폭락 얘기'],[101,'매우 높음','#f23645','뉴스 대부분이 폭락·패닉']];
 const lv=v=>LV.find(l=>v<l[0]);
 const ago=ts=>{ const m=Math.round((Date.now()-new Date(ts))/6e4); return m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전'; };
 const row=x=>`<div class="r"><span class="tm">${ago(x.ts)}</span><span><a href="${x.link}" target="_blank" rel="noopener">${x.t.replace(/</g,'&lt;')}</a> <span class="s">${x.src}</span></span></div>`;
@@ -107,12 +142,14 @@ const row=x=>`<div class="r"><span class="tm">${ago(x.ts)}</span><span><a href="
   const q='?'+Math.floor(Date.now()/60000); let C=null, J=null;
   try{ C=await fetch('crash.json'+q).then(r=>r.ok?r.json():null); }catch(e){}
   try{ J=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null); }catch(e){}
+  if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const tg=hi*0.66, dd=(sp[n-1]/hi-1)*100;
+    $('#live-sp').innerHTML=`지금(${J.d[n-1]}): S&amp;P500 <b>${sp[n-1].toLocaleString('en-US',{maximumFractionDigits:0})}</b> · 52주 고점 대비 <b>${dd.toFixed(1)}%</b> · −34%선 <b>${tg.toLocaleString('en-US',{maximumFractionDigits:0})}</b>까지 여기서 <b>${((tg/sp[n-1]-1)*100).toFixed(1)}%</b>`; }
   if(!C||!C.s24){ $('#hero').innerHTML='<span class="note">데이터 준비 중 — 15분 안에 첫 수집이 끝납니다.</span>'; return; }
   const s=C.s24, d=C.d24, d7=C.d7, s7=C.s7, L=lv(s.total), el=$('#hero'), mins=Math.round((Date.now()/1000-C.ts)/60);
   el.style.setProperty('--hc',L[2]); el.style.setProperty('--hg',L[2]+'22'); el.style.setProperty('--hg2',L[2]+'88');
   let ref=''; if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const dd=(sp[n-1]/hi-1)*100;
     ref=`<div class="zone" style="margin-top:10px;color:#c9cfd8">참고 — 실제 주가: S&amp;P500 52주 고점 대비 <b style="color:${dd<=-20?'#f23645':dd<=-10?'#f0b429':'#5ad445'}">${dd.toFixed(1)}%</b> (${J.d[n-1]}) · 코로나 폭락은 2020년 2~3월 33일 만에 <b>−34%</b></div>`; }
-  el.innerHTML=`<div class="row1"><span class="live"><i></i>LIVE · ${C.at_kst} 수집 (${mins<1?'방금':mins+'분 전'})</span><span class="big">${s.total.toFixed(0)}<span style="font-size:18px"> / 100</span></span><span class="days"><b style="color:${L[2]}">${L[1]}</b> — ${L[3]}</span></div>
+  el.innerHTML=`<div class="row1"><span class="live"><i></i>뉴스 분위기 지수 (참고) · ${C.at_kst} 수집 (${mins<1?'방금':mins+'분 전'})</span><span class="big">${s.total.toFixed(0)}<span style="font-size:18px"> / 100</span></span><span class="days"><b style="color:${L[2]}">${L[1]}</b> — ${L[3]}</span></div>
     <div class="gz"><i id="gpin" style="left:0%"></i>${[[10,'낮음'],[30,'보통'],[50,'주의'],[70,'높음'],[90,'매우 높음']].map(([p,t])=>`<span style="left:${p}%">${t}</span>`).join('')}</div>
     <div class="zone" style="color:#c9cfd8">뉴스 점수 <b>${s.news.toFixed(0)}</b> · 의견 점수 <b>${s.opin==null?'— (의견 10건 미만)':s.opin.toFixed(0)}</b> · 7일 기준 지수 ${s7.total.toFixed(0)}</div>${ref}`;
   requestAnimationFrame(()=>setTimeout(()=>{ $('#gpin').style.left=Math.max(1,Math.min(99,s.total))+'%'; },60));
