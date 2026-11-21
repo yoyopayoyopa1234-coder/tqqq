@@ -88,46 +88,118 @@
     <span class="date" id="today"></span>
   </header>
   <div class="hero" style="--hc:#5aa9ff;--hg:rgba(90,169,255,.14);--hg2:rgba(90,169,255,.5)">
-    <div class="row1"><span class="live" style="color:#5aa9ff"><i style="animation:none"></i>추정 기준일 2026-11-21 (미국 11/20 종가 반영)</span><span class="big">약 25%</span><span class="days">범위 <b>20~30%</b></span></div>
-    <div class="zone" style="margin-top:6px;color:#c9cfd8">기준: S&amp;P500이 앞으로 1년 안에 10월 6일 고점 대비 <b>−34%</b>(코로나 때 낙폭, 지수 약 5,160선)까지 내려가는 경우</div>
+    <div class="row1"><span class="live" style="color:#5aa9ff"><i></i><span id="h-live">과거 기록 계산 중…</span></span><span class="big" id="h-big">–</span><span class="days" id="h-days"></span></div>
+    <div class="zone" style="margin-top:6px;color:#c9cfd8">기준: 내 종목 <b>QQQ(나스닥100)</b>가 앞으로 1년 안에 52주 고점 대비 <b>−34%</b>(코로나 때 낙폭)까지 내려가는 경우</div>
     <div class="pr">
-      <div><div class="top"><span>S&amp;P500이 1년 안에 −34%</span><b>20~30%</b></div><div class="trk"><i style="left:20%;width:10%"></i><u style="left:25%"></u></div></div>
-      <div><div class="top"><span>나스닥이 1년 안에 −34%</span><b>35~40%</b></div><div class="trk"><i style="left:35%;width:5%"></i><u style="left:37.5%"></u></div></div>
-      <div><div class="top"><span>속도까지 코로나급 (한 달여 만에 −34%)</span><b>10% 미만</b></div><div class="trk"><i style="left:0;width:10%"></i><u style="left:5%"></u></div></div>
+      <div><div class="top"><span>① 과거 40년 실제 기록 <span class="note">매일 자동 계산</span></span><b id="b-stat">–</b></div><div class="trk"><i id="t-stat" style="left:0;width:0"></i><u id="u-stat" style="left:0"></u></div></div>
+      <div><div class="top"><span>② 뉴스·전문가 종합 판단값 <span class="note">11/21 고정</span></span><b>35~40%</b></div><div class="trk"><i style="left:35%;width:5%"></i><u style="left:37.5%"></u></div></div>
+      <div><div class="top"><span>③ 속도까지 코로나급 (석 달 안에 −34%) <span class="note">과거 기록</span></span><b id="b-fast">–</b></div><div class="trk"><i id="t-fast" style="left:0;width:0"></i><u id="u-fast" style="left:0"></u></div></div>
       <div class="ax"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
     </div>
-    <div class="zone" id="live-sp" style="color:#c9cfd8"></div>
-    <div class="action">뉴스에 나온 숫자와 전문가 의견을 종합한 <b>판단값</b>입니다. 계산으로 증명한 확률이 아니고, 자동으로 바뀌지 않습니다(기준일 고정). 위 S&amp;P500 현재 위치만 매일 갱신됩니다.</div>
+    <div class="zone" id="live-q" style="color:#c9cfd8"></div>
+    <div class="action" id="h-act">①은 지수 기록을 세어 본 숫자이고 ②는 사람의 판단입니다. 둘 다 확정된 확률이 아닙니다.</div>
   </div>
 
-  <div class="panel"><h2>숫자를 만든 재료<span class="desc">뉴스 숫자 · 의견 숫자</span></h2><div class="tw"><table class="t">
+  <div class="panel"><h2>내 QQQ 가격표<span class="desc" id="q-desc">52주 고점 기준</span></h2><div class="tw"><table class="t" id="q-tbl"></table></div>
+    <div class="rl note" id="q-note"></div></div>
+
+  <div class="panel"><h2>40년 실제 기록 — 나스닥100<span class="desc">52주 고점 대비 이만큼 빠진 뒤 1년 동안 벌어진 일</span></h2><div class="tw"><table class="t" id="n-tbl"></table></div>
+    <div class="rl"><b id="e-title">지금과 같은 낙폭이었던 때</b><div class="tw" style="padding:0;margin-top:6px"><table class="t" id="e-tbl"></table></div>
+    <div class="note" style="margin-top:8px">세는 방법: 종가가 52주 고점 대비 해당 낙폭에 처음 닿은 날을 1건으로 셈. 낙폭이 −5% 안쪽으로 회복된 뒤 다시 닿아야 새 건으로 셈. 이후 1년(252거래일) 최저 종가를 그때의 52주 고점과 비교. 1년이 아직 안 지난 건은 비율 계산에서 제외. 데이터: 나스닥100 지수 1985년~ (Yahoo Finance).</div></div></div>
+
+  <div class="panel"><h2>나스닥100 낙폭 40년<span class="desc">52주 고점 대비 · 점선은 −20%, −34%</span></h2><div class="plotbox"><div id="plot-h" class="plot"></div></div></div>
+
+  <div class="panel"><h2>비교 — S&amp;P500<span class="desc">같은 방법</span></h2><div class="tw"><table class="t" id="s-tbl"></table></div>
+    <div class="rl note" id="s-note"></div></div>
+
+  <div class="panel"><h2>지금 움직이는 숫자<span class="desc">자동 갱신</span></h2><div class="tw"><table class="t" id="m-tbl">
+    <tr><th>지표</th><th>현재</th><th style="text-align:left">읽는 법</th></tr>
+    <tr><td>VIX (공포지수)</td><td id="m-vix">수집 대기</td><td style="text-align:left;white-space:normal">20 아래 평온 · 30 위 공포 · 40 위는 2008년, 2020년, 2025년 4월 수준</td></tr>
+    <tr><td>고수익채 스프레드</td><td id="m-hy">수집 대기</td><td style="text-align:left;white-space:normal">3%대 평온 · 5% 위 신용 불안 · 8% 위 위기. 주가만 빠지고 여기가 조용하면 연쇄 부도형 폭락은 아님</td></tr>
+    <tr><td id="m-fomc-l">12월 FOMC</td><td id="m-fomc">–</td><td style="text-align:left;white-space:normal">0.5%p 인상 확률이 올라오면 폭락 쪽, 동결 확률이 올라오면 반대쪽 · <a href="fedwatch.html" style="color:var(--accent)">FedWatch</a></td></tr>
+    <tr><td>공포탐욕지수</td><td id="m-fg">–</td><td style="text-align:left;white-space:normal">25 아래 극단적 공포 · <a href="fg.html" style="color:var(--accent)">공탐</a></td></tr></table></div></div>
+
+  <div class="panel"><h2>②번 판단값을 만든 재료<span class="desc">2026-11-21 리포트 작성 시점 값 · 이후 갱신 안 됨</span></h2><div class="tw"><table class="t">
     <tr><th>재료</th><th>숫자</th><th style="text-align:left">어떻게 썼나</th></tr>
-    <tr><td>폴리마켓</td><td>18% 선</td><td style="text-align:left;white-space:normal">하한선. 올해 안 AI 거품 붕괴 확률(기준에 따라 16~24%). 11/20 급락 이전 수치</td></tr>
+    <tr><td>폴리마켓</td><td>18% 선</td><td style="text-align:left;white-space:normal">하한선. 올해 안 AI 거품 붕괴 확률(기준에 따라 16~24%). 11/20 급락 이전 수치이고 기사 인용값이라 직접 확인은 못 함</td></tr>
     <tr><td>스티브 행키</td><td>50% 미만</td><td style="text-align:left;white-space:normal">상한선. 11월 초 대형 위기 가능성 경고</td></tr>
     <tr><td>TS 롬바드</td><td>확률 없음</td><td style="text-align:left;white-space:normal">미국 주식 30% 이상 하락 시나리오 — 낙폭이 코로나급과 비슷해 기준점으로 삼음</td></tr>
-    <tr><td>오언 라몬트</td><td>70%</td><td style="text-align:left;white-space:normal">참고만. 버블 상태일 확률이지 폭락 확률이 아님</td></tr>
-    <tr><td>현재 위치</td><td>−11.6%</td><td style="text-align:left;white-space:normal">S&amp;P500 종가 6,910.39 — 5,160선까지 여기서 약 25% 더 내려야 함</td></tr></table></div>
-    <div class="rl"><b>계산 흐름</b><br>① <b>기본값 15% 안팎</b> — 과거에 10%대 조정이 −20% 약세장으로 번진 경우가 대략 3분의 1, 그중 −34%까지 간 경우가 절반 이하 (일반 지식으로 잡은 대략값)<br>
-    ② <b>올린 이유</b> — 연준 금리 인상 중이고 12월 추가 인상이 거의 확실 · 실러 CAPE 40 초과 · 코어위브 채권 수익률 16% 초과 등 AI 부채 스트레스 · 금요일 VIX 종가 39.5<br>
-    ③ <b>40% 이상으로 올리지 않은 이유</b> — 엔비디아 분기 매출이 예상을 넘는 등 이익이 실제로 있음 · 고수익채 스프레드 3.47%로 위기 수준 아님 · TS 롬바드도 2008년식 연쇄 부도는 예상하지 않음</div></div>
+    <tr><td>오언 라몬트</td><td>70%</td><td style="text-align:left;white-space:normal">참고만. 버블 상태일 확률이지 폭락 확률이 아님</td></tr></table></div>
+    <div class="rl"><b>판단값이 올라가는 경우</b> — 12월 FOMC 0.5%p 인상 또는 추가 인상 예고 · 엔비디아 SEC 건이 정식 조사로 확대 · 고수익채 스프레드 계속 확대 · 하이퍼스케일러 설비투자 가이던스 하향<br>
+    <b>내려가는 경우</b> — 0.25%p 인상 뒤 속도 조절 신호 · SEC 건 단순 문의로 마무리 · 스프레드 3%대 중반 안정 · 설비투자 가이던스 유지<br>
+    <span class="note">S&amp;P500 판단값은 약 25%(20~30%), 속도까지 코로나급은 10% 미만 · 출처: <a href="https://www.blockmedia.co.kr/archives/1117864" target="_blank" rel="noopener" style="color:var(--accent)">블록미디어(폴리마켓)</a> · <a href="https://finbold.com/analyst-warns-ai-bubble-is-about-to-burst-as-sp-500-plummets/" target="_blank" rel="noopener" style="color:var(--accent)">Finbold(행키)</a> · <a href="https://www.fool.com/investing/2026/11/01/a-wall-street-firm-modeled-out-an-ai-crash-s-and-p-500-down-30-usd20-trillion-gone-but-here-s-what-happens-next/" target="_blank" rel="noopener" style="color:var(--accent)">Motley Fool(TS 롬바드)</a> · <a href="https://claude.ai/artifact/FrH32DfWPFqhDh4vwPNRtD" target="_blank" rel="noopener" style="color:var(--accent)">원문 추정 리포트</a></span></div></div>
 
-  <div class="panel"><h2>이 숫자가 움직이는 조건</h2><div class="tw"><table class="t">
-    <tr><th>지표</th><th style="text-align:left">확률이 올라가는 경우</th><th style="text-align:left">확률이 내려가는 경우</th></tr>
-    <tr><td>12월 FOMC</td><td style="text-align:left;white-space:normal">0.5%p 인상 또는 추가 인상 예고</td><td style="text-align:left;white-space:normal">0.25%p 인상 뒤 속도 조절 신호</td></tr>
-    <tr><td>엔비디아 SEC 건</td><td style="text-align:left;white-space:normal">정식 조사로 확대, 매출 인식 문제 확인</td><td style="text-align:left;white-space:normal">단순 문의로 마무리, 후임 CEO 확정</td></tr>
-    <tr><td>고수익채 스프레드</td><td style="text-align:left;white-space:normal">계속 확대</td><td style="text-align:left;white-space:normal">3%대 중반에서 안정</td></tr>
-    <tr><td>하이퍼스케일러 설비투자</td><td style="text-align:left;white-space:normal">가이던스 하향, 데이터센터 취소 확대</td><td style="text-align:left;white-space:normal">가이던스 유지</td></tr></table></div>
-    <div class="rl note">12월 FOMC와 엔비디아 SEC 건은 결과에 따라 한 번에 10%p씩 움직일 수 있는 변수 · 출처: <a href="https://www.blockmedia.co.kr/archives/1117864" target="_blank" rel="noopener" style="color:var(--accent)">블록미디어(폴리마켓)</a> · <a href="https://finbold.com/analyst-warns-ai-bubble-is-about-to-burst-as-sp-500-plummets/" target="_blank" rel="noopener" style="color:var(--accent)">Finbold(행키)</a> · <a href="https://www.fool.com/investing/2026/11/01/a-wall-street-firm-modeled-out-an-ai-crash-s-and-p-500-down-30-usd20-trillion-gone-but-here-s-what-happens-next/" target="_blank" rel="noopener" style="color:var(--accent)">Motley Fool(TS 롬바드)</a> · <a href="https://www.upi.com/Top_News/US/2026/11/20/stocks-dow-jones-nasdaq-correction-territory/1061795214998/" target="_blank" rel="noopener" style="color:var(--accent)">UPI(11/20 종가)</a> · <a href="https://claude.ai/artifact/FrH32DfWPFqhDh4vwPNRtD" target="_blank" rel="noopener" style="color:var(--accent)">원문 추정 리포트</a> · 투자 자문 아님</div></div>
+  <div class="panel"><h2>이 페이지의 한계</h2><div class="rl">
+    · <b>표본이 적습니다.</b> 지금 낙폭 수준의 과거 사례는 10건 안팎이라 한두 건만 달라져도 비율이 10%p씩 바뀝니다. 2000년, 2008년처럼 같은 약세장 안의 사례가 여러 번 세어지기도 합니다.<br>
+    · <b>과거 빈도는 미래 확률이 아닙니다.</b> 금리, 밸류에이션, AI 투자 사이클은 매번 다릅니다.<br>
+    · <b>지수 기준입니다.</b> QQQ 가격은 나스닥100을 따라가지만 배당과 보수 때문에 소수점 수준 차이가 납니다.<br>
+    · <b>①과 ②가 비슷하게 나온 것은 서로를 증명하지 않습니다.</b> ②는 사람이 뉴스와 의견을 보고 정한 값입니다.<br>
+    · 투자 자문이 아닙니다.</div></div>
 
-  <div class="status">확률은 2026-11-21 기준 판단값(고정) · S&amp;P500 현재 위치만 매일 갱신 (Yahoo Finance)</div>
+  <div class="status" id="st">불러오는 중…</div>
 </div>
+<style>#plot-h{height:360px} td[style*="white-space:normal"]{min-width:210px}</style>
 <script>
 const $=s=>document.querySelector(s);
 $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+const f1=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(1)+'%', pc=v=>Math.round(v)+'%', nf=(v,d=0)=>v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const jget=async u=>{ try{ const r=await fetch(u+(u.includes('?')?'&':'?')+Math.floor(Date.now()/600000)); return r.ok?await r.json():null; }catch(e){ return null; } };
+const W=252;
+function prep(px){ const n=px.length, hi=new Array(n), dd=new Array(n); for(let i=0;i<n;i++){ let m=0; for(let k=Math.max(0,i-W+1);k<=i;k++) if(px[k]>m) m=px[k]; hi[i]=m; dd[i]=px[i]/m-1; } return {px,hi,dd,n}; }
+// thr: 음수 비율. 낙폭이 −5% 안쪽으로 회복돼야 다음 건으로 셈
+function episodes(P,thr){ const out=[]; let armed=true; for(let i=W;i<P.n;i++){ if(armed&&P.dd[i]<=thr){ const e={i,hi:P.hi[i],done:i+W<P.n}; let mn=Infinity,mn63=Infinity; const end=Math.min(P.n-1,i+W); for(let k=i;k<=end;k++){ if(P.px[k]<mn) mn=P.px[k]; if(k<=i+63&&P.px[k]<mn63) mn63=P.px[k]; } e.min=mn/e.hi-1; e.min63=mn63/e.hi-1; e.ret=e.done?P.px[i+W]/P.px[i]-1:null; out.push(e); armed=false; } else if(!armed&&P.dd[i]>-0.05) armed=true; } return out; }
+function stat(P,thr){ const all=episodes(P,thr), E=all.filter(e=>e.done), n=E.length, c=x=>E.filter(e=>e.min<=x).length; const r=E.map(e=>e.ret).sort((a,b)=>a-b);
+  return {all,E,n,r20:c(-0.20),r34:c(-0.34),r50:c(-0.50),fast:E.filter(e=>e.min63<=-0.34).length,med:n?(n%2?r[(n-1)/2]:(r[n/2-1]+r[n/2])/2):null,up:E.filter(e=>e.ret>0).length}; }
+const frac=(a,n)=>n?`${n}번 중 ${a}번 <span class="note">(${pc(a/n*100)})</span>`:'–';
+function table(P,cur,el){ const rows=[-0.10,-0.15,-0.20,-0.25,-0.30]; if(cur<=-0.10&&!rows.some(r=>Math.abs(r-cur)<0.005)) rows.push(cur); rows.sort((a,b)=>b-a);
+  let h='<tr><th>고점 대비</th><th>사례</th><th>−20%까지</th><th>−34%까지</th><th>−50%까지</th><th>1년 뒤 올랐던 경우</th><th>1년 뒤 수익률 중앙값</th></tr>';
+  for(let t of rows){ const me=Math.abs(t-cur)<0.005; if(me) t=cur; const s=stat(P,t); h+=`<tr${me?' class="me"':''}><td>${f1(t*100)}${me?' ← 지금':''}</td><td>${s.n}건</td><td>${t<=-0.2?'–':frac(s.r20,s.n)}</td><td>${frac(s.r34,s.n)}</td><td>${frac(s.r50,s.n)}</td><td>${frac(s.up,s.n)}</td><td>${s.med==null?'–':f1(s.med*100)}</td></tr>`; }
+  el.innerHTML=h; }
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
 (async()=>{
-  let J=null; try{ J=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null); }catch(e){}
-  if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const tg=hi*0.66, dd=(sp[n-1]/hi-1)*100;
-    $('#live-sp').innerHTML=`지금(${J.d[n-1]}): S&amp;P500 <b>${sp[n-1].toLocaleString('en-US',{maximumFractionDigits:0})}</b> · 52주 고점 대비 <b>${dd.toFixed(1)}%</b> · −34%선 <b>${tg.toLocaleString('en-US',{maximumFractionDigits:0})}</b>까지 여기서 <b>${((tg/sp[n-1]-1)*100).toFixed(1)}%</b>`; }
+  const [J,T,F,C,G]=await Promise.all([jget('tq40.json'),jget('tqqq_data.json'),jget('fedwatch.json'),jget('crash_data.json'),jget('fg_hist.json')]);
+  if(!J||!J.ndx){ $('#st').innerHTML='<span class="err">지수 데이터를 불러오지 못했습니다</span>'; return; }
+  const N=prep(J.ndx), S=prep(J.spx), last=N.n-1, d=J.d, dd=N.dd[last], inCorr=dd<=-0.10, thr=inCorr?dd:-0.10;
+  const st=stat(N,thr), p34=st.n?st.r34/st.n*100:0, pf=st.n?st.fast/st.n*100:0;
+  // 표본이 적어 구간으로 표시 (윌슨 80% 구간)
+  const wil=(k,n)=>{ if(!n) return [0,0]; const z=1.2816,p=k/n,den=1+z*z/n,c=(p+z*z/(2*n))/den,h=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/den; return [Math.max(0,c-h)*100,Math.min(1,c+h)*100]; };
+  const [lo,hi]=wil(st.r34,st.n), [flo,fhi]=wil(st.fast,st.n);
+  $('#h-live').textContent=`${d[last]} 종가 기준 · 나스닥100 52주 고점 대비 ${f1(dd*100)}`;
+  $('#h-big').textContent=`${st.n}번 중 ${st.r34}번`;
+  $('#h-days').innerHTML=`과거 비율 <b>${pc(p34)}</b> · 표본이 적어 대략 ${pc(lo)}~${pc(hi)}`;
+  $('#b-stat').innerHTML=`${pc(p34)} <span class="note">(${st.n}번 중 ${st.r34}번)</span>`; $('#t-stat').style.cssText=`left:${lo}%;width:${hi-lo}%`; $('#u-stat').style.left=p34+'%';
+  $('#b-fast').innerHTML=`${pc(pf)} <span class="note">(${st.n}번 중 ${st.fast}번)</span>`; $('#t-fast').style.cssText=`left:${flo}%;width:${fhi-flo}%`; $('#u-fast').style.left=pf+'%';
+  $('#h-act').innerHTML=(inCorr?`나스닥100이 고점 대비 <b>${f1(dd*100)}</b>까지 빠졌던 과거 ${st.n}번 가운데, 1년 안에 −34%까지 간 것이 <b>${st.r34}번</b>, 1년 뒤 오히려 올라 있던 것이 <b>${st.up}번</b>(중앙값 ${st.med==null?'–':f1(st.med*100)})입니다. `:`지금 낙폭은 ${f1(dd*100)}로 조정 구간(−10%)이 아닙니다. 위 숫자는 <b>−10%에 닿았을 때</b> 기준입니다. `)+`①은 기록을 센 숫자, ②는 사람의 판단값이며 둘 다 확정된 확률이 아닙니다.`;
+  table(N,inCorr?dd:0,$('#n-tbl')); const sdd=S.dd[S.n-1]; table(S,sdd<=-0.10?sdd:0,$('#s-tbl'));
+  const ss=stat(S,sdd<=-0.10?sdd:-0.10); $('#s-note').innerHTML=`S&amp;P500 지금: ${nf(S.px[S.n-1],0)} · 52주 고점 대비 <b>${f1(sdd*100)}</b> · 같은 낙폭이었던 과거 ${ss.n}번 중 −34%까지 간 것은 <b>${ss.r34}번(${ss.n?pc(ss.r34/ss.n*100):'–'})</b> · 리포트 판단값은 약 25%. 나스닥이 S&amp;P보다 더 깊이 빠져 있어 QQQ 쪽 비율이 더 높게 나옵니다.`;
+  // 지금 수준 사례 목록
+  $('#e-title').textContent=inCorr?`지금(${f1(dd*100)})과 같은 낙폭이었던 때`:'−10%에 닿았던 때';
+  $('#e-tbl').innerHTML='<tr><th>닿은 날</th><th>이후 1년 최저 (고점 대비)</th><th>−34% 도달</th><th>1년 뒤 수익률</th></tr>'+st.all.map(e=>`<tr><td>${d[e.i]}${e.done?'':' (진행 중)'}</td><td>${f1(e.min*100)}</td><td>${e.min<=-0.34?'<span class="dn">도달</span>':(e.done?'안 감':'–')}</td><td>${e.ret==null?'–':`<span class="${e.ret>=0?'up':'dn'}">${f1(e.ret*100)}</span>`}</td></tr>`).join('');
+  // QQQ 가격표
+  const q=T&&T.ohlc&&T.ohlc.QQQ_1d;
+  if(q&&q.length>W){ const n=q.length, c=q[n-1][4]; let qh=0,qi=0; for(let k=n-W;k<n;k++) if(q[k][4]>qh){ qh=q[k][4]; qi=k; } const qd=c/qh-1, dt=t=>new Date(t*1000).toISOString().slice(0,10);
+    $('#q-desc').textContent=`52주 최고 종가 $${nf(qh,2)} (${dt(q[qi][0])}) 기준`;
+    $('#live-q').innerHTML=`QQQ 지금(${dt(q[n-1][0])}): <b>$${nf(c,2)}</b> · 52주 고점 대비 <b>${f1(qd*100)}</b> · −34%선 <b>$${nf(qh*0.66,2)}</b>까지 여기서 <b>${f1((qh*0.66/c-1)*100)}</b>`;
+    const lv=[[-0.10,'조정'],[-0.20,'약세장'],[-0.34,'코로나급'],[-0.50,'2008년급'],[-0.83,'2000년 닷컴 붕괴']]; const cnt={[-0.20]:st.r20,[-0.34]:st.r34,[-0.50]:st.r50};
+    let h=`<tr><th>고점 대비</th><th>QQQ 가격</th><th>지금부터</th><th>1억원이면</th><th style="text-align:left">과거 같은 낙폭에서 1년 안에 여기까지</th></tr>`;
+    for(const [t,nm] of lv){ const p=qh*(1+t), passed=c<=p*1.01; h+=`<tr${t===-0.34?' class="me"':''}><td>${f1(t*100)} <span class="note">${nm}</span></td><td>$${nf(p,2)}</td><td>${passed?(c<=p?'이미 지남':'바로 앞'):f1((p/c-1)*100)}</td><td>${passed?'–':nf(Math.round(1e4*p/c))+'만원'}</td><td style="text-align:left">${passed?'–':(cnt[t]!=null&&inCorr?`${st.n}번 중 ${cnt[t]}번`:(t===-0.83?'40년에 1번':'–'))}</td></tr>`; }
+    $('#q-tbl').innerHTML=h;
+    $('#q-note').innerHTML=`지금 QQQ에 1억원이 있다면 각 선에서 평가액이 얼마가 되는지 보여 줍니다(환율 변동 제외). 회복 기간: 코로나 때는 저점까지 1달, 전고점 회복까지 3달 반 · 2022년은 저점까지 1년, 회복까지 2년 · 2000년은 저점까지 2년 반, 회복까지 15년.`; }
+  else $('#q-tbl').innerHTML='<tr><td>QQQ 가격을 불러오지 못했습니다</td></tr>';
+  // 움직이는 숫자
+  if(C&&C.vix&&C.vix.length){ const v=C.vix, x=v[v.length-1][1], rank=v.filter(r=>r[1]<=x).length/v.length*100; $('#m-vix').innerHTML=`<b>${x.toFixed(1)}</b> <span class="note">최근 2년 중 상위 ${Math.max(1,Math.round(100-rank))}%</span>`; }
+  if(C&&C.hy&&C.hy.length){ const v=C.hy, x=v[v.length-1], m=v[Math.max(0,v.length-22)]; $('#m-hy').innerHTML=`<b>${x[1].toFixed(2)}%</b> <span class="note">${x[0]} · 한 달 전 ${m[1].toFixed(2)}%</span>`; }
+  if(F&&F.fw&&F.fw.meets&&F.fw.meets.length){ const m=F.fw.meets[0], base=Math.round(F.fw.lo*100); let big=0; for(const k in m.probs) if(+k>=base+50) big+=m.probs[k]; const mo=+m.date.slice(5,7);
+    $('#m-fomc-l').textContent=`${mo}월 FOMC (${m.date.slice(5)})`; $('#m-fomc').innerHTML=`동결 ${m.hold.toFixed(0)}% · 인상 <b>${m.hike.toFixed(0)}%</b><br><span class="note">그중 0.5%p 이상 ${big.toFixed(0)}% · 인하 ${m.cut.toFixed(0)}%</span>`; }
+  if(G){ const a=G.d&&G.v?G.v:(Array.isArray(G)?G:(G.data||G.rows||null)); let x=null; if(a&&a.length){ const l=a[a.length-1]; x=typeof l==='number'?l:(Array.isArray(l)?l[l.length-1]:(l.y??l.v??l.value)); } if(x!=null&&isFinite(x)) $('#m-fg').innerHTML=`<b>${Math.round(x)}</b>`; }
+  $('#st').textContent=`지수 ${d[last]} 종가까지 · 과거 기록과 QQQ 가격표는 매일 자동 갱신 · 판단값은 2026-11-21 고정 (Yahoo Finance · FRED)`;
+  // 낙폭 차트
+  for(const src of ['https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js','https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js','https://cdn.plot.ly/plotly-2.35.2.min.js']){ try{ await loadScript(src); if(window.Plotly) break; }catch(e){} }
+  if(!window.Plotly) return;
+  const xs=d.slice(W), ys=N.dd.slice(W).map(v=>+(v*100).toFixed(2)), hl=(y,c)=>({type:'line',xref:'paper',x0:0,x1:1,y0:y,y1:y,line:{color:c,width:1,dash:'dash'}});
+  Plotly.react('plot-h',[{x:xs,y:ys,type:'scatter',mode:'lines',line:{color:'#5aa9ff',width:1},fill:'tozeroy',fillcolor:'rgba(90,169,255,.18)',name:'낙폭',hovertemplate:'%{x}<br>%{y:.1f}%<extra></extra>'},
+    {x:[d[last]],y:[+(dd*100).toFixed(1)],type:'scatter',mode:'markers+text',marker:{color:'#f0b429',size:9},text:['지금 '+f1(dd*100)],textposition:'middle left',textfont:{color:'#f0b429',size:12},hoverinfo:'skip'}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#c9cfd8',size:11},margin:{l:44,r:14,t:10,b:28},showlegend:false,dragmode:'pan',xaxis:{gridcolor:'#262c35'},yaxis:{gridcolor:'#262c35',ticksuffix:'%',range:[-90,3],fixedrange:true},shapes:[hl(-20,'#8a93a3'),hl(-34,'#f23645')]},{displayModeBar:false,responsive:true,scrollZoom:true});
 })();
 </script>
 </body>
