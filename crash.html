@@ -82,7 +82,15 @@
 <body>
 <div class="wrap">
   <header>
-    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="btc.html">BTC</a><a href="plan.html">목표 계획서</a><a href="crash.html" class="cur">폭락 가능성</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>document.addEventListener("click",e=>{document.querySelectorAll(".nav .more[open]").forEach(d=>{if(!d.contains(e.target))d.removeAttribute("open");});});</script>
+    <style>.nav .more{position:relative;display:inline-block;margin:0;font-size:12px;line-height:normal;color:inherit}.nav .more>summary::before{content:none!important}.nav .more>summary{display:inline-block;background:transparent;gap:0}.nav .more>summary{list-style:none;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:6px;color:var(--muted);border:1px solid transparent;user-select:none}.nav .more>summary::-webkit-details-marker{display:none}.nav .more>summary.cur,.nav .more[open]>summary{color:var(--fg);border-color:var(--line);background:var(--panel)}.nav .more>div{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.55);animation:navdrop .18s ease-out}.nav .more>div a{white-space:nowrap}@keyframes navdrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}</style><nav class="nav"><a href="spband.html">S&amp;P 반반형 진입탈출선</a><a href="soxl.html">SOXL</a><a href="analysis.html">TQQQ</a><a href="mstr.html">MSTR</a><a href="btc.html">BTC</a><a href="plan.html">목표 계획서</a><a href="crash.html" class="cur">폭락 가능성</a><a href="fg.html">공탐</a><a href="fedwatch.html">FedWatch</a><details class="more"><summary>기타 ▾</summary><div><a href="banban.html">반반형</a><a href="simple.html">간단지표</a><a href="board.html">TQQQ 신호판</a><a href="limits.html">매매법 한계</a><a href="quotes.html">명언</a><a href="tax.html">절세</a></div></details></nav><script>
+const $=s=>document.querySelector(s);
+$('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+(async()=>{
+  let J=null; try{ J=await fetch('tq40.json?'+Math.floor(Date.now()/600000)).then(r=>r.ok?r.json():null); }catch(e){}
+  if(J&&J.spx){ const sp=J.spx, n=sp.length; let hi=0; for(let k=Math.max(0,n-252);k<n;k++) hi=Math.max(hi,sp[k]); const tg=hi*0.66, dd=(sp[n-1]/hi-1)*100;
+    $('#live-sp').innerHTML=`지금(${J.d[n-1]}): S&amp;P500 <b>${sp[n-1].toLocaleString('en-US',{maximumFractionDigits:0})}</b> · 52주 고점 대비 <b>${dd.toFixed(1)}%</b> · −34%선 <b>${tg.toLocaleString('en-US',{maximumFractionDigits:0})}</b>까지 여기서 <b>${((tg/sp[n-1]-1)*100).toFixed(1)}%</b>`; }
+})();
+</script>
     <span style="flex-basis:100%;height:0"></span>
     <h1>코로나급 폭락 가능성</h1>
     <span class="date" id="today"></span>
@@ -97,7 +105,7 @@
       <div class="ax"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
     </div>
     <div class="zone" id="live-sp" style="color:#c9cfd8"></div>
-    <div class="action">뉴스에 나온 숫자와 전문가 의견을 종합한 <b>판단값</b>입니다. 계산으로 증명한 확률이 아니고, 자동으로 바뀌지 않습니다(기준일 고정). 아래 "뉴스 분위기 지수"만 15분마다 갱신됩니다.</div>
+    <div class="action">뉴스에 나온 숫자와 전문가 의견을 종합한 <b>판단값</b>입니다. 계산으로 증명한 확률이 아니고, 자동으로 바뀌지 않습니다(기준일 고정). 위 S&amp;P500 현재 위치만 매일 갱신됩니다.</div>
   </div>
 
   <div class="panel"><h2>숫자를 만든 재료<span class="desc">뉴스 숫자 · 의견 숫자</span></h2><div class="tw"><table class="t">
@@ -119,17 +127,7 @@
     <tr><td>하이퍼스케일러 설비투자</td><td style="text-align:left;white-space:normal">가이던스 하향, 데이터센터 취소 확대</td><td style="text-align:left;white-space:normal">가이던스 유지</td></tr></table></div>
     <div class="rl note">12월 FOMC와 엔비디아 SEC 건은 결과에 따라 한 번에 10%p씩 움직일 수 있는 변수 · 출처: <a href="https://www.blockmedia.co.kr/archives/1117864" target="_blank" rel="noopener" style="color:var(--accent)">블록미디어(폴리마켓)</a> · <a href="https://finbold.com/analyst-warns-ai-bubble-is-about-to-burst-as-sp-500-plummets/" target="_blank" rel="noopener" style="color:var(--accent)">Finbold(행키)</a> · <a href="https://www.fool.com/investing/2026/11/01/a-wall-street-firm-modeled-out-an-ai-crash-s-and-p-500-down-30-usd20-trillion-gone-but-here-s-what-happens-next/" target="_blank" rel="noopener" style="color:var(--accent)">Motley Fool(TS 롬바드)</a> · <a href="https://www.upi.com/Top_News/US/2026/11/20/stocks-dow-jones-nasdaq-correction-territory/1061795214998/" target="_blank" rel="noopener" style="color:var(--accent)">UPI(11/20 종가)</a> · <a href="https://claude.ai/artifact/FrH32DfWPFqhDh4vwPNRtD" target="_blank" rel="noopener" style="color:var(--accent)">원문 추정 리포트</a> · 투자 자문 아님</div></div>
 
-  <div id="hero" class="hero" style="--hc:#8a93a3;--hg:rgba(138,147,163,.12);--hg2:rgba(138,147,163,.5)"><div class="muted">불러오는 중…</div></div>
-  <div class="panel"><h2>뉴스 분위기 — 두 가지 숫자<span class="desc">최근 24시간 · 괄호는 최근 7일</span></h2><div class="body"><div class="kv4" id="nums"></div><div class="tw"><table class="t" id="tbl"></table></div></div></div>
-  <div class="panel"><h2>지수 추이<span class="desc">1시간마다 기록 · 쌓일수록 길어집니다</span></h2><div class="plotbox"><div class="plot" id="plot-h"></div></div></div>
-  <div class="panel"><h2>폭락 단어가 들어간 뉴스<span class="desc">최근 24시간 · 최신 15건</span></h2><div class="nl" id="l-crash"></div></div>
-  <div class="panel"><h2>의견<span class="desc">최근 24시간 · 왼쪽 비관(폭락 경고) · 오른쪽 낙관(반등·저가매수)</span></h2><div class="cols"><div class="nl" id="l-bear"></div><div class="nl" id="l-bull"></div></div></div>
-  <div class="panel"><h2>뉴스 분위기 지수 계산 방법과 한계</h2><div class="rl">
-    <b>① 뉴스 숫자</b> — Google 뉴스·Bing 뉴스에서 시장 뉴스 제목(영어·한국어)을 모아 중복을 지우고, '폭락·급락·패닉·붕괴·crash·plunge·sell-off…' 단어가 든 제목의 비율을 셉니다('증시'·'나스닥' 같은 일반 검색어로 모은 제목만 대상). 5%면 0점, 45% 이상이면 100점.<br>
-    <b>② 의견 숫자</b> — 전망·경고·분석이 담긴 제목을 비관(폭락·침체·추가 하락 경고)과 낙관(반등·바닥·저가매수)으로 나눠 비관 비율을 셉니다. 40%면 0점, 85% 이상이면 100점. 의견이 10건 미만이면 뉴스 점수만 씁니다.<br>
-    <b>지수</b> = 두 점수의 평균 (0~100). 맨 위 확률 추정(약 25%)과는 별개로, 오늘 뉴스가 얼마나 시끄러운지만 보여 줍니다.<br>
-    <span class="note">통계로 계산한 확률이 아니라 뉴스 분위기를 숫자로 옮긴 지수입니다. 제목 속 단어만 세기 때문에 "폭락은 없다"는 기사도 폭락 뉴스로 잡힐 수 있고, 점수 기준(5~45% 등)은 임의로 정한 값입니다. 뉴스는 주가가 빠진 뒤에 늘어나는 후행 지표라 폭락을 미리 알려 주지 못합니다. 2020년 코로나 때는 뉴스가 쏟아질 무렵 이미 S&amp;P500이 −20% 넘게 빠져 있었습니다. 투자 자문 아님.</span></div></div>
-  <div class="status">데이터: Google 뉴스 RSS · Bing 뉴스 RSS · 15분마다 갱신</div>
+  <div class="status">확률은 2026-11-21 기준 판단값(고정) · S&amp;P500 현재 위치만 매일 갱신 (Yahoo Finance)</div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
