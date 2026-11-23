@@ -36,7 +36,12 @@ def ohlc_since(sym, iv, p1=1262304000):
         if c is None: continue
         o, h, l = q["open"][i] or c, q["high"][i] or c, q["low"][i] or c
         out.append([t, round(o, 4), round(max(h, o, c), 4), round(min(l, o, c), 4), round(c, 4)])
-    while len(out) >= 2 and day(out[-1][0]) == day(out[-2][0]):   # 진행 중인 봉 중복 → 합침
+    off = (r.get("meta") or {}).get("gmtoffset", 0) or 0
+    def dup(a, b):   # 진행 중인 봉을 한 번 더 보내는 경우 (월봉은 같은 달, 주봉은 7일 이내, 일봉은 같은 날)
+        if iv == "1mo": return time.gmtime(a + off + 43200)[:2] == time.gmtime(b + off)[:2]
+        if iv == "1wk": return b - a < 7 * 86400
+        return day(a) == day(b)
+    while len(out) >= 2 and dup(out[-2][0], out[-1][0]):
         a, b = out[-2], out[-1]; out[-2:] = [[a[0], a[1], max(a[2], b[2]), min(a[3], b[3]), b[4]]]
     return out
 
