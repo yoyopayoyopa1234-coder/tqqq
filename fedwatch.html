@@ -49,6 +49,7 @@
   .hero .main { display:grid; grid-template-columns:auto 1fr; gap:6px 22px; align-items:end; margin-top:14px; } @media (max-width:640px){ .hero .main { grid-template-columns:1fr; } }
   .bigp .k { font-size:12px; color:var(--muted); } .bigp .v { font-size:56px; font-weight:900; line-height:1; letter-spacing:-1px; font-variant-numeric:tabular-nums; }
   .bigp .v small { font-size:22px; font-weight:800; margin-left:2px; }
+  .why { margin-top:8px; max-width:520px; font-size:11px; line-height:1.55; color:var(--muted); } .why .wh { font-size:11.5px; margin-bottom:2px; } .why .wh span { opacity:.7; }
   .chg { display:inline-flex; gap:6px; margin-top:8px; flex-wrap:wrap; } .chg span { font-size:11.5px; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--line); font-variant-numeric:tabular-nums; }
   .up { color:#ff9f68; } .dn { color:#5ec8f2; } .flat { color:var(--muted); }
   .bar3 { display:flex; height:22px; border-radius:11px; overflow:hidden; background:rgba(255,255,255,.05); }
@@ -147,6 +148,10 @@ $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:
 const kst=t=>{ const d=new Date(new Date(t).getTime()+9*36e5); return `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`; };
 const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KN={cut:'인하',hold:'동결',hike:'인상'};
+const escH=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function whyBox(w,meet){ if(!w||w.meet!==meet) return ''; const d=+w.d, col=d>0?'var(--hike)':d<0?'var(--cut)':'var(--muted)';
+  const hd=(w.heads||[]).map(x=>`<div>· <a href="${escH(x.link)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${escH(x.t)}</a> <span style="opacity:.6">${escH(x.src||'')}</span></div>`).join('');
+  return `<div class="why"><div class="wh">${d?`<b style="color:${col}">${(+w.from).toFixed(1)}% → ${(+w.to).toFixed(1)}% (${d>0?'+':''}${d.toFixed(1)}%p)</b>`:'<b>변동 없음</b>'} <span>${kst(w.t)} 변동</span></div><div>· ${escH(w.l1)}</div>${hd}<div style="opacity:.55">뉴스 줄은 변동 시점의 최신 관련 기사 제목(자동)</div></div>`; }
 const md=ds=>`${+ds.slice(5,7)}/${+ds.slice(8,10)}`;
 const f1=v=>v==null?'—':(+v).toFixed(1);
 // FOMC 발표 시각: 미국 동부 오후 2시 (서머타임: 3월 둘째 일요일 ~ 11월 첫째 일요일)
@@ -169,7 +174,7 @@ function render(){
     $('#hero').innerHTML=`<div class="top"><div class="meet">다음 FOMC <b>${m.date}</b> <span class="muted">· 한국 ${kst(announceUTC(m.date))} 발표</span></div>
         <div class="cd" id="cd"></div></div>
       <div class="main"><div class="bigp"><div class="k">금리 인상 확률</div><div class="v" style="color:var(--hike)"><span id="bigNum">0</span><small>%</small></div>
-          <div class="chg">${deltaBadge(mHike,histAt(1,m.date),'1시간')}${deltaBadge(mHike,histAt(24,m.date),'하루')}${deltaBadge(mHike,histAt(24*7,m.date),'일주일')}</div></div>
+          <div class="chg">${deltaBadge(mHike,histAt(1,m.date),'1시간')}${deltaBadge(mHike,histAt(24,m.date),'하루')}${deltaBadge(mHike,histAt(24*7,m.date),'일주일')}</div>${whyBox(FW.why,m.date)}</div>
         <div><div class="bar3"><i style="background:var(--cut)" data-w="${m.cut}">${m.cut>=8?'인하 '+f1(m.cut)+'%':''}</i><i style="background:var(--hold)" data-w="${m.hold}">${m.hold>=8?'동결 '+f1(m.hold)+'%':''}</i><i style="background:var(--hike)" data-w="${m.hike}">${m.hike>=8?'인상 '+f1(m.hike)+'%':''}</i></div>
           <div class="legend3"><span style="color:var(--cut)">● 인하 <b>${f1(m.cut)}%</b></span><span style="color:#c9cfd8">● 동결 <b>${f1(m.hold)}%</b></span><span style="color:var(--hike)">● 인상 <b>${f1(m.hike)}%</b></span></div>
           <div class="exp">시장이 가장 크게 보는 쪽: <b style="color:${lead[2]}">${lead[0]} ${f1(lead[1])}%</b> · 회의 뒤 예상 금리 <b>${(+m.exp).toFixed(2)}%</b> <span class="muted">(지금 실효금리 ${F.effr}% · 목표 ${F.lo.toFixed(2)}–${F.hi.toFixed(2)}%)</span></div></div></div>

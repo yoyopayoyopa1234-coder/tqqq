@@ -423,6 +423,39 @@ def fedwatch_calc(now, old):
     return dict(asof=now.isoformat(timespec="minutes"), effr=effr, effr_date=edate, lo=lo, hi=hi, futures=fut, meets=res)
 
 
+def why_calc(fw, old, news, now, hist):
+    """인상 확률이 0.5%p 이상 바뀔 때마다 이유 3줄(선물 변화 1줄 + 최신 관련 뉴스 제목 2줄)을 남긴다."""
+    prev = old.get("why")
+    try:
+        m = fw["meets"][0]; cur = m["hike"]; fut = {f["code"]: [f["month"], f["rate"]] for f in fw["futures"][:3]}
+    except Exception: return prev
+    if prev and prev.get("meet") == m["date"]:
+        if abs(cur - prev["to"]) < 0.5: return prev
+        frm, pfut, since = prev["to"], prev.get("fut") or {}, prev["t"]
+    else:                                   # 처음이거나 회의가 바뀜 → 약 하루 전 기록과 비교
+        frm, pfut, since = None, {}, None
+        for h in hist:
+            if now - datetime.fromisoformat(h["t"]) <= timedelta(hours=24):
+                f0 = next((x for x in h.get("f", []) if x[0] == m["date"]), None)
+                if f0: frm, since = f0[1], h["t"]
+                break
+        if frm is None: frm = cur
+    d = round(cur - frm, 1); up = d > 0
+    mv = [f"{int(mo[5:])}월물 {pfut[c][1]:.3f}→{r:.3f}%" for c, (mo, r) in fut.items() if c in pfut and abs(r - pfut[c][1]) >= 0.0025]
+    if mv: l1 = "연방기금 선물 내재금리 " + " · ".join(mv[:2]) + (" — 선물 시장이 인상 쪽으로 더 기울었음" if up else " — 선물 시장의 인상 베팅이 줄었음")
+    else: l1 = f"연방기금 선물 가격이 {'인상' if up else '동결'} 쪽으로 소폭 움직임 (회의 뒤 예상 금리 {m['exp']:.2f}%)" if d else f"회의 뒤 예상 금리 {m['exp']:.2f}% (지금 실효금리 {fw['effr']}%)"
+    rel = re.compile(r"fed|fomc|rate hike|rate cut|inflation|cpi|pce|payroll|jobs|powell|treasury|yield|연준|금리|인상|인하|물가|고용|파월|국채", re.I)
+    cand = [x for x in news if now - x["ts"] <= timedelta(hours=36) and rel.search(x["title"])]
+    cand.sort(key=lambda x: (0 if re.search(r"[가-힣]", x["title"]) else 1, -x["ts"].timestamp()))
+    heads, seen = [], set()
+    for x in cand:
+        t = re.sub(r"\s[-|–]\s[^-|–]{2,40}$", "", x["title"]).strip(); k = re.sub(r"[^0-9a-z가-힣]", "", t.lower())[:40]
+        if k in seen or len(t) < 12: continue
+        seen.add(k); heads.append(dict(t=t[:140], src=x["src"], link=x["link"]))
+        if len(heads) == 2: break
+    return dict(t=now.isoformat(timespec="minutes"), since=since, meet=m["date"], **{"from": frm}, to=cur, d=d, fut=fut, l1=l1, heads=heads)
+
+
 def main():
     now = datetime.now(timezone.utc)
     try: old = json.load(open(OUT))
@@ -463,7 +496,9 @@ def main():
                 f=[[m["date"], m["hike"], m["hold"], m["cut"], m["exp"]] for m in (fw or {}).get("meets", [])[:4]],
                 m=[[m["date"], m["hike_est"], m["hold"], m["cut"]] for m in meets])
     hist = [h for h in old.get("hist", []) if "m" in h and datetime.fromisoformat(h["t"]) >= now - timedelta(days=30)] + [snap]
-    out = dict(ts=int(now.timestamp()), fw=fw, meets=[{k: iso(v) for k, v in m.items()} for m in meets],
+    try: why = why_calc(fw, old, news, now, hist)
+    except Exception as e: why = old.get("why"); note("이유 요약 실패", type(e).__name__, str(e)[:120])
+    out = dict(ts=int(now.timestamp()), fw=fw, why=why, meets=[{k: iso(v) for k, v in m.items()} for m in meets],
                figs=[{k: iso(v) for k, v in f.items()} for f in sorted(figs, key=lambda f: f["ts"], reverse=True)[:60]],
                counts=cnt, fig_src=bysrc, news=[ser(x) for x in news[:50]], comm=[ser(x) for x in comm[:30]], diag=DIAG, hist=hist[-3000:])
     json.dump(out, open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))
