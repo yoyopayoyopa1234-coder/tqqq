@@ -1,19 +1,19 @@
 {
- "at": "2026-11-23T21:05+00:00",
- "at_kst": "11/24 06:05",
+ "at": "2026-11-23T21:10+00:00",
+ "at_kst": "11/24 06:10",
  "market": "unknown",
- "verdict": "신호 판단은 일치, 수치 2건 차이 — 매수·탈출 판단에는 영향이 없습니다.",
- "level": "minor",
+ "verdict": "전부 일치 (6/6) — 신호판 수치와 판단을 그대로 믿어도 됩니다.",
+ "level": "ok",
  "checks": [
   {
    "name": "SPX 가격",
-   "ok": false,
-   "detail": "+0.046%"
+   "ok": true,
+   "detail": "-0.010%"
   },
   {
    "name": "SPX 200일선",
    "ok": true,
-   "detail": "+0.000%"
+   "detail": "-0.000%"
   },
   {
    "name": "SPX 밴드 위치",
@@ -27,8 +27,8 @@
   },
   {
    "name": "TQQQ 가격",
-   "ok": false,
-   "detail": "-0.163%"
+   "ok": true,
+   "detail": "+0.000%"
   },
   {
    "name": "공포·탐욕 지수",
@@ -37,25 +37,23 @@
   }
  ],
  "notes": [
-  "SPX: TradingView 기준 밴드 안 (상단 대비 -3.98%, 하단 대비 +0.95%).",
-  "차이: SPX 가격 — +0.046%",
-  "차이: TQQQ 가격 — -0.163%"
+  "SPX: TradingView 기준 밴드 안 (상단 대비 -3.93%, 하단 대비 +1.00%)."
  ],
  "items": {
   "spx": {
-   "tv_px": 7234.38,
-   "tv_ma": 7350.11,
-   "my_px": 7237.71,
-   "my_ma": 7350.11,
+   "tv_px": 7237.9,
+   "tv_ma": 7350.13,
+   "my_px": 7237.17,
+   "my_ma": 7350.1,
    "my_zone": "band",
    "my_state": "OUT",
-   "tv_up": 7533.86,
-   "tv_lo": 7166.36,
+   "tv_up": 7533.88,
+   "tv_lo": 7166.38,
    "tv_zone": "band",
-   "tv_dist_up": -3.98,
-   "tv_dist_lo": 0.95,
-   "px_diff_pct": 0.046,
-   "ma_diff_pct": 0.0,
+   "tv_dist_up": -3.93,
+   "tv_dist_lo": 1.0,
+   "px_diff_pct": -0.01,
+   "ma_diff_pct": -0.0,
    "zone_match": true,
    "ag_state": "OUT",
    "ag_days": null,
@@ -66,12 +64,12 @@
    "my_ts": false
   }
  },
- "tqqq_tv": 49.15,
- "tqqq_my": 49.07,
+ "tqqq_tv": 49.1,
+ "tqqq_my": 49.1,
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
-  "26.11.24. 06:04 기준",
+  "26.11.24. 06:09 기준",
   "TQQQ·SPYM 전량 매도",
   "SGOV 대피 완료",
   "하단 밴드 이탈 (전량 탈출)",
@@ -373,9 +371,9 @@
    "n": 6
   },
   {
-   "at": "11/24 06:05",
-   "level": "minor",
-   "ok": 4,
+   "at": "11/24 06:10",
+   "level": "ok",
+   "ok": 6,
    "n": 6
   }
  ]
