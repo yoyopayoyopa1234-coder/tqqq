@@ -37,8 +37,10 @@ def ohlc_since(sym, iv, p1=1262304000):
         o, h, l = q["open"][i] or c, q["high"][i] or c, q["low"][i] or c
         out.append([t, round(o, 4), round(max(h, o, c), 4), round(min(l, o, c), 4), round(c, 4)])
     off = (r.get("meta") or {}).get("gmtoffset", 0) or 0
+    def mkey(t):   # 봉 시작(현지 자정 ±1시간, 서머타임 오차)은 +12시간 해서 달 판정, 그 밖(체결 시각)은 그대로
+        x = t + off; return time.gmtime(x + (43200 if (x % 86400 <= 3600 or x % 86400 >= 82800) else 0))[:2]
     def dup(a, b):   # 진행 중인 봉을 한 번 더 보내는 경우 (월봉은 같은 달, 주봉은 7일 이내, 일봉은 같은 날)
-        if iv == "1mo": return time.gmtime(a + off + 43200)[:2] == time.gmtime(b + off)[:2]
+        if iv == "1mo": return mkey(a) == mkey(b)
         if iv == "1wk": return b - a < 7 * 86400
         return day(a) == day(b)
     while len(out) >= 2 and dup(out[-2][0], out[-1][0]):

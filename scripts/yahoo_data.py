@@ -19,6 +19,11 @@ def get(url, tries=2, uas=({"User-Agent": "curl/8.5.0"}, UA)):
                 time.sleep(2)
     raise last
 
+def _loc(t, off):
+    """현지 시각. 봉 시작(자정 ±1시간 — 서머타임 오차)은 정오로 옮겨 날짜·달이 하루 밀리지 않게 함."""
+    x = t + off
+    return datetime.fromtimestamp(x + (43200 if (x % 86400 <= 3600 or x % 86400 >= 82800) else 0), timezone.utc)
+
 def yahoo(sym, iv, rng=None):
     rng = rng or {"1wk": "since2014", "1d": "since2014", "1mo": "20y"}.get(iv, "max")
     span = (f"period1=1388534400&period2={int(time.time())}" if rng == "since2014"
@@ -36,7 +41,7 @@ def yahoo(sym, iv, rng=None):
     if len(out) >= 2:
         a, b = out[-2], out[-1]
         # 봉 시작 시각은 +12시간 해서 달을 판정 (서머타임 종료 직후 11월 1일 봉이 10월 31일로 읽혀 11월봉이 2개 생기던 문제)
-        da, db = datetime.fromtimestamp(a[0] + off + 43200, timezone.utc), datetime.fromtimestamp(b[0] + off, timezone.utc)
+        da, db = _loc(a[0], off), _loc(b[0], off)
         same = ((iv == "1mo" and (da.year, da.month) == (db.year, db.month)) or
                 (iv == "1wk" and (db - da).days < 7) or (iv == "1d" and da.date() == db.date()))
         if same:
@@ -45,7 +50,7 @@ def yahoo(sym, iv, rng=None):
     meta = res.get("meta", {})
     px, mt = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
     if px and mt and out and mt > out[-1][0]:
-        dl, dm = datetime.fromtimestamp(out[-1][0] + off + (43200 if iv == "1mo" else 0), timezone.utc), datetime.fromtimestamp(mt + off, timezone.utc)
+        dl, dm = _loc(out[-1][0], off), _loc(mt, off)
         same = ((iv == "1mo" and (dl.year, dl.month) == (dm.year, dm.month)) or
                 (iv == "1wk" and (dm - dl).days < 7) or (iv == "1d" and dl.date() == dm.date()))
         if same:
