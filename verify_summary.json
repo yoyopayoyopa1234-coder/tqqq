@@ -1,19 +1,19 @@
 {
- "at": "2026-11-23T21:10+00:00",
- "at_kst": "11/24 06:10",
- "market": "unknown",
+ "at": "2026-11-23T21:28+00:00",
+ "at_kst": "11/24 06:28",
+ "market": "closed",
  "verdict": "전부 일치 (6/6) — 신호판 수치와 판단을 그대로 믿어도 됩니다.",
  "level": "ok",
  "checks": [
   {
    "name": "SPX 가격",
    "ok": true,
-   "detail": "-0.010%"
+   "detail": "+0.000%"
   },
   {
    "name": "SPX 200일선",
    "ok": true,
-   "detail": "-0.000%"
+   "detail": "+0.000%"
   },
   {
    "name": "SPX 밴드 위치",
@@ -33,27 +33,27 @@
   {
    "name": "공포·탐욕 지수",
    "ok": true,
-   "detail": "AgiTQ 18 / 사이트 18"
+   "detail": "AgiTQ 17 / 사이트 17"
   }
  ],
  "notes": [
-  "SPX: TradingView 기준 밴드 안 (상단 대비 -3.93%, 하단 대비 +1.00%)."
+  "SPX: TradingView 기준 밴드 안 (상단 대비 -3.94%, 하단 대비 +0.99%)."
  ],
  "items": {
   "spx": {
-   "tv_px": 7237.9,
-   "tv_ma": 7350.13,
+   "tv_px": 7237.17,
+   "tv_ma": 7350.1,
    "my_px": 7237.17,
    "my_ma": 7350.1,
    "my_zone": "band",
    "my_state": "OUT",
-   "tv_up": 7533.88,
-   "tv_lo": 7166.38,
+   "tv_up": 7533.85,
+   "tv_lo": 7166.35,
    "tv_zone": "band",
-   "tv_dist_up": -3.93,
-   "tv_dist_lo": 1.0,
-   "px_diff_pct": -0.01,
-   "ma_diff_pct": -0.0,
+   "tv_dist_up": -3.94,
+   "tv_dist_lo": 0.99,
+   "px_diff_pct": 0.0,
+   "ma_diff_pct": 0.0,
    "zone_match": true,
    "ag_state": "OUT",
    "ag_days": null,
@@ -69,7 +69,7 @@
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
-  "26.11.24. 06:09 기준",
+  "26.11.24. 06:20 기준",
   "TQQQ·SPYM 전량 매도",
   "SGOV 대피 완료",
   "하단 밴드 이탈 (전량 탈출)",
@@ -83,17 +83,11 @@
   "TQQQ 최고점 대비 N/A",
   "공포와 탐욕 지수 (CNN FGI)",
   "극공포 (Extreme Fear)",
-  "현재 18",
+  "현재 17",
   "/",
   "30일 평균 27"
  ],
  "history": [
-  {
-   "at": "11/23 18:30",
-   "level": "ok",
-   "ok": 6,
-   "n": 6
-  },
   {
    "at": "11/23 18:45",
    "level": "ok",
@@ -372,6 +366,12 @@
   },
   {
    "at": "11/24 06:10",
+   "level": "ok",
+   "ok": 6,
+   "n": 6
+  },
+  {
+   "at": "11/24 06:28",
    "level": "ok",
    "ok": 6,
    "n": 6
