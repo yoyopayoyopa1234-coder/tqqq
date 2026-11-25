@@ -95,7 +95,7 @@
 <script>
 const $=s=>document.querySelector(s);
 $('#today').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-const PLAN=[{t:'SOXL',src:'soxl_data.json',buy:25,sell:198,c:'#5aa9ff',link:'soxl.html'},{t:'MSTR',src:'../dashboard/data.json',buy:110,sell:430,c:'#f0b429',link:'mstr.html'},{t:'TQQQ',src:'tqqq_data.json',buy:33,sell:98,c:'#5ad445',link:'analysis.html'}];
+const PLAN=[{t:'SOXL',src:'soxl_data.json',buy:25,sell:198,c:'#5aa9ff',link:'soxl.html'},{t:'MSTR',src:'mstr_data.json',buy:110,sell:430,c:'#f0b429',link:'mstr.html'},{t:'TQQQ',src:'tqqq_data.json',buy:33,sell:98,c:'#5ad445',link:'analysis.html'}];
 const f2=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}), pc=(v,d=1)=>(v>=0?'+':'−')+Math.abs(v).toFixed(d)+'%', d10=t=>new Date(t*1000).toISOString().slice(0,10);
 (async()=>{
   const q='?'+Math.floor(Date.now()/600000); let html='';
