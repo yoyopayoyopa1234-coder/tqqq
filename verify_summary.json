@@ -1,24 +1,24 @@
 {
- "at": "2026-11-25T18:51+00:00",
- "at_kst": "11/26 03:51",
+ "at": "2026-11-25T19:06+00:00",
+ "at_kst": "11/26 04:06",
  "market": "unknown",
- "verdict": "신호 판단 불일치 1건 — 아래 차이를 확인하고, TradingView 화면을 직접 보세요.",
- "level": "bad",
+ "verdict": "신호 판단은 일치, 수치 1건 차이 — 매수·탈출 판단에는 영향이 없습니다.",
+ "level": "minor",
  "checks": [
   {
    "name": "SPX 가격",
-   "ok": false,
-   "detail": "+0.307%"
+   "ok": true,
+   "detail": "-0.004%"
   },
   {
    "name": "SPX 200일선",
    "ok": true,
-   "detail": "+0.002%"
+   "detail": "-0.000%"
   },
   {
    "name": "SPX 밴드 위치",
-   "ok": false,
-   "detail": "TV below / 사이트 band"
+   "ok": true,
+   "detail": "TV band / 사이트 band"
   },
   {
    "name": "SPX 보유/대피 (AgiTQ)",
@@ -27,36 +27,35 @@
   },
   {
    "name": "TQQQ 가격",
-   "ok": true,
-   "detail": "-0.022%"
+   "ok": false,
+   "detail": "-0.663%"
   },
   {
    "name": "공포·탐욕 지수",
    "ok": true,
-   "detail": "AgiTQ 15 / 사이트 15"
+   "detail": "AgiTQ 16 / 사이트 16"
   }
  ],
  "notes": [
-  "SPX: TradingView 기준 하단 밴드 아래 (상단 대비 -4.90%, 하단 대비 -0.02%). 밴드 경계에 가까워 종가에 따라 신호가 바뀔 수 있습니다.",
-  "차이: SPX 가격 — +0.307%",
-  "차이: SPX 밴드 위치 — TV below / 사이트 band"
+  "SPX: TradingView 기준 밴드 안 (상단 대비 -4.67%, 하단 대비 +0.22%). 밴드 경계에 가까워 종가에 따라 신호가 바뀔 수 있습니다.",
+  "차이: TQQQ 가격 — -0.663%"
  ],
  "items": {
   "spx": {
-   "tv_px": 7167.11,
-   "tv_ma": 7352.39,
-   "my_px": 7189.1,
-   "my_ma": 7352.52,
+   "tv_px": 7184.37,
+   "tv_ma": 7352.51,
+   "my_px": 7184.08,
+   "my_ma": 7352.5,
    "my_zone": "band",
    "my_state": "OUT",
-   "tv_up": 7536.2,
-   "tv_lo": 7168.58,
-   "tv_zone": "below",
-   "tv_dist_up": -4.9,
-   "tv_dist_lo": -0.02,
-   "px_diff_pct": 0.307,
-   "ma_diff_pct": 0.002,
-   "zone_match": false,
+   "tv_up": 7536.32,
+   "tv_lo": 7168.7,
+   "tv_zone": "band",
+   "tv_dist_up": -4.67,
+   "tv_dist_lo": 0.22,
+   "px_diff_pct": -0.004,
+   "ma_diff_pct": -0.0,
+   "zone_match": true,
    "ag_state": "OUT",
    "ag_days": null,
    "ag_dd": null,
@@ -66,36 +65,30 @@
    "my_ts": false
   }
  },
- "tqqq_tv": 44.86,
- "tqqq_my": 44.85,
+ "tqqq_tv": 45.26,
+ "tqqq_my": 44.96,
  "agitq": [
   "아기티큐 200슨피단 (SPX)",
   "v3.0-γ (26.08.12)",
-  "26.11.26. 03:50 기준",
+  "26.11.26. 04:05 기준",
   "TQQQ·SPYM 전량 매도",
   "SGOV 대피 완료",
   "하단 밴드 이탈 (전량 탈출)",
   "TQQQ 최고점 대비 N/A",
   "아기티큐 200큐큐단 (QQQ)",
   "v3.0-γ (26.08.12)",
-  "26.11.26. 03:50 기준",
+  "26.11.26. 04:05 기준",
   "TQQQ·SPYM 전량 매도",
   "SGOV 대피 완료",
   "하단 밴드 이탈 (전량 탈출)",
   "TQQQ 최고점 대비 N/A",
   "공포와 탐욕 지수 (CNN FGI)",
   "극공포 (Extreme Fear)",
-  "현재 15",
+  "현재 16",
   "/",
   "30일 평균 26"
  ],
  "history": [
-  {
-   "at": "11/25 16:24",
-   "level": "ok",
-   "ok": 6,
-   "n": 6
-  },
   {
    "at": "11/25 16:37",
    "level": "ok",
@@ -376,6 +369,12 @@
    "at": "11/26 03:51",
    "level": "bad",
    "ok": 4,
+   "n": 6
+  },
+  {
+   "at": "11/26 04:06",
+   "level": "minor",
+   "ok": 5,
    "n": 6
   }
  ]
