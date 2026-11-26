@@ -83,7 +83,7 @@ $('#today').textContent = new Date().toLocaleDateString('ko-KR',{month:'long',da
 /* ── 데이터 (서버가 미리 받아둔 data.json) ── */
 let DATA=null;
 async function loadData(){ const q='?'+Math.floor(Date.now()/600000);
-  const [a,b]=await Promise.all([fetch('btc_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('../dashboard/data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
+  const [a,b]=await Promise.all([fetch('btc_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('m2_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
   if(a){ DATA=a; DATA.m2=b&&b.m2; } }
 function ohlc(key){
   const k = DATA && DATA.ohlc && DATA.ohlc[key];

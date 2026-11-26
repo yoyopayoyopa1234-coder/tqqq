@@ -91,7 +91,7 @@ $('#today').textContent = new Date().toLocaleDateString('ko-KR',{month:'long',da
 /* ── 데이터 (서버가 미리 받아둔 data.json) ── */
 let DATA=null;
 async function loadData(){ const q='?'+Math.floor(Date.now()/600000);
-  const [a,b,c]=await Promise.all([fetch('tqqq_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('../dashboard/data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('tq40.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
+  const [a,b,c]=await Promise.all([fetch('tqqq_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('m2_data.json'+q).then(r=>r.ok?r.json():null).catch(()=>null), fetch('tq40.json'+q).then(r=>r.ok?r.json():null).catch(()=>null)]);
   if(a){ DATA=a; DATA.m2=b&&b.m2; DATA.t40=c&&c.ohlc?c:null; } }
 /* 40년 환산: 실제 데이터 첫 봉 이전은 tq40.json(1985~ 환산 + 2010~ 실제)으로 채움 */
 let RANGE='40'; try{ RANGE=localStorage.getItem('tq-range')||'40'; }catch(e){}
