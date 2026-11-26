@@ -10,9 +10,9 @@ FRED = "https://fred.stlouisfed.org/graph/fredgraph.csv?id="
 # (나라, 통화량 후보 [(종류, 코드, 곱수)], 환율 (야후, FRED, 뒤집기), 달러 환산 허용 범위 조 달러)
 C = [("미국", [("fred", "M2SL", 1e9), ("fred", "WM2NS", 1e9)], None, (15, 35)),
      ("유로존", [("ecb", "BSI/M.U2.Y.V.M20.X.1.U2.2300.Z01.E", 1e6), ("fred", "MABMM301EZM189S", 1)], ("EURUSD=X", "DEXUSEU", False), (8, 30)),
-     ("중국", [("fred", "MYAGM2CNM189N", 1), ("fred", "MABMM301CNM189S", 1), ("fred", "MABMM301CNM189N", 1)], ("CNY=X", "DEXCHUS", True), (20, 80)),
-     ("일본", [("fred", "MABMM301JPM189S", 1), ("fred", "MYAGM2JPM189S", 1), ("fred", "MABMM301JPM189N", 1)], ("JPY=X", "DEXJPUS", True), (4, 20)),
-     ("영국", [("fred", "MABMM301GBM189S", 1), ("fred", "MABMM301GBM189N", 1)], ("GBPUSD=X", "DEXUSUK", False), (1.5, 8))]
+     ("중국", [("em", "RPT_ECONOMY_CURRENCY_SUPPLY", 1e8)], ("CNY=X", "DEXCHUS", True), (20, 80)),          # 동방재부(인민은행 발표값), 억 위안
+     ("일본", [("boj", "MAM1NAM2M2MO", 1e8), ("fred", "MABMM301JPM189S", 1)], ("JPY=X", "DEXJPUS", True), (4, 20)),   # 일본은행 API, 억 엔
+     ("영국", [("boe", "LPMAUYN", 1e6), ("fred", "MABMM301GBM189S", 1)], ("GBPUSD=X", "DEXUSUK", False), (1.5, 8))]   # 영란은행 M4, 백만 파운드
 START = date(2014, 1, 1)
 
 def fred(code):
@@ -25,6 +25,25 @@ def fred(code):
 def ecb(key):
     rows = list(csv.DictReader(io.StringIO(get(f"https://data-api.ecb.europa.eu/service/data/{key}?format=csvdata&startPeriod=2013-01"))))
     return [(date.fromisoformat(r["TIME_PERIOD"] + "-01"), float(r["OBS_VALUE"])) for r in rows if r.get("OBS_VALUE")]
+
+def em(report):
+    j = json.loads(get(f"https://datacenter-web.eastmoney.com/api/data/v1/get?reportName={report}&columns=REPORT_DATE,BASIC_CURRENCY&pageSize=500&sortColumns=REPORT_DATE&sortTypes=1"))
+    return [(date.fromisoformat(r["REPORT_DATE"][:10]), float(r["BASIC_CURRENCY"])) for r in j["result"]["data"] if r.get("BASIC_CURRENCY")]
+
+def boj(code):
+    j = json.loads(get(f"https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=MD02&code={code}&startDate=201301"))
+    v = j["RESULTSET"][0]["VALUES"]
+    return [(date(int(str(d)[:4]), int(str(d)[4:6]), 1), float(x)) for d, x in zip(v["SURVEY_DATES"], v["VALUES"]) if x is not None]
+
+def boe(code):
+    t = get(f"https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=01/Jan/2013&Dateto=now&SeriesCodes={code}&CSVF=TN&UsingCodes=Y")
+    out = []
+    for r in list(csv.reader(io.StringIO(t)))[1:]:
+        try: out.append((datetime.strptime(r[0].strip(), "%d %b %Y").date().replace(day=1), float(r[1])))
+        except Exception: pass
+    return out
+
+SRC = {"fred": fred, "ecb": ecb, "em": em, "boj": boj, "boe": boe}
 
 def ffill(obs, days):
     obs = sorted(obs); out, j, v = [], 0, None
@@ -48,7 +67,7 @@ def main():
         ser = None
         for kind, code, mul in cands:
             try:
-                obs = [(a, b * mul) for a, b in (fred(code) if kind == "fred" else ecb(code))]
+                obs = sorted((a, b * mul) for a, b in SRC[kind](code))
                 last = obs[-1]; fresh = (today - last[0]).days <= 200
                 diag.append(f"{name} {code}: {len(obs)}개 · 마지막 {last[0]} {last[1]:.4g} · {'사용 가능' if fresh else '오래됨'}")
                 if fresh and not ser: ser = (code, obs)
